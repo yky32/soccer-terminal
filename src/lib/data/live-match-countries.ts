@@ -7,8 +7,11 @@ export type CountryMatchActivity = {
   liveMatches: number;
 };
 
+import type { LiveMatch } from "@/lib/data/live-match";
+
 export type LiveCountriesResponse = {
   countries: CountryMatchActivity[];
+  matchesByCountry: Record<string, LiveMatch[]>;
   countryCount: number;
   totalMatches: number;
   maxMatches: number;

@@ -1,0 +1,24 @@
+export type LiveMatch = {
+  id: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeGoals: number;
+  awayGoals: number;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  statusShort: string;
+  statusLong: string;
+  elapsed: number | null;
+  league: string;
+  leagueLogo: string | null;
+  leagueRound: string | null;
+  country: string;
+  countryCode: string;
+  countryFlag: string | null;
+  venue: string | null;
+  venueCity: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  halftimeHome: number | null;
+  halftimeAway: number | null;
+};

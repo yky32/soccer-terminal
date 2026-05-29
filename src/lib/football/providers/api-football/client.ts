@@ -3,7 +3,8 @@ import type {
   FootballDataProvider,
   LiveCountriesSnapshot,
 } from "@/lib/football/provider";
-import { aggregateLiveCountries } from "@/lib/football/providers/api-football/aggregate";
+import { enrichMatchesWithLocations } from "@/lib/football/enrich-match-locations";
+import { buildLiveFixturesSnapshot } from "@/lib/football/providers/api-football/normalize-fixtures";
 import type { ApiFootballLiveResponse } from "@/lib/football/providers/api-football/types";
 
 const API_BASE = "https://v3.football.api-sports.io";
@@ -39,10 +40,14 @@ export function createApiFootballProvider(apiKey: string): FootballDataProvider 
         throw new Error(message || "API-Football returned errors");
       }
 
-      const countries = aggregateLiveCountries(data.response ?? []);
+      const snapshot = buildLiveFixturesSnapshot(data.response ?? []);
+      const matchesByCountry = await enrichMatchesWithLocations(
+        snapshot.matchesByCountry,
+      );
 
       return {
-        countries,
+        ...snapshot,
+        matchesByCountry,
         updatedAt: new Date().toISOString(),
         provider: "api-football",
       };

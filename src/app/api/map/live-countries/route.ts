@@ -16,6 +16,7 @@ export async function GET(request: Request) {
         body: {
           ...stats,
           countries: snapshot.countries,
+          matchesByCountry: snapshot.matchesByCountry,
           updatedAt: snapshot.updatedAt,
           provider: snapshot.provider,
         },

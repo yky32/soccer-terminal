@@ -1,7 +1,9 @@
+import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 
 export type LiveCountriesSnapshot = {
   countries: CountryMatchActivity[];
+  matchesByCountry: Record<string, LiveMatch[]>;
   updatedAt: string;
   provider: string;
 };
