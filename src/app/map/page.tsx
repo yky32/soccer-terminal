@@ -9,6 +9,7 @@ export default function MapPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Global Map"
         description="Interactive world map with live and upcoming matches, filterable by league tier, youth, women's football, and more."
       />

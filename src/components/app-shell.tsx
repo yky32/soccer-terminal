@@ -2,24 +2,58 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "@/components/logo";
 import { mainNav } from "@/lib/navigation";
+
+function ChevronRight() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="h-5 w-5 shrink-0 text-muted-light transition-transform group-hover:translate-x-0.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-full flex-col lg:flex-row">
-      <aside className="border-b border-border lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
-        <div className="flex items-center justify-between px-4 py-4 lg:flex-col lg:items-start lg:px-5 lg:py-6">
-          <Link href="/" className="text-sm font-semibold tracking-wide uppercase">
-            Soccer World Monitor
-          </Link>
-          <span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] text-muted lg:mt-3">
-            Alpha
-          </span>
+    <div className="flex min-h-full flex-col">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+        <div className="page-container flex h-[4.25rem] items-center justify-between gap-6">
+          <Logo />
+
+          <nav className="hidden items-center gap-1 md:flex">
+            {mainNav.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`text-label rounded-full px-4 py-2.5 font-medium transition-colors ${
+                    isActive
+                      ? "bg-foreground text-background"
+                      : "text-muted hover:bg-surface hover:text-foreground"
+                  }`}
+                >
+                  {item.shortLabel}
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible lg:px-3 lg:pb-6">
+        <nav className="flex gap-2 overflow-x-auto border-t border-border px-5 py-3.5 md:hidden">
           {mainNav.map((item) => {
             const isActive =
               item.href === "/"
@@ -30,20 +64,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`shrink-0 rounded-lg px-3 py-2 text-sm transition-colors lg:w-full ${
+                className={`text-label shrink-0 rounded-full px-4 py-2.5 font-medium transition-colors ${
                   isActive
-                    ? "bg-surface-elevated text-foreground"
-                    : "text-muted hover:bg-surface hover:text-foreground"
+                    ? "bg-foreground text-background"
+                    : "bg-surface text-muted"
                 }`}
               >
-                {item.label}
+                {item.shortLabel}
               </Link>
             );
           })}
         </nav>
-      </aside>
+      </header>
 
-      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      <main className="flex-1">{children}</main>
+
+      <footer className="border-t border-border bg-surface">
+        <div className="page-container flex flex-col gap-4 py-9 sm:flex-row sm:items-center sm:justify-between">
+          <Logo />
+          <p className="text-body text-muted">
+            Professional football intelligence
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
+export { ChevronRight };

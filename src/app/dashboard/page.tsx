@@ -9,6 +9,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Analytics Dashboard"
         description="Customizable multi-panel layout for live matches, tactical views, player radars, and league tables."
       />

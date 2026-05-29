@@ -9,6 +9,7 @@ export default function YouthPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Youth Academies"
         description="Track promising young talents with performance curves, minutes played, and development signals."
       />

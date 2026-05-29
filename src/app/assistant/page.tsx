@@ -9,6 +9,7 @@ export default function AssistantPage() {
   return (
     <>
       <PageHeader
+        compact
         title="AI Assistant"
         description="Daily briefings, tactical trend analysis, and a conversational interface for football insights."
       />

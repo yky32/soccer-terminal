@@ -9,6 +9,7 @@ export default function ScoutingPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Scouting Intelligence"
         description="Advanced player search, side-by-side comparison, and similarity discovery for talent analysts."
       />

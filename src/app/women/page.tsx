@@ -9,6 +9,7 @@ export default function WomenPage() {
   return (
     <>
       <PageHeader
+        compact
         title="Women's Football"
         description="Dedicated hub for women's leagues, fixtures, and analytics with growing global coverage."
       />
