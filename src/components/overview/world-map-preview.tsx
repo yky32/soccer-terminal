@@ -9,6 +9,7 @@ import type {
   LiveCountriesResponse,
 } from "@/lib/data/live-match-countries";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
+import { apiRequest } from "@/lib/http/api-client";
 
 const WORLD_VIEW = { center: [0, 22] as [number, number], zoom: 1.2 };
 const COUNTRY_FOCUS_ZOOM = 3.25;
@@ -28,11 +29,15 @@ export function WorldMapPreview() {
 
   const loadLiveCountries = useCallback(async () => {
     try {
-      const response = await fetch("/api/map/live-countries");
-      const data = (await response.json()) as LiveCountriesResponse;
+      const { data } = await apiRequest<LiveCountriesResponse>({
+        scope: "client",
+        provider: "internal",
+        method: "GET",
+        url: "/api/map/live-countries",
+      });
 
-      if (!response.ok) {
-        throw new Error(data.error ?? "Failed to load live matches");
+      if (data.error) {
+        throw new Error(data.error);
       }
 
       setStats(getLiveMatchStats(data.countries ?? []));

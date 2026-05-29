@@ -1,3 +1,4 @@
+import { apiRequest } from "@/lib/http/api-client";
 import type {
   FootballDataProvider,
   LiveCountriesSnapshot,
@@ -12,20 +13,17 @@ export function createApiFootballProvider(apiKey: string): FootballDataProvider 
     id: "api-football",
 
     async getLiveCountries(): Promise<LiveCountriesSnapshot> {
-      const response = await fetch(`${API_BASE}/fixtures?live=all`, {
+      const { data } = await apiRequest<ApiFootballLiveResponse>({
+        scope: "server",
+        provider: "api-football",
+        method: "GET",
+        url: `${API_BASE}/fixtures`,
+        query: { live: "all" },
         headers: {
           "x-apisports-key": apiKey,
         },
         next: { revalidate: 60 },
       });
-
-      if (!response.ok) {
-        throw new Error(
-          `API-Football request failed (${response.status} ${response.statusText})`,
-        );
-      }
-
-      const data = (await response.json()) as ApiFootballLiveResponse;
 
       if (Array.isArray(data.errors) && data.errors.length > 0) {
         throw new Error("API-Football returned errors for live fixtures");

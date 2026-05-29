@@ -94,6 +94,8 @@ cp .env.example .env.local
 
 The homepage map loads live fixtures via `GET /api/map/live-countries` (cached ~60s on the server).
 
+All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request DTO** and **Response DTO** to the server/browser console in development (`API_HTTP_LOG=true` forces it on in production too).
+
 ---
 
 ## Scripts
