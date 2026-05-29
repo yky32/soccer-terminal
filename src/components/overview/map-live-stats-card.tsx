@@ -9,20 +9,24 @@ type MapLiveStatsCardProps = {
   countryCount: number;
   totalMatches: number;
   countries: CountryMatchActivity[];
-  trendPercent?: number;
   selectedCountryCode?: string | null;
   onCountrySelect?: (country: CountryMatchActivity) => void;
   onResetView?: () => void;
+  loading?: boolean;
+  error?: string | null;
+  updatedAt?: string | null;
 };
 
 export function MapLiveStatsCard({
   countryCount,
   totalMatches,
   countries,
-  trendPercent = 12.5,
   selectedCountryCode = null,
   onCountrySelect,
   onResetView,
+  loading = false,
+  error = null,
+  updatedAt = null,
 }: MapLiveStatsCardProps) {
   const [showAll, setShowAll] = useState(false);
   const sorted = [...countries].sort((a, b) => b.liveMatches - a.liveMatches);
@@ -42,7 +46,16 @@ export function MapLiveStatsCard({
     >
       <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
         Live now
+        {loading ? (
+          <span className="ml-1.5 font-normal normal-case text-neutral-400">
+            · updating
+          </span>
+        ) : null}
       </p>
+
+      {error ? (
+        <p className="mt-2 text-[11px] leading-snug text-red-600">{error}</p>
+      ) : null}
 
       <dl className="mt-2 grid grid-cols-2 gap-x-3.5 gap-y-1">
         <div>
@@ -63,12 +76,17 @@ export function MapLiveStatsCard({
         </div>
       </dl>
 
-      <p className="mt-1.5 text-[10px] font-medium leading-tight text-emerald-600">
-        <span aria-hidden="true">↗ </span>+{trendPercent}%
-        <span className="font-normal text-neutral-400"> vs last hour</span>
-      </p>
+      {updatedAt && !error ? (
+        <p className="mt-1.5 text-[10px] leading-tight text-neutral-400">
+          Updated{" "}
+          {new Date(updatedAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      ) : null}
 
-      {sorted.length > 0 ? (
+      {!error && sorted.length > 0 ? (
         <div className="mt-2 border-t border-neutral-100 pt-2" data-map-list-action>
           <ul className="space-y-0.5">
             {visible.map((country) => {
@@ -113,6 +131,8 @@ export function MapLiveStatsCard({
             </button>
           ) : null}
         </div>
+      ) : !error && !loading ? (
+        <p className="mt-2 text-[11px] text-neutral-500">No live matches right now</p>
       ) : null}
     </div>
   );

@@ -81,7 +81,18 @@ npm run dev
 
 Open [localhost:3000](http://localhost:3000).
 
-No environment variables are required for local development at this stage.
+Copy `.env.example` to `.env.local` and set your API-Football key:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Description |
+|----------|-------------|
+| `API_FOOTBALL_KEY` | Key from [API-Football](https://www.api-football.com/) |
+| `FOOTBALL_DATA_PROVIDER` | Data source (`api-football`; more providers can be added) |
+
+The homepage map loads live fixtures via `GET /api/map/live-countries` (cached ~60s on the server).
 
 ---
 

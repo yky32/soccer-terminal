@@ -1,27 +1,55 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CountryLivePin } from "@/components/overview/country-live-pin";
 import { MapLiveStatsCard } from "@/components/overview/map-live-stats-card";
 import { Map, type MapRef } from "@/components/ui/map";
-import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
-import {
-  getLiveMatchStats,
-  LIVE_MATCH_COUNTRIES,
+import type {
+  CountryMatchActivity,
+  LiveCountriesResponse,
 } from "@/lib/data/live-match-countries";
+import { getLiveMatchStats } from "@/lib/data/live-match-countries";
 
-const TREND_PERCENT = 12.5;
 const WORLD_VIEW = { center: [0, 22] as [number, number], zoom: 1.2 };
 const COUNTRY_FOCUS_ZOOM = 3.25;
+const REFRESH_MS = 60_000;
+
+const EMPTY_STATS = getLiveMatchStats([]);
 
 export function WorldMapPreview() {
   const mapRef = useRef<MapRef>(null);
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
     null,
   );
+  const [stats, setStats] = useState(EMPTY_STATS);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { countryCount, totalMatches, maxMatches, countries } =
-    getLiveMatchStats(LIVE_MATCH_COUNTRIES);
+  const loadLiveCountries = useCallback(async () => {
+    try {
+      const response = await fetch("/api/map/live-countries");
+      const data = (await response.json()) as LiveCountriesResponse;
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "Failed to load live matches");
+      }
+
+      setStats(getLiveMatchStats(data.countries ?? []));
+      setUpdatedAt(data.updatedAt ?? null);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load live matches");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLiveCountries();
+    const interval = setInterval(loadLiveCountries, REFRESH_MS);
+    return () => clearInterval(interval);
+  }, [loadLiveCountries]);
 
   const resetWorldView = useCallback(() => {
     setSelectedCountryCode(null);
@@ -42,6 +70,8 @@ export function WorldMapPreview() {
     });
   }, []);
 
+  const { countryCount, totalMatches, maxMatches, countries } = stats;
+
   return (
     <section className="relative w-full border-y border-border">
       <div className="relative h-[min(88vh,calc(100dvh-10rem))] min-h-[28rem] w-full">
@@ -55,14 +85,15 @@ export function WorldMapPreview() {
           attributionControl={false}
           className="h-full w-full"
         >
-          {countries.map((country, index) => (
-            <CountryLivePin
-              key={country.code}
-              country={country}
-              maxMatches={maxMatches}
-              pulseDelay={index * 0.35}
-            />
-          ))}
+          {!loading &&
+            countries.map((country, index) => (
+              <CountryLivePin
+                key={country.code}
+                country={country}
+                maxMatches={maxMatches}
+                pulseDelay={index * 0.35}
+              />
+            ))}
         </Map>
 
         <div className="pointer-events-none absolute left-4 top-4 z-10 sm:left-6 sm:top-6">
@@ -70,13 +101,14 @@ export function WorldMapPreview() {
             countryCount={countryCount}
             totalMatches={totalMatches}
             countries={countries}
-            trendPercent={TREND_PERCENT}
             selectedCountryCode={selectedCountryCode}
             onCountrySelect={focusCountry}
             onResetView={resetWorldView}
+            loading={loading}
+            error={error}
+            updatedAt={updatedAt}
           />
         </div>
-
       </div>
     </section>
   );
