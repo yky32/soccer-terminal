@@ -12,22 +12,22 @@ function loggingEnabled() {
 
 export function logApiRequest(dto: ApiRequestDto) {
   if (!loggingEnabled()) return;
-  console.info("[API][Request DTO] ➡️➡️➡️➡️", JSON.stringify(dto, null, 2));
+  console.info("[API][Request DTO] 🔴🔴➡️➡️", JSON.stringify(dto, null, 2));
 }
 
 export function logApiResponse<T>(dto: ApiResponseDto<T>) {
   if (!loggingEnabled()) return;
-  console.info("[API][Response DTO]  ⬅️⬅️⬅️⬅️", JSON.stringify(dto, null, 2));
+  console.info("[API][Response DTO]  🟢🟢️⬅️⬅️", JSON.stringify(dto, null, 2));
 }
 
 export function logRouteRequest(dto: ApiRouteRequestDto) {
   if (!loggingEnabled()) return;
-  console.info("[API][Route Request DTO] ➡️➡️➡️➡️", JSON.stringify(dto, null, 2));
+  console.info("[API][Route Request DTO] 🔴🔴➡️➡️", JSON.stringify(dto, null, 2));
 }
 
 export function logRouteResponse<T>(dto: ApiRouteResponseDto<T>) {
   if (!loggingEnabled()) return;
-  console.info("[API][Route Response DTO] ⬅️⬅️⬅️⬅️", JSON.stringify(dto, null, 2));
+  console.info("[API][Route Response DTO] 🟢🟢️⬅️⬅️", JSON.stringify(dto, null, 2));
 }
 
 export function createRequestId(prefix: string) {
