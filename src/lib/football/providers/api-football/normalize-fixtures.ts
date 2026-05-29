@@ -35,7 +35,7 @@ export function buildLiveFixturesSnapshot(
   }
 
   for (const code of Object.keys(matchesByCountry)) {
-    matchesByCountry[code].sort((a, b) => a.league.localeCompare(b.league));
+    matchesByCountry[code].sort(sortMatchesByKickoff);
   }
 
   const countries: CountryMatchActivity[] = [];
@@ -73,6 +73,7 @@ function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
     awayGoals: fixture.goals.away ?? 0,
     homeLogo: fixture.teams.home.logo ?? null,
     awayLogo: fixture.teams.away.logo ?? null,
+    kickoffAt: fixture.fixture.date ?? null,
     statusShort: fixture.fixture.status.short,
     statusLong: fixture.fixture.status.long,
     elapsed: fixture.fixture.status.elapsed,
@@ -94,4 +95,11 @@ function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
 function formatVenue(name?: string | null, city?: string | null) {
   if (name && city) return `${name}, ${city}`;
   return name ?? city ?? null;
+}
+
+function sortMatchesByKickoff(a: LiveMatch, b: LiveMatch) {
+  const aTime = a.kickoffAt ? Date.parse(a.kickoffAt) : Number.MAX_SAFE_INTEGER;
+  const bTime = b.kickoffAt ? Date.parse(b.kickoffAt) : Number.MAX_SAFE_INTEGER;
+  if (aTime !== bTime) return aTime - bTime;
+  return a.league.localeCompare(b.league);
 }

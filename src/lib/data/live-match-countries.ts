@@ -8,8 +8,10 @@ export type CountryMatchActivity = {
 };
 
 import type { LiveMatch } from "@/lib/data/live-match";
+import type { MapMatchMode } from "@/lib/data/map-match-mode";
 
 export type LiveCountriesResponse = {
+  mode: MapMatchMode;
   countries: CountryMatchActivity[];
   matchesByCountry: Record<string, LiveMatch[]>;
   countryCount: number;

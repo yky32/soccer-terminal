@@ -1,7 +1,9 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
+import type { MapMatchMode } from "@/lib/data/map-match-mode";
 
 export type LiveCountriesSnapshot = {
+  mode: MapMatchMode;
   countries: CountryMatchActivity[];
   matchesByCountry: Record<string, LiveMatch[]>;
   updatedAt: string;
@@ -11,5 +13,5 @@ export type LiveCountriesSnapshot = {
 /** Swap implementations without changing UI or API routes */
 export interface FootballDataProvider {
   readonly id: string;
-  getLiveCountries(): Promise<LiveCountriesSnapshot>;
+  getMapCountries(mode: MapMatchMode): Promise<LiveCountriesSnapshot>;
 }

@@ -6,6 +6,7 @@ export type LiveMatch = {
   awayGoals: number;
   homeLogo: string | null;
   awayLogo: string | null;
+  kickoffAt: string | null;
   statusShort: string;
   statusLong: string;
   elapsed: number | null;

@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
+import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
+import { cn } from "@/lib/utils";
 
 const PREVIEW_COUNT = 3;
 
 type MapLiveStatsCardProps = {
+  mode: MapMatchMode;
+  onModeChange: (mode: MapMatchMode) => void;
   countryCount: number;
   totalMatches: number;
   countries: CountryMatchActivity[];
@@ -18,6 +22,8 @@ type MapLiveStatsCardProps = {
 };
 
 export function MapLiveStatsCard({
+  mode,
+  onModeChange,
   countryCount,
   totalMatches,
   countries,
@@ -38,14 +44,42 @@ export function MapLiveStatsCard({
     onResetView?.();
   };
 
+  const modeLabel = mode === "live" ? "Live now" : "Upcoming";
+  const emptyLabel =
+    mode === "live" ? "No live matches right now" : "No upcoming matches in the next 7 days";
+
   return (
     <div
       role="presentation"
       onClick={handleCardClick}
       className="pointer-events-auto w-[12.25rem] cursor-default rounded-lg border border-neutral-200/60 bg-neutral-100/75 px-3 py-2.5 shadow-[0_1px_6px_rgba(0,0,0,0.04)] backdrop-blur-md sm:w-[12.75rem]"
     >
-      <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
-        Live now
+      <div className="flex items-center gap-1 rounded-md bg-neutral-200/60 p-0.5" data-map-list-action>
+        {(["live", "future"] as const).map((option) => {
+          const active = mode === option;
+
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onModeChange(option)}
+              className={cn(
+                "flex-1 rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors",
+                active
+                  ? option === "live"
+                    ? "bg-white text-emerald-800 shadow-sm"
+                    : "bg-white text-sky-800 shadow-sm"
+                  : "text-neutral-500 hover:text-neutral-800",
+              )}
+            >
+              {option === "live" ? "Live" : "Future"}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+        {modeLabel}
         {loading ? (
           <span className="ml-1.5 font-normal normal-case text-neutral-400">
             · updating
@@ -105,9 +139,16 @@ export function MapLiveStatsCard({
                   >
                     <span className="flex min-w-0 items-center gap-1.5">
                       <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                          isSelected ? "bg-emerald-600" : "bg-emerald-500"
-                        }`}
+                        className={cn(
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
+                          mode === "live"
+                            ? isSelected
+                              ? "bg-emerald-600"
+                              : "bg-emerald-500"
+                            : isSelected
+                              ? "bg-sky-600"
+                              : "bg-sky-500",
+                        )}
                         aria-hidden="true"
                       />
                       <span className="truncate">{country.name}</span>
@@ -132,7 +173,7 @@ export function MapLiveStatsCard({
           ) : null}
         </div>
       ) : !error && !loading ? (
-        <p className="mt-2 text-[11px] text-neutral-500">No live matches right now</p>
+        <p className="mt-2 text-[11px] text-neutral-500">{emptyLabel}</p>
       ) : null}
     </div>
   );

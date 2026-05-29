@@ -10,11 +10,13 @@ import {
 import { MatchEventCard } from "@/components/overview/match-event-card";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
+import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { cn } from "@/lib/utils";
 
 type CountryMatchesPanelProps = {
   country: CountryMatchActivity;
   matches: LiveMatch[];
+  matchMode?: MapMatchMode;
   onClose: () => void;
   visible?: boolean;
 };
@@ -22,6 +24,7 @@ type CountryMatchesPanelProps = {
 export function CountryMatchesPanel({
   country,
   matches,
+  matchMode = "live",
   onClose,
   visible = true,
 }: CountryMatchesPanelProps) {
@@ -34,7 +37,7 @@ export function CountryMatchesPanel({
   useEffect(() => {
     setSelectedLeagues(new Set(leagues));
     setFilterExpanded(false);
-  }, [country.code]);
+  }, [country.code, matchMode]);
 
   useEffect(() => {
     setSelectedLeagues((prev) => {
@@ -75,6 +78,16 @@ export function CountryMatchesPanel({
     selectedLeagues.has(option.name),
   ).length;
 
+  const panelTitle = matchMode === "live" ? "Live matches" : "Upcoming matches";
+  const emptyCountryLabel =
+    matchMode === "live"
+      ? "No live matches in this country right now."
+      : "No upcoming matches in this country for the next 7 days.";
+  const emptyFilterLabel =
+    matchMode === "live"
+      ? "No live matches for the selected leagues."
+      : "No upcoming matches for the selected leagues.";
+
   return (
     <aside
       className={cn(
@@ -96,7 +109,7 @@ export function CountryMatchesPanel({
             ) : null}
             <div className="min-w-0">
               <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
-                Live matches
+                {panelTitle}
               </p>
               <p className="truncate text-sm font-bold text-neutral-900">{country.name}</p>
               <p className="text-[11px] text-neutral-500">
@@ -144,6 +157,7 @@ export function CountryMatchesPanel({
               <li key={match.id}>
                 <MatchEventCard
                   match={match}
+                  matchMode={matchMode}
                   compact
                   colorIndex={matchColorIndex.get(match.id)}
                 />
@@ -156,11 +170,11 @@ export function CountryMatchesPanel({
           </p>
         ) : matches.length > 0 ? (
           <p className="px-2 py-8 text-center text-xs leading-relaxed text-neutral-500">
-            No live matches for the selected leagues.
+            {emptyFilterLabel}
           </p>
         ) : (
           <p className="px-2 py-8 text-center text-xs leading-relaxed text-neutral-500">
-            No live matches in this country right now.
+            {emptyCountryLabel}
           </p>
         )}
       </div>

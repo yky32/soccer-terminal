@@ -12,6 +12,7 @@ import type {
   CountryMatchActivity,
   LiveCountriesResponse,
 } from "@/lib/data/live-match-countries";
+import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
 import { apiRequest } from "@/lib/http/api-client";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ function mapFocusPadding(pane: HTMLElement | null, withLegend: boolean) {
 export function WorldMapPreview() {
   const mapRef = useRef<MapRef>(null);
   const mapPaneRef = useRef<HTMLDivElement>(null);
+  const [matchMode, setMatchMode] = useState<MapMatchMode>("live");
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
     null,
   );
@@ -52,13 +54,15 @@ export function WorldMapPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadLiveCountries = useCallback(async () => {
+  const loadMapCountries = useCallback(async (mode: MapMatchMode) => {
     try {
+      setLoading(true);
       const { data } = await apiRequest<LiveCountriesResponse>({
         scope: "client",
         provider: "internal",
         method: "GET",
         url: "/api/map/live-countries",
+        query: { mode },
       });
 
       if (data.error) {
@@ -70,17 +74,23 @@ export function WorldMapPreview() {
       setUpdatedAt(data.updatedAt ?? null);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load live matches");
+      setError(
+        err instanceof Error
+          ? err.message
+          : mode === "live"
+            ? "Failed to load live matches"
+            : "Failed to load upcoming matches",
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadLiveCountries();
-    const interval = setInterval(loadLiveCountries, REFRESH_MS);
+    loadMapCountries(matchMode);
+    const interval = setInterval(() => loadMapCountries(matchMode), REFRESH_MS);
     return () => clearInterval(interval);
-  }, [loadLiveCountries]);
+  }, [loadMapCountries, matchMode]);
 
   const { countryCount, totalMatches, maxMatches, countries } = stats;
 
@@ -155,6 +165,15 @@ export function WorldMapPreview() {
     setSplitOpen(true);
   }, []);
 
+  const handleModeChange = useCallback(
+    (mode: MapMatchMode) => {
+      if (mode === matchMode) return;
+      resetWorldView();
+      setMatchMode(mode);
+    },
+    [matchMode, resetWorldView],
+  );
+
   const selectedMatches = selectedCountryCode
     ? (matchesByCountry[selectedCountryCode] ?? [])
     : [];
@@ -188,6 +207,7 @@ export function WorldMapPreview() {
                     key={country.code}
                     country={country}
                     maxMatches={maxMatches}
+                    mode={matchMode}
                     pulseDelay={index * 0.35}
                   />
                 ))
@@ -198,6 +218,7 @@ export function WorldMapPreview() {
                   <MatchVenuePin
                     key={match.id}
                     match={match}
+                    mode={matchMode}
                     colorIndex={index}
                     pulseDelay={index * 0.25}
                   />
@@ -207,6 +228,8 @@ export function WorldMapPreview() {
 
           <div className="pointer-events-none absolute left-4 top-4 z-10 flex max-h-[calc(100%-2rem)] flex-col gap-3 sm:left-6 sm:top-6">
             <MapLiveStatsCard
+              mode={matchMode}
+              onModeChange={handleModeChange}
               countryCount={countryCount}
               totalMatches={totalMatches}
               countries={countries}
@@ -236,6 +259,7 @@ export function WorldMapPreview() {
             <CountryMatchesPanel
               country={selectedCountry}
               matches={selectedMatches}
+              matchMode={matchMode}
               onClose={resetWorldView}
               visible={splitOpen}
             />
