@@ -10,6 +10,7 @@ export type TeamPosition = "GK" | "DEF" | "MID" | "FWD";
 
 export type TeamSquadPlayer = {
   id: string;
+  slug: string;
   name: string;
   avatar: string | null;
   number: number;

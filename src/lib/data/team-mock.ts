@@ -16,6 +16,7 @@ import type {
   TeamProfile,
   TeamSquadPlayer,
 } from "@/lib/data/team-profile";
+import { playerSlugFromTeamAndName } from "@/lib/player-paths";
 import { teamSlugFromName } from "@/lib/team-paths";
 
 const NATIONALITIES = [
@@ -130,9 +131,12 @@ function buildSquad(
     const goals = position === "FWD" ? (hash % 18) + 2 : position === "MID" ? hash % 8 : hash % 2;
     const assists = position === "MID" || position === "FWD" ? hash % 10 : hash % 3;
 
+    const name = mockPlayerName(league.id, teamName, index);
+
     return {
       id: `${slug}-${index}`,
-      name: mockPlayerName(league.id, teamName, index),
+      slug: playerSlugFromTeamAndName(teamName, name),
+      name,
       avatar: mockPlayerAvatar(league.id, teamName, index),
       number: index === 0 ? 1 : (hash % 98) + 2,
       position,

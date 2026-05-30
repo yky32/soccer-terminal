@@ -33,6 +33,7 @@ export type LeaguePlayerStatKind = "rating" | "goals" | "assists" | "fouls";
 export type LeaguePlayerStat = {
   rank: number;
   playerName: string;
+  playerSlug: string;
   playerAvatar: string | null;
   team: string;
   teamLogo: string | null;

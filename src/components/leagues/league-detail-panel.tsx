@@ -89,6 +89,7 @@ export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) 
             title="League leaders"
             subtitle={`${league.shortName} · ${league.season}`}
             boards={leagueBoards}
+            leagueId={league.id}
           />
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">

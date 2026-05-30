@@ -102,6 +102,7 @@ export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelPro
             subtitle={`${team.league.shortName} · ${team.league.season}`}
             boards={team.leaderBoards}
             focusTeam={team.name}
+            leagueId={team.league.id}
           />
 
           <section className={cn(leaguesGlass, "overflow-hidden")}>
@@ -140,7 +141,7 @@ export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelPro
       {tab === "squad" ? (
         <section className={cn(leaguesGlass, "overflow-hidden")}>
           <SectionHeader title="Squad" meta={`${team.squad.length} players`} />
-          <TeamSquadList squad={team.squad} />
+          <TeamSquadList squad={team.squad} leagueId={team.league.id} />
         </section>
       ) : null}
 
@@ -150,6 +151,7 @@ export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelPro
           subtitle={`${team.name} · ${team.league.season}`}
           boards={team.leaderBoards}
           focusTeam={team.name}
+          leagueId={team.league.id}
         />
       ) : null}
 

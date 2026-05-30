@@ -7,6 +7,7 @@ import type {
   LeagueStandingRow,
   LeagueTeamStat,
 } from "@/lib/data/league-profile";
+import { teamSlugFromName } from "@/lib/team-paths";
 
 const FIRST_NAMES = [
   "James",
@@ -132,6 +133,14 @@ function statValue(kind: LeaguePlayerStatKind, leagueId: string, team: string, s
   }
 }
 
+function playerSlugFromName(name: string) {
+  return teamSlugFromName(name);
+}
+
+function playerSlugFromTeamAndName(teamName: string, playerName: string) {
+  return `${teamSlugFromName(teamName)}-${playerSlugFromName(playerName)}`;
+}
+
 function buildPlayerLeaderRows(
   league: LeagueProfile,
   teams: LeagueStandingRow[],
@@ -143,10 +152,13 @@ function buildPlayerLeaderRows(
 
   const rows = pool.flatMap((standing, teamIndex) =>
     Array.from({ length: teamFilter ? 3 : 2 }, (_, slot) => {
-      const value = statValue(kind, league.id, standing.team, teamIndex + slot);
+      const playerSlot = teamIndex + slot;
+      const name = playerName(league.id, standing.team, playerSlot);
+      const value = statValue(kind, league.id, standing.team, playerSlot);
       return {
-        playerName: playerName(league.id, standing.team, teamIndex + slot),
-        playerAvatar: playerAvatar(league.id, standing.team, teamIndex + slot),
+        playerName: name,
+        playerSlug: playerSlugFromTeamAndName(standing.team, name),
+        playerAvatar: playerAvatar(league.id, standing.team, playerSlot),
         team: standing.team,
         teamLogo: standing.teamLogo,
         value,
@@ -293,3 +305,4 @@ export function formatStatValue(kind: LeaguePlayerStatKind, value: number) {
 
 export const mockPlayerName = playerName;
 export const mockPlayerAvatar = playerAvatar;
+export const statValueForPlayer = statValue;

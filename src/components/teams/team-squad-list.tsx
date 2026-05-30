@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { FootballLogo } from "@/components/overview/football-logo";
+import Link from "next/link";
+import { PlayerAvatar } from "@/components/players/player-avatar";
 import { leaguesGlassInset } from "@/components/leagues/leagues-glass";
 import type { TeamSquadPlayer } from "@/lib/data/team-profile";
+import { playerHref } from "@/lib/player-paths";
 import { cn } from "@/lib/utils";
 
 type TeamSquadListProps = {
   squad: TeamSquadPlayer[];
+  leagueId: string;
 };
 
 const POSITION_ORDER = ["GK", "DEF", "MID", "FWD"] as const;
 
-export function TeamSquadList({ squad }: TeamSquadListProps) {
+export function TeamSquadList({ squad, leagueId }: TeamSquadListProps) {
   const grouped = POSITION_ORDER.map((position) => ({
     position,
     players: squad.filter((player) => player.position === position),
@@ -29,7 +31,7 @@ export function TeamSquadList({ squad }: TeamSquadListProps) {
             <ul className="divide-y divide-black/[0.04]">
               {players.map((player) => (
                 <li key={player.id}>
-                  <SquadRow player={player} />
+                  <SquadRow player={player} leagueId={leagueId} />
                 </li>
               ))}
             </ul>
@@ -40,13 +42,16 @@ export function TeamSquadList({ squad }: TeamSquadListProps) {
   );
 }
 
-function SquadRow({ player }: { player: TeamSquadPlayer }) {
+function SquadRow({ player, leagueId }: { player: TeamSquadPlayer; leagueId: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 sm:px-5">
+    <Link
+      href={playerHref(leagueId, player.slug)}
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/30 sm:px-5"
+    >
       <span className="w-6 shrink-0 text-center text-[0.8125rem] font-bold tabular-nums text-neutral-400">
         {player.number}
       </span>
-      <PlayerAvatar src={player.avatar} name={player.name} />
+      <PlayerAvatar src={player.avatar} name={player.name} size="md" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-[0.875rem] font-semibold text-neutral-950">{player.name}</p>
         <p className="mt-0.5 text-[0.75rem] text-neutral-500">
@@ -67,42 +72,6 @@ function SquadRow({ player }: { player: TeamSquadPlayer }) {
       >
         {player.rating.toFixed(1)}
       </span>
-    </div>
-  );
-}
-
-function PlayerAvatar({ src, name }: { src: string | null; name: string }) {
-  const [failed, setFailed] = useState(false);
-  const initials = name
-    .split(" ")
-    .map((part) => part.charAt(0))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  if (!src || failed) {
-    return (
-      <span
-        className={cn(
-          leaguesGlassInset,
-          "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-bold text-neutral-600",
-        )}
-        aria-hidden
-      >
-        {initials || "?"}
-      </span>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- external Unsplash mock avatars
-    <img
-      src={src}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      onError={() => setFailed(true)}
-      className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-black/[0.08]"
-    />
+    </Link>
   );
 }
