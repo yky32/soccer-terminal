@@ -7,7 +7,7 @@ import { NewsFeaturedGrid } from "@/components/news/news-featured-grid";
 import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-filter-bar";
 import { NewsReadDrawer } from "@/components/news/news-read-drawer";
 import { NewsSidebar } from "@/components/news/news-sidebar";
-import { NewsTicker } from "@/components/news/news-ticker";
+import { useNewsWireSlot } from "@/components/news/news-wire-slot-context";
 import {
   newsEnter,
   newsFocus,
@@ -51,6 +51,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
   const filterRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setHeaderHidden } = useAppChrome();
+  const { setWireHeadlines } = useNewsWireSlot();
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -120,7 +121,12 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
   const stream = filtered.filter((article) => !featuredIds.has(article.id));
   const visibleStream = stream.slice(0, visibleCount);
   const breaking = articles.slice(0, 4);
-  const tickerHeadlines = articles.slice(0, 6);
+  const tickerHeadlines = useMemo(() => articles.slice(0, 6), [articles]);
+
+  useEffect(() => {
+    setWireHeadlines(tickerHeadlines);
+    return () => setWireHeadlines(null);
+  }, [tickerHeadlines, setWireHeadlines]);
 
   const resetFilters = () => {
     setSelectedLeague("all");
@@ -133,8 +139,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
 
   return (
     <>
-      <NewsTicker headlines={tickerHeadlines} />
-
       <div ref={sentinelRef} className="h-px w-full" aria-hidden />
 
       <div

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
+import { NewsTicker } from "@/components/news/news-ticker";
+import { NewsWireSlotProvider, useNewsWireSlot } from "@/components/news/news-wire-slot-context";
 import { mainNav } from "@/lib/navigation";
 
 function ChevronRight() {
@@ -24,7 +26,9 @@ function ChevronRight() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <AppChromeProvider>
-      <AppShellFrame>{children}</AppShellFrame>
+      <NewsWireSlotProvider>
+        <AppShellFrame>{children}</AppShellFrame>
+      </NewsWireSlotProvider>
     </AppChromeProvider>
   );
 }
@@ -32,15 +36,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 function AppShellFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { headerHidden } = useAppChrome();
+  const { wireHeadlines } = useNewsWireSlot();
+  const isNewsPage = pathname.startsWith("/news");
+  const showWire = isNewsPage && wireHeadlines && wireHeadlines.length > 0;
 
   return (
     <div className="flex min-h-full flex-col">
       {!headerHidden ? (
         <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
-        <div className="page-container flex h-[4.25rem] items-center justify-between gap-6">
+        <div
+          className={`page-container flex h-[4.25rem] items-center gap-4 ${
+            showWire ? "md:gap-5" : "justify-between gap-6"
+          }`}
+        >
           <Logo />
 
-          <nav className="hidden items-center gap-1 md:flex">
+          {showWire ? (
+            <div className="hidden min-w-0 flex-1 md:block">
+              <NewsTicker embedded headlines={wireHeadlines} />
+            </div>
+          ) : null}
+
+          <nav
+            className={`hidden items-center gap-1 md:flex ${showWire ? "shrink-0" : ""}`}
+          >
             {mainNav.map((item) => {
               const isActive =
                 item.href === "/"
@@ -63,6 +82,14 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
             })}
           </nav>
         </div>
+
+        {showWire ? (
+          <div className="border-t border-border md:hidden">
+            <div className="page-container py-2">
+              <NewsTicker embedded headlines={wireHeadlines} />
+            </div>
+          </div>
+        ) : null}
 
         <nav className="flex gap-2 overflow-x-auto border-t border-border px-5 py-3.5 md:hidden">
           {mainNav.map((item) => {
