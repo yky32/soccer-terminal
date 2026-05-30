@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAppChrome } from "@/components/app-chrome-context";
 import { NewsFeaturedGrid } from "@/components/news/news-featured-grid";
 import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-filter-bar";
 import { NewsLeagueRail } from "@/components/news/news-league-rail";
-import { NewsReadDrawer } from "@/components/news/news-read-drawer";
 import { NewsSectionRenderer } from "@/components/news/news-sections";
-import { useNewsWireSlot } from "@/components/news/news-wire-slot-context";
+import { NewsWireBootstrap } from "@/components/news/news-wire-bootstrap";
 import { newsGlass, newsGlassStrong } from "@/components/news/news-glass";
 import type { NewsArticle } from "@/lib/data/news-article";
 import {
@@ -18,6 +18,7 @@ import {
   buildNewsPageSections,
   getNewsLayoutSeed,
 } from "@/lib/data/news-page-layout";
+import { newsArticleHref } from "@/lib/news-paths";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 8;
@@ -39,16 +40,22 @@ const CATEGORY_FILTERS: { id: CategoryFilter; label: string }[] = [
 ];
 
 export function NewsFeed({ articles, leagues }: NewsFeedProps) {
+  const router = useRouter();
   const [selectedLeague, setSelectedLeague] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [activeArticle, setActiveArticle] = useState<NewsArticle | null>(null);
   const [isFilterStuck, setIsFilterStuck] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setHeaderHidden } = useAppChrome();
-  const { setWireHeadlines } = useNewsWireSlot();
+
+  const handleSelect = useCallback(
+    (article: NewsArticle) => {
+      router.push(newsArticleHref(article.id));
+    },
+    [router],
+  );
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -120,11 +127,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
 
   const tickerHeadlines = useMemo(() => articles.slice(0, 6), [articles]);
 
-  useEffect(() => {
-    setWireHeadlines(tickerHeadlines);
-    return () => setWireHeadlines(null);
-  }, [tickerHeadlines, setWireHeadlines]);
-
   const resetFilters = () => {
     setSelectedLeague("all");
     setSelectedCategory("all");
@@ -136,6 +138,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
 
   return (
     <>
+      <NewsWireBootstrap headlines={tickerHeadlines} />
       <div ref={sentinelRef} className="h-px w-full" aria-hidden />
 
       <div
@@ -211,7 +214,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
               <NewsFeaturedGrid
                 lead={featuredLead}
                 secondary={featuredSecondary}
-                onSelect={setActiveArticle}
+                onSelect={handleSelect}
               />
             ) : null}
 
@@ -219,7 +222,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
               <NewsSectionRenderer
                 key={section.id}
                 section={section}
-                onSelect={setActiveArticle}
+                onSelect={handleSelect}
                 timelineSource={section.kind === "timeline" ? timelineSource : undefined}
                 latestVisibleCount={section.kind === "latest" ? visibleCount : undefined}
                 onLoadMore={
@@ -232,8 +235,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
           </div>
         )}
       </section>
-
-      <NewsReadDrawer article={activeArticle} onClose={() => setActiveArticle(null)} />
     </>
   );
 }

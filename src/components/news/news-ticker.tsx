@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import type { NewsArticle } from "@/lib/data/news-article";
 import { formatNewsRelativeTime } from "@/lib/data/format-news-date";
 import { findTeamsInHeadline } from "@/lib/data/news-team-registry";
-import { newsGlassInset, newsGlassSubtle } from "@/components/news/news-glass";
+import { newsArticleHref } from "@/lib/news-paths";
+import { newsFocus, newsGlassInset, newsGlassSubtle } from "@/components/news/news-glass";
 import { cn } from "@/lib/utils";
 
 type NewsTickerProps = {
@@ -61,9 +63,11 @@ function WireTickerItem({
   const teams = useMemo(() => findTeamsInHeadline(article.headline), [article.headline]);
 
   return (
-    <span
+    <Link
+      href={newsArticleHref(article.id)}
       className={cn(
-        "inline-flex shrink-0 items-center gap-2 text-foreground sm:gap-2.5",
+        newsFocus,
+        "inline-flex shrink-0 items-center gap-2 text-foreground transition-opacity hover:opacity-80 sm:gap-2.5",
         embedded ? "text-[0.8125rem]" : "text-[0.875rem]",
       )}
     >
@@ -92,7 +96,7 @@ function WireTickerItem({
       >
         {formatNewsRelativeTime(article.publishedAt)}
       </span>
-    </span>
+    </Link>
   );
 }
 

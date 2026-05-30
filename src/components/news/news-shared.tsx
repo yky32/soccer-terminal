@@ -6,6 +6,10 @@ import {
   formatNewsTimestamp,
 } from "@/lib/data/format-news-date";
 import { NEWS_CATEGORY_META, type NewsArticle } from "@/lib/data/news-article";
+export {
+  getCategoryAccent,
+  getCategoryAccentBar,
+} from "@/lib/data/news-article";
 import { cn } from "@/lib/utils";
 
 export function isRecentNews(isoDate: string, hours = 2) {
@@ -113,12 +117,4 @@ export function NewsMetaLine({
       </time>
     </p>
   );
-}
-
-export function getCategoryAccent(category: NewsArticle["category"]) {
-  return NEWS_CATEGORY_META[category].accent;
-}
-
-export function getCategoryAccentBar(category: NewsArticle["category"]) {
-  return NEWS_CATEGORY_META[category].accentBar;
 }

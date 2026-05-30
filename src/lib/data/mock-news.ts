@@ -591,6 +591,30 @@ export function getMockNewsArticles() {
   );
 }
 
+export function getMockNewsArticleById(id: string) {
+  return MOCK_NEWS_ARTICLES.find((article) => article.id === id) ?? null;
+}
+
+export function getRelatedMockNewsArticles(article: NewsArticle, limit = 4) {
+  const articles = getMockNewsArticles().filter((item) => item.id !== article.id);
+  const sameLeague = articles.filter((item) => item.league === article.league);
+  const sameCategory = articles.filter(
+    (item) => item.category === article.category && item.league !== article.league,
+  );
+  const rest = articles.filter(
+    (item) => item.league !== article.league && item.category !== article.category,
+  );
+
+  const merged = [...sameLeague, ...sameCategory, ...rest];
+  const seen = new Set<string>();
+
+  return merged.filter((item) => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  }).slice(0, limit);
+}
+
 export function getMockNewsLeagues(articles: NewsArticle[]) {
   const byLeague = new Map<string, { count: number; logo: string | null }>();
 

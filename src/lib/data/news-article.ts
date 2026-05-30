@@ -54,3 +54,11 @@ export const NEWS_CATEGORY_META: Record<
     badge: "bg-violet-500/10 text-violet-800 ring-violet-500/20",
   },
 };
+
+export function getCategoryAccent(category: NewsCategory) {
+  return NEWS_CATEGORY_META[category].accent;
+}
+
+export function getCategoryAccentBar(category: NewsCategory) {
+  return NEWS_CATEGORY_META[category].accentBar;
+}
