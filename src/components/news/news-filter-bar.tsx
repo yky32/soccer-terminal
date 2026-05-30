@@ -81,9 +81,9 @@ export function NewsFilterBar({
 
       <div
         className={cn(
-          isStuck ? newsGlassSubtle : newsGlass,
+          isStuck ? newsGlassInset : newsGlass,
           "flex items-center gap-1.5 rounded-xl px-1.5 py-1 sm:gap-2 sm:px-2",
-          isStuck && "rounded-lg py-0.5",
+          isStuck && "rounded-lg border border-white/50 bg-white/45 py-1 shadow-sm",
         )}
       >
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -306,8 +306,9 @@ function NewsInsightStrip({
     <div
       className={cn(
         "mb-1.5 flex items-center gap-1 overflow-x-auto rounded-lg px-1 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        newsGlassSubtle,
-        isStuck && "mb-1 rounded-md py-0",
+        isStuck
+          ? cn(newsGlassInset, "mb-1 border border-white/45 bg-white/40 py-0.5")
+          : newsGlassSubtle,
       )}
     >
       {stats.map((stat) => {

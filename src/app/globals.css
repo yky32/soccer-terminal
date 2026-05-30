@@ -260,6 +260,20 @@
     box-shadow: 0 10px 32px rgba(15, 23, 42, 0.07);
   }
 
+  .news-glass-brick--sticky {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(238, 242, 248, 0.86) 100%
+    );
+    backdrop-filter: blur(40px) saturate(195%);
+    -webkit-backdrop-filter: blur(40px) saturate(195%);
+    border-color: rgba(255, 255, 255, 0.68);
+    box-shadow:
+      0 14px 44px rgba(15, 23, 42, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
   .news-glass-brick--subtle {
     background: linear-gradient(
       165deg,

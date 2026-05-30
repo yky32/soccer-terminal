@@ -1,6 +1,7 @@
 export {
   glass,
   glassStrong,
+  glassSticky,
   glassSubtle,
   glassInset,
   glassHover,
@@ -12,6 +13,7 @@ export {
 export {
   glass as newsGlass,
   glassStrong as newsGlassStrong,
+  glassSticky as newsGlassSticky,
   glassSubtle as newsGlassSubtle,
   glassInset as newsGlassInset,
   glassHover as newsGlassHover,

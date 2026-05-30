@@ -8,7 +8,7 @@ import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-f
 import { NewsLeagueRail } from "@/components/news/news-league-rail";
 import { NewsSectionRenderer } from "@/components/news/news-sections";
 import { NewsWireBootstrap } from "@/components/news/news-wire-bootstrap";
-import { newsGlass, newsGlassStrong } from "@/components/news/news-glass";
+import { newsGlass, newsGlassSticky } from "@/components/news/news-glass";
 import type { NewsArticle } from "@/lib/data/news-article";
 import {
   buildNewsInsights,
@@ -152,7 +152,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
           className={cn(
             "transition-[box-shadow,backdrop-filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             isFilterStuck
-              ? cn(newsGlassStrong, "rounded-none border-x-0 border-t-0 border-b")
+              ? cn(newsGlassSticky, "border-x-0 border-t-0 border-b border-black/[0.08] py-0.5")
               : "border-b border-transparent",
           )}
         >

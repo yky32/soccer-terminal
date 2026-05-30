@@ -5,6 +5,8 @@ export const glass = "news-glass-brick rounded-[1.25rem]";
 
 export const glassStrong = "news-glass-brick news-glass-brick--strong rounded-[1.25rem]";
 
+export const glassSticky = "news-glass-brick news-glass-brick--sticky";
+
 export const glassSubtle = "news-glass-brick news-glass-brick--subtle rounded-xl";
 
 export const glassInset = "news-glass-brick news-glass-brick--inset rounded-xl";
