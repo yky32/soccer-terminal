@@ -10,6 +10,7 @@ export default function LeaguesPage() {
     <>
       <PageHeader
         compact
+        onGlass
         title="Leagues"
         description="Browse standings, fixtures, and stats across top leagues and competitions."
       />

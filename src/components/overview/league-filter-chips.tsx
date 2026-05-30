@@ -2,6 +2,7 @@
 
 import { FootballLogo } from "@/components/overview/football-logo";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { glassInset } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
@@ -61,10 +62,10 @@ export function LeagueFilterToggle({
       aria-expanded={expanded}
       aria-controls="league-filter-panel"
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors",
+        "inline-flex shrink-0 items-center gap-1 px-2 py-1 text-[10px] font-semibold transition-colors",
         expanded
-          ? "border-emerald-300 bg-emerald-50 text-emerald-900"
-          : "border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-neutral-300 hover:bg-white hover:text-neutral-900",
+          ? "rounded-md border border-emerald-300/80 bg-emerald-50/80 text-emerald-900"
+          : cn(glassInset, "text-neutral-600 hover:text-neutral-900"),
       )}
     >
       <span className="uppercase tracking-wide">Filter leagues</span>
@@ -102,7 +103,7 @@ export function LeagueFilterChips({
   return (
     <div
       id="league-filter-panel"
-      className="border-b border-neutral-200/80 bg-neutral-50/90 px-3 py-2.5"
+      className={cn(glassInset, "border-b border-black/[0.06] px-3 py-2.5")}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] text-neutral-600">

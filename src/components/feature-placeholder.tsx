@@ -1,3 +1,6 @@
+import { glass, glassInset, glassStrong } from "@/components/glass-surface";
+import { cn } from "@/lib/utils";
+
 type FeaturePlaceholderProps = {
   milestones: string[];
 };
@@ -5,7 +8,7 @@ type FeaturePlaceholderProps = {
 export function FeaturePlaceholder({ milestones }: FeaturePlaceholderProps) {
   return (
     <section className="page-container pb-16 sm:pb-24">
-      <div className="rounded-2xl border border-border bg-surface p-8 sm:p-10">
+      <div className={cn(glassStrong, "p-8 sm:p-10")}>
         <p className="text-label font-semibold uppercase tracking-[0.06em] text-muted">
           In development
         </p>
@@ -13,7 +16,12 @@ export function FeaturePlaceholder({ milestones }: FeaturePlaceholderProps) {
         <ul className="mt-10 space-y-6">
           {milestones.map((milestone, index) => (
             <li key={milestone} className="flex gap-5 sm:gap-6">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-background text-body font-semibold text-foreground">
+              <span
+                className={cn(
+                  glassInset,
+                  "flex h-11 w-11 shrink-0 items-center justify-center text-body font-semibold text-foreground",
+                )}
+              >
                 {index + 1}
               </span>
               <span className="text-body-large pt-1.5 text-muted">{milestone}</span>

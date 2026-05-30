@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
+import { glassInset, glassStrong, glassSubtle } from "@/components/glass-surface";
+import { PageBackdrop } from "@/components/page-backdrop";
 import { NewsTicker } from "@/components/news/news-ticker";
 import { NewsWireSlotProvider, useNewsWireSlot } from "@/components/news/news-wire-slot-context";
 import { mainNav } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 
 function ChevronRight() {
   return (
@@ -43,7 +46,9 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-full flex-col">
       {!headerHidden ? (
-        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+        <header
+          className={`sticky top-0 z-50 ${glassStrong} rounded-none border-x-0 border-t-0 border-b border-black/[0.08]`}
+        >
         <div
           className={`page-container flex h-[4.25rem] items-center gap-4 ${
             showWire ? "md:gap-5" : "justify-between gap-6"
@@ -70,11 +75,11 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-label rounded-full px-4 py-2.5 font-medium transition-colors ${
-                    isActive
-                      ? "bg-foreground text-background"
-                      : "text-muted hover:bg-surface hover:text-foreground"
-                  }`}
+                className={`text-label rounded-full px-4 py-2.5 font-medium transition-colors ${
+                  isActive
+                    ? "bg-foreground text-background"
+                    : cn(glassInset, "text-muted hover:text-foreground")
+                }`}
                 >
                   {item.shortLabel}
                 </Link>
@@ -84,14 +89,14 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
         </div>
 
         {showWire ? (
-          <div className="border-t border-border md:hidden">
+          <div className="border-t border-black/[0.06] md:hidden">
             <div className="page-container py-2">
               <NewsTicker embedded headlines={wireHeadlines} />
             </div>
           </div>
         ) : null}
 
-        <nav className="flex gap-2 overflow-x-auto border-t border-border px-5 py-3.5 md:hidden">
+        <nav className="flex gap-2 overflow-x-auto border-t border-black/[0.06] px-5 py-3.5 md:hidden">
           {mainNav.map((item) => {
             const isActive =
               item.href === "/"
@@ -105,7 +110,7 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
                 className={`text-label shrink-0 rounded-full px-4 py-2.5 font-medium transition-colors ${
                   isActive
                     ? "bg-foreground text-background"
-                    : "bg-surface text-muted"
+                    : cn(glassInset, "text-muted")
                 }`}
               >
                 {item.shortLabel}
@@ -116,9 +121,12 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
         </header>
       ) : null}
 
-      <main className="flex-1">{children}</main>
+      <main className="app-page relative flex min-h-0 flex-1 flex-col">
+        <PageBackdrop />
+        <div className="relative z-[1] flex flex-1 flex-col">{children}</div>
+      </main>
 
-      <footer className="border-t border-border bg-surface">
+      <footer className={`${glassSubtle} rounded-none border-x-0 border-b-0 border-t border-black/[0.08]`}>
         <div className="page-container flex flex-col gap-4 py-9 sm:flex-row sm:items-center sm:justify-between">
           <Logo />
           <p className="text-body text-muted">

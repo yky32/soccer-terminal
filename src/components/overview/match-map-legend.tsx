@@ -1,5 +1,7 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
+import { glassSubtle } from "@/components/glass-surface";
+import { cn } from "@/lib/utils";
 
 type MatchMapLegendProps = {
   matches: LiveMatch[];
@@ -13,7 +15,7 @@ export function MatchMapLegend({ matches }: MatchMapLegendProps) {
   if (located.length === 0) return null;
 
   return (
-    <div className="pointer-events-none max-w-[14rem] rounded-md border border-neutral-200/80 bg-white/90 px-2.5 py-2 shadow-sm backdrop-blur-sm">
+    <div className={cn(glassSubtle, "pointer-events-none max-w-[14rem] px-2.5 py-2")}>
       <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
         Map pins
       </p>

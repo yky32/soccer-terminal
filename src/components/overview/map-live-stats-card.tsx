@@ -3,6 +3,7 @@
 import { useState, type MouseEvent } from "react";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
+import { glass, glassInset, glassSubtle } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_COUNT = 3;
@@ -52,9 +53,12 @@ export function MapLiveStatsCard({
     <div
       role="presentation"
       onClick={handleCardClick}
-      className="pointer-events-auto w-[12.25rem] cursor-default rounded-lg border border-neutral-200/60 bg-neutral-100/75 px-3 py-2.5 shadow-[0_1px_6px_rgba(0,0,0,0.04)] backdrop-blur-md sm:w-[12.75rem]"
+      className={cn(
+        glass,
+        "pointer-events-auto w-[12.25rem] cursor-default px-3 py-2.5 sm:w-[12.75rem]",
+      )}
     >
-      <div className="flex items-center gap-1 rounded-md bg-neutral-200/60 p-0.5" data-map-list-action>
+      <div className={cn(glassInset, "flex items-center gap-1 p-0.5")} data-map-list-action>
         {(["live", "future"] as const).map((option) => {
           const active = mode === option;
 

@@ -177,12 +177,12 @@
     line-height: 1.45;
   }
 
-  .news-page {
+  .app-page {
     position: relative;
     background: #eef1f6;
   }
 
-  .news-page-backdrop {
+  .page-backdrop {
     position: fixed;
     inset: 0;
     z-index: 0;
@@ -198,39 +198,39 @@
     -webkit-mask-composite: source-in;
   }
 
-  .news-page-orb {
+  .page-orb {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
     will-change: transform;
   }
 
-  .news-page-orb--sky {
+  .page-orb--sky {
     width: min(65vw, 520px);
     height: min(65vw, 520px);
     top: 18%;
     right: -8%;
     background: radial-gradient(circle, rgba(56, 189, 248, 0.42) 0%, transparent 68%);
-    animation: news-orb-sky 24s ease-in-out infinite alternate;
+    animation: page-orb-sky 24s ease-in-out infinite alternate;
   }
 
-  .news-page-orb--violet {
+  .page-orb--violet {
     width: min(48vw, 400px);
     height: min(48vw, 400px);
     top: 52%;
     right: 8%;
     left: auto;
     background: radial-gradient(circle, rgba(129, 140, 248, 0.34) 0%, transparent 68%);
-    animation: news-orb-violet 28s ease-in-out infinite alternate;
+    animation: page-orb-violet 28s ease-in-out infinite alternate;
   }
 
-  .news-page-orb--mint {
+  .page-orb--mint {
     width: min(48vw, 380px);
     height: min(48vw, 380px);
     bottom: 4%;
     right: 12%;
     background: radial-gradient(circle, rgba(103, 232, 249, 0.3) 0%, transparent 68%);
-    animation: news-orb-mint 26s ease-in-out infinite alternate;
+    animation: page-orb-mint 26s ease-in-out infinite alternate;
   }
 
   /* Liquid glass — translucent cards, readable text, backdrop shows through */
@@ -359,7 +359,7 @@
   .news-wire-badge__ping,
   .news-enter,
   .news-drawer-enter,
-  .news-page-orb {
+  .page-orb {
     animation: none;
   }
 
@@ -399,7 +399,7 @@
   }
 }
 
-@keyframes news-orb-sky {
+@keyframes page-orb-sky {
   from {
     transform: translate(0, 0) scale(1);
   }
@@ -408,7 +408,7 @@
   }
 }
 
-@keyframes news-orb-violet {
+@keyframes page-orb-violet {
   from {
     transform: translate(0, 0) scale(1);
   }
@@ -417,7 +417,7 @@
   }
 }
 
-@keyframes news-orb-mint {
+@keyframes page-orb-mint {
   from {
     transform: translate(0, 0) scale(1);
   }

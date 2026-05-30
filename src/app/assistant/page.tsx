@@ -10,6 +10,7 @@ export default function AssistantPage() {
     <>
       <PageHeader
         compact
+        onGlass
         title="AI"
         description="Daily briefings, tactical trend analysis, and a conversational interface for football insights."
       />

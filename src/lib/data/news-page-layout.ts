@@ -24,7 +24,7 @@ const SECTION_META: Record<
 > = {
   "breaking-wide": {
     title: "Breaking",
-    subtitle: "Live wires moving fastest right now",
+    subtitle: "",
     size: 4,
   },
   "breaking-stack": {
@@ -34,7 +34,7 @@ const SECTION_META: Record<
   },
   spotlight: {
     title: "Spotlight",
-    subtitle: "Three stories worth a longer look",
+    subtitle: "",
     size: 3,
   },
   "quick-scan": {
@@ -151,7 +151,7 @@ export function buildNewsPageSections(
       id: `latest-${latestArticles[0]?.id ?? "stream"}`,
       kind: "latest",
       title: "Latest",
-      subtitle: "Grouped by recency",
+      subtitle: "",
       articles: latestArticles,
     });
   }

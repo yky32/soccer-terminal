@@ -182,8 +182,13 @@ export function WorldMapPreview() {
   const showMatchPins = Boolean(showMatchColumn);
 
   return (
-    <section className="relative w-full border-y border-border">
-      <div className="flex h-[min(88vh,calc(100dvh-10rem))] min-h-[28rem] w-full overflow-hidden">
+    <section className="relative w-full">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-sky-400/70 to-transparent"
+        aria-hidden
+      />
+
+      <div className="relative flex h-[min(92vh,calc(100dvh-4.25rem))] min-h-[30rem] w-full overflow-hidden sm:min-h-[34rem]">
         <div
           ref={mapPaneRef}
           className={cn(
@@ -191,6 +196,19 @@ export function WorldMapPreview() {
             showMatchColumn ? "w-[70%]" : "w-full",
           )}
         >
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-[5] h-28 bg-gradient-to-b from-[#eef1f6] via-[#eef1f6]/80 to-transparent"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-36 bg-gradient-to-t from-[#eef1f6] via-[#eef1f6]/70 to-transparent"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 z-[4] shadow-[inset_0_0_120px_rgba(15,23,42,0.08)]"
+            aria-hidden
+          />
+
           <Map
             ref={mapRef}
             theme="light"
@@ -226,6 +244,26 @@ export function WorldMapPreview() {
               : null}
           </Map>
 
+          {!showMatchColumn && !loading ? (
+            <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex justify-center px-4 sm:bottom-10">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/55 px-4 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] text-neutral-900 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+                <span className="relative flex h-2 w-2" aria-hidden>
+                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500/60" />
+                  <span className="relative m-auto h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                </span>
+                <span>
+                  {matchMode === "live" ? "Live worldwide" : "Upcoming fixtures"}
+                </span>
+                <span className="text-neutral-500" aria-hidden>
+                  ·
+                </span>
+                <span className="tabular-nums text-neutral-700">
+                  {countryCount} {countryCount === 1 ? "country" : "countries"}
+                </span>
+              </div>
+            </div>
+          ) : null}
+
           <div className="pointer-events-none absolute left-4 top-4 z-10 flex max-h-[calc(100%-2rem)] flex-col gap-3 sm:left-6 sm:top-6">
             <MapLiveStatsCard
               mode={matchMode}
@@ -251,8 +289,8 @@ export function WorldMapPreview() {
 
         <div
           className={cn(
-            "h-full min-w-0 shrink-0 overflow-hidden border-neutral-200 transition-[width,border-color] duration-700 ease-in-out",
-            showMatchColumn ? "w-[30%] border-l" : "w-0 border-l-0",
+            "relative z-10 h-full min-w-0 shrink-0 overflow-hidden transition-[width] duration-700 ease-in-out",
+            showMatchColumn ? "w-[30%] min-w-[17.5rem] sm:min-w-[19rem]" : "w-0",
           )}
         >
           {selectedCountry ? (

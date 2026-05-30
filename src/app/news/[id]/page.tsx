@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { NewsArticleDetail } from "@/components/news/news-article-detail";
-import { NewsPageBackdrop } from "@/components/news/news-page-backdrop";
 import { NewsWireBootstrap } from "@/components/news/news-wire-bootstrap";
 import {
   getMockNewsArticleById,
@@ -42,12 +41,11 @@ export default async function NewsArticlePage({ params }: NewsArticlePageProps) 
   const wireHeadlines = getMockNewsArticles();
 
   return (
-    <div className="news-page min-h-full">
-      <NewsPageBackdrop />
+    <>
       <NewsWireBootstrap headlines={wireHeadlines} />
-      <div className="relative z-[1] page-container pb-14 pt-6 sm:pb-16 sm:pt-8">
+      <div className="page-container pb-14 pt-6 sm:pb-16 sm:pt-8">
         <NewsArticleDetail article={article} related={related} />
       </div>
-    </div>
+    </>
   );
 }

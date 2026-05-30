@@ -2,6 +2,7 @@ import { FootballLogo } from "@/components/overview/football-logo";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
+import { glass, glassInset } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
 type MatchEventCardProps = {
@@ -183,7 +184,7 @@ export function MatchEventCard({
 
   return (
     <article
-      className="overflow-hidden rounded-lg border border-neutral-200/90 bg-white shadow-sm"
+      className={cn(glass, "overflow-hidden")}
       style={pinColor ? { borderLeftWidth: 3, borderLeftColor: pinColor } : undefined}
     >
       <MatchCardHeader match={match} matchMode={matchMode} compact />
@@ -266,7 +267,7 @@ function MatchCardHeader({
   return (
     <div
       className={cn(
-        "border-b border-neutral-100 bg-neutral-50/80",
+        "border-b border-black/[0.06]",
         compact ? "px-3 py-2.5" : "px-2 py-1.5",
       )}
     >
@@ -353,7 +354,7 @@ function MatchCardFooter({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-neutral-100 bg-neutral-50/50 text-neutral-500",
+        "flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-black/[0.06] text-neutral-500",
         compact ? "px-3 py-2 text-[11px] leading-relaxed" : "px-2 py-1 text-[9px]",
       )}
     >

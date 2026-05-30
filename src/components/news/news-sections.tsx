@@ -50,7 +50,7 @@ export function NewsSectionRenderer({
   if (!hasContent) return null;
 
   return (
-    <section className={cn("space-y-2.5", className)} aria-labelledby={section.id}>
+    <section className={cn("space-y-3 sm:space-y-4", className)} aria-labelledby={section.id}>
       <SectionHeader id={section.id} title={section.title} subtitle={section.subtitle} kind={section.kind} />
 
       {section.kind === "breaking-wide" ? (
@@ -98,15 +98,20 @@ function SectionHeader({
   kind: NewsSectionKind;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-black/[0.06] pb-1.5">
-      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-        <h2 id={id} className="text-[0.9375rem] font-semibold tracking-[-0.02em] text-neutral-950">
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-2 sm:pb-2.5">
+      <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h2
+          id={id}
+          className="text-[clamp(1.625rem,2.75vw,2.125rem)] font-semibold leading-[1.08] tracking-[-0.035em] text-neutral-950"
+        >
           {title}
         </h2>
-        {subtitle ? <p className="text-[0.75rem] text-neutral-500">{subtitle}</p> : null}
+        {subtitle ? (
+          <p className="text-[0.9375rem] leading-snug text-neutral-500">{subtitle}</p>
+        ) : null}
       </div>
       {(kind === "breaking-wide" || kind === "breaking-stack") && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.1em] text-rose-700 ring-1 ring-inset ring-rose-500/20">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-rose-700 ring-1 ring-inset ring-rose-500/20">
           <span className="relative flex h-1.5 w-1.5">
             <span className="absolute inset-0 animate-ping rounded-full bg-rose-500/70" />
             <span className="relative m-auto h-1 w-1 rounded-full bg-rose-500" />
