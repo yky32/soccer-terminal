@@ -18,10 +18,10 @@ import type { LeagueProfile } from "@/lib/data/league-profile";
 import {
   buildLeagueLeaderBoards,
   buildLeagueSeasons,
-  buildTeamLeaderBoards,
   getLeagueNewsLabel,
 } from "@/lib/data/league-stats";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
 type LeagueDetailTab = "overview" | "teams" | "seasons" | "news";
@@ -40,18 +40,12 @@ const TABS: { id: LeagueDetailTab; label: string }[] = [
 
 export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) {
   const [tab, setTab] = useState<LeagueDetailTab>("overview");
-  const [selectedTeam, setSelectedTeam] = useState(league.standings[0]?.team ?? "");
 
   useEffect(() => {
     setTab("overview");
-    setSelectedTeam(league.standings[0]?.team ?? "");
-  }, [league.id, league.standings]);
+  }, [league.id]);
 
   const leagueBoards = useMemo(() => buildLeagueLeaderBoards(league), [league]);
-  const teamBoards = useMemo(
-    () => (selectedTeam ? buildTeamLeaderBoards(league, selectedTeam) : null),
-    [league, selectedTeam],
-  );
   const seasons = useMemo(() => buildLeagueSeasons(league), [league]);
   const newsLabel = getLeagueNewsLabel(league);
   const leagueNews = useMemo(
@@ -100,7 +94,7 @@ export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
             <section className={cn(leaguesGlass, "overflow-hidden")}>
               <SectionHeader title="Standings" meta={`Matchday ${league.matchday}`} />
-              <LeagueStandingsTable standings={league.standings} />
+              <LeagueStandingsTable standings={league.standings} leagueId={league.id} />
             </section>
 
             <section className={cn(leaguesGlass, "overflow-hidden")}>
@@ -130,33 +124,21 @@ export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) 
             <SectionHeader title="Select team" meta={`${league.standings.length} clubs`} />
             <div className="flex flex-wrap gap-1.5 px-3 py-3 sm:px-4">
               {league.standings.map((standing) => (
-                <button
+                <Link
                   key={standing.team}
-                  type="button"
-                  onClick={() => setSelectedTeam(standing.team)}
+                  href={teamHrefFromName(league.id, standing.team)}
                   className={cn(
                     leaguesGlassFocus,
-                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all active:scale-95 sm:px-3",
-                    selectedTeam === standing.team
-                      ? "bg-foreground text-background shadow-sm"
-                      : "bg-white/48 text-neutral-700 hover:bg-white/72 hover:text-neutral-950",
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all hover:bg-white/72 hover:text-neutral-950 active:scale-95 sm:px-3",
+                    "bg-white/48 text-neutral-700",
                   )}
                 >
                   <FootballLogo src={standing.teamLogo} label={standing.team} size="xs" />
                   <span>{standing.team}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </section>
-
-          {teamBoards && selectedTeam ? (
-            <LeagueStatLeaderGrid
-              title={selectedTeam}
-              subtitle="Squad leaders · league win rate context"
-              boards={teamBoards}
-              focusTeam={selectedTeam}
-            />
-          ) : null}
         </div>
       ) : null}
 

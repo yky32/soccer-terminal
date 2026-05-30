@@ -48,6 +48,33 @@ const LAST_NAMES = [
 
 const PLAYER_STAT_KINDS: LeaguePlayerStatKind[] = ["rating", "goals", "assists", "fouls"];
 
+const PLAYER_AVATAR_PHOTOS = [
+  "photo-1574629810360-7efbbe195018",
+  "photo-1507003211169-0a1dd7228f2d",
+  "photo-1500648767791-00dcc994a43e",
+  "photo-1472099645785-5658abf4ff4e",
+  "photo-1519082780210-588b635ef122",
+  "photo-1599562820212-4442516f7429",
+  "photo-1552374196-1ab2a7036a8a",
+  "photo-1544005313-94ddf0286df2",
+  "photo-1534528741775-53994a69daeb",
+  "photo-1539577614458-281718137e24",
+  "photo-1529626455594-4ff0802cfb7e",
+  "photo-1525134479661-759ea2f8b274",
+  "photo-1517841905240-472988babdf9",
+  "photo-1499996860823-ce281385117f",
+  "photo-1488426862026-3d574a134fd4",
+  "photo-1568602471122-783663691618",
+  "photo-1600486913731-49a14d2a4c45",
+  "photo-1580489944761-15a19d654956",
+  "photo-1566492031773-4f4e44671857",
+  "photo-1506794778202-cad84cf45f1d",
+];
+
+function unsplashAvatar(photoId: string) {
+  return `https://images.unsplash.com/${photoId}?w=80&h=80&auto=format&fit=crop&q=80`;
+}
+
 /** Maps league profile ids to news wire league labels. */
 export const LEAGUE_NEWS_LABELS: Record<string, string> = {
   "premier-league": "Premier League",
@@ -81,6 +108,13 @@ function playerName(leagueId: string, team: string, slot: number) {
   return `${first} ${last}`;
 }
 
+function playerAvatar(leagueId: string, team: string, slot: number) {
+  const hash = hashString(`avatar:${leagueId}:${team}:${slot}`);
+  const photoId =
+    PLAYER_AVATAR_PHOTOS[hash % PLAYER_AVATAR_PHOTOS.length] ?? PLAYER_AVATAR_PHOTOS[0];
+  return unsplashAvatar(photoId ?? "photo-1574629810360-7efbbe195018");
+}
+
 function statValue(kind: LeaguePlayerStatKind, leagueId: string, team: string, slot: number) {
   const hash = hashString(`${kind}:${leagueId}:${team}:${slot}`);
 
@@ -112,6 +146,7 @@ function buildPlayerLeaderRows(
       const value = statValue(kind, league.id, standing.team, teamIndex + slot);
       return {
         playerName: playerName(league.id, standing.team, teamIndex + slot),
+        playerAvatar: playerAvatar(league.id, standing.team, teamIndex + slot),
         team: standing.team,
         teamLogo: standing.teamLogo,
         value,
@@ -255,3 +290,6 @@ export const LEAGUE_STAT_LABELS = LEAGUE_PLAYER_STAT_LABELS;
 export function formatStatValue(kind: LeaguePlayerStatKind, value: number) {
   return formatPlayerStatValue(kind, value);
 }
+
+export const mockPlayerName = playerName;
+export const mockPlayerAvatar = playerAvatar;

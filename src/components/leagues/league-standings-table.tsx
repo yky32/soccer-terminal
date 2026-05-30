@@ -1,12 +1,20 @@
+import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import type { LeagueFormResult, LeagueStandingRow } from "@/lib/data/league-profile";
+import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
 type LeagueStandingsTableProps = {
   standings: LeagueStandingRow[];
+  leagueId?: string;
+  highlightTeam?: string;
 };
 
-export function LeagueStandingsTable({ standings }: LeagueStandingsTableProps) {
+export function LeagueStandingsTable({
+  standings,
+  leagueId,
+  highlightTeam,
+}: LeagueStandingsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[36rem] text-left text-[0.8125rem]">
@@ -27,23 +35,23 @@ export function LeagueStandingsTable({ standings }: LeagueStandingsTableProps) {
           {standings.map((row) => {
             const gd = row.goalsFor - row.goalsAgainst;
             const isTopFour = row.rank <= 4;
+            const isHighlighted = highlightTeam === row.team;
 
             return (
               <tr
                 key={`${row.rank}-${row.team}`}
                 className={cn(
                   "border-b border-black/[0.04] transition-colors last:border-b-0",
-                  isTopFour ? "bg-emerald-500/[0.05]" : "hover:bg-white/36",
+                  isHighlighted && "bg-indigo-500/[0.08] ring-1 ring-inset ring-indigo-500/15",
+                  !isHighlighted && isTopFour && "bg-emerald-500/[0.05]",
+                  !isHighlighted && "hover:bg-white/36",
                 )}
               >
                 <td className="px-3 py-2.5 font-semibold tabular-nums text-neutral-700 sm:px-4">
                   {row.rank}
                 </td>
                 <td className="px-2 py-2.5">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <FootballLogo src={row.teamLogo} label={row.team} size="sm" />
-                    <span className="truncate font-semibold text-neutral-950">{row.team}</span>
-                  </div>
+                  <TeamCell row={row} leagueId={leagueId} />
                 </td>
                 <td className="px-2 py-2.5 text-center tabular-nums text-neutral-600">{row.played}</td>
                 <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
@@ -70,6 +78,28 @@ export function LeagueStandingsTable({ standings }: LeagueStandingsTableProps) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function TeamCell({ row, leagueId }: { row: LeagueStandingRow; leagueId?: string }) {
+  const content = (
+    <>
+      <FootballLogo src={row.teamLogo} label={row.team} size="sm" />
+      <span className="truncate font-semibold text-neutral-950">{row.team}</span>
+    </>
+  );
+
+  if (!leagueId) {
+    return <div className="flex min-w-0 items-center gap-2">{content}</div>;
+  }
+
+  return (
+    <Link
+      href={teamHrefFromName(leagueId, row.team)}
+      className="flex min-w-0 items-center gap-2 rounded-md transition-colors hover:text-sky-900"
+    >
+      {content}
+    </Link>
   );
 }
 

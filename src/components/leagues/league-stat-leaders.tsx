@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import {
   leaguesGlass,
@@ -36,14 +37,14 @@ export function LeagueStatLeaderGrid({
       <header
         className={cn(
           leaguesGlassInsetBar,
-          "border-b border-black/[0.06] px-4 py-3 sm:px-5",
+          "flex items-center justify-between border-b border-black/[0.06] px-4 py-3 sm:px-5",
         )}
       >
         <h2 className="text-[clamp(1.125rem,2.2vw,1.375rem)] font-semibold tracking-[-0.03em] text-neutral-950">
           {title}
         </h2>
         {subtitle ? (
-          <p className="mt-0.5 text-[0.8125rem] text-neutral-500">{subtitle}</p>
+          <span className="text-[0.8125rem] text-neutral-500">{subtitle}</span>
         ) : null}
       </header>
 
@@ -76,6 +77,7 @@ function PlayerStatColumn({
               <span className="w-4 shrink-0 text-[0.75rem] font-bold tabular-nums text-neutral-400">
                 {row.rank}
               </span>
+              <PlayerAvatar src={row.playerAvatar} name={row.playerName} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[0.8125rem] font-semibold text-neutral-950">
                   {row.playerName}
@@ -102,6 +104,42 @@ function PlayerStatColumn({
         ))}
       </ol>
     </div>
+  );
+}
+
+function PlayerAvatar({ src, name }: { src: string | null; name: string }) {
+  const [failed, setFailed] = useState(false);
+  const initials = name
+    .split(" ")
+    .map((part) => part.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  if (!src || failed) {
+    return (
+      <span
+        className={cn(
+          leaguesGlassInset,
+          "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-bold text-neutral-600",
+        )}
+        aria-hidden
+      >
+        {initials || "?"}
+      </span>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- external Unsplash mock avatars
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailed(true)}
+      className="h-7 w-7 shrink-0 rounded-full object-cover ring-1 ring-black/[0.08]"
+    />
   );
 }
 
