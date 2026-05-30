@@ -1,26 +1,23 @@
-import { FeaturePlaceholder } from "@/components/feature-placeholder";
+import { LeaguesFeed } from "@/components/leagues/leagues-feed";
 import { PageHeader } from "@/components/page-header";
+import { getMockLeagues } from "@/lib/data/mock-leagues";
 
 export const metadata = {
   title: "Leagues",
 };
 
 export default function LeaguesPage() {
+  const leagues = getMockLeagues();
+
   return (
     <>
       <PageHeader
         compact
         onGlass
-        title="Leagues"
-        description="Browse standings, fixtures, and stats across top leagues and competitions."
+        title="League dashboards."
+        description="Standings, upcoming fixtures, and quick links into the global map and news wire — organized by region and tier."
       />
-      <FeaturePlaceholder
-        milestones={[
-          "League browser with tier and region filters",
-          "Live tables and upcoming fixture lists",
-          "Drill-down to team and match detail",
-        ]}
-      />
+      <LeaguesFeed leagues={leagues} />
     </>
   );
 }

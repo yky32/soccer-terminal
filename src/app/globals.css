@@ -310,6 +310,89 @@
     transition-duration: 0.15s;
   }
 
+  /* Leagues page — denser liquid glass (~20% more opacity than news-glass-brick) */
+  .leagues-glass-brick {
+    isolation: isolate;
+    overflow: hidden;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.5) 100%
+    );
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.54);
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.07);
+  }
+
+  .leagues-glass-brick--strong {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.77) 0%,
+      rgba(255, 255, 255, 0.58) 100%
+    );
+    backdrop-filter: blur(32px) saturate(185%);
+    -webkit-backdrop-filter: blur(32px) saturate(185%);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  .leagues-glass-brick--sticky {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(238, 242, 248, 0.92) 100%
+    );
+    backdrop-filter: blur(44px) saturate(200%);
+    -webkit-backdrop-filter: blur(44px) saturate(200%);
+    border-color: rgba(255, 255, 255, 0.76);
+    box-shadow:
+      0 14px 44px rgba(15, 23, 42, 0.11),
+      inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  }
+
+  .leagues-glass-brick--subtle {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.58) 0%,
+      rgba(255, 255, 255, 0.38) 100%
+    );
+    backdrop-filter: blur(24px) saturate(175%);
+    -webkit-backdrop-filter: blur(24px) saturate(175%);
+    border-color: rgba(255, 255, 255, 0.46);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  }
+
+  .leagues-glass-brick--inset {
+    background: rgba(255, 255, 255, 0.34);
+    backdrop-filter: blur(18px) saturate(170%);
+    -webkit-backdrop-filter: blur(18px) saturate(170%);
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+
+  .leagues-glass-inset {
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(12px) saturate(165%);
+    -webkit-backdrop-filter: blur(12px) saturate(165%);
+  }
+
+  .leagues-glass-brick--interactive:hover {
+    transform: translateY(-2px) scale(1.002);
+    border-color: rgba(255, 255, 255, 0.66);
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.79) 0%,
+      rgba(255, 255, 255, 0.6) 100%
+    );
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.09);
+  }
+
+  .leagues-glass-brick--interactive:active {
+    transform: translateY(-1px) scale(0.998);
+    transition-duration: 0.15s;
+  }
+
   .news-enter {
     animation: news-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }

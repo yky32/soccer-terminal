@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppChrome } from "@/components/app-chrome-context";
+import { useStickyChromeHide } from "@/components/use-sticky-chrome";
 import { NewsFeaturedGrid } from "@/components/news/news-featured-grid";
 import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-filter-bar";
 import { NewsLeagueRail } from "@/components/news/news-league-rail";
@@ -45,10 +45,8 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [isFilterStuck, setIsFilterStuck] = useState(false);
+  const { isStuck: isFilterStuck, sentinelRef } = useStickyChromeHide();
   const filterRef = useRef<HTMLDivElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const { setHeaderHidden } = useAppChrome();
 
   const handleSelect = useCallback(
     (article: NewsArticle) => {
@@ -56,24 +54,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
     },
     [router],
   );
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsFilterStuck(!entry.isIntersecting),
-      { threshold: 0 },
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    setHeaderHidden(isFilterStuck);
-    return () => setHeaderHidden(false);
-  }, [isFilterStuck, setHeaderHidden]);
 
   const filtered = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
