@@ -177,6 +177,133 @@
     line-height: 1.45;
   }
 
+  .news-page {
+    position: relative;
+    background: #eef1f6;
+  }
+
+  .news-page-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    mask-image:
+      linear-gradient(to right, transparent 0%, transparent 55%, black 72%, black 100%),
+      linear-gradient(to bottom, transparent 0%, transparent 18%, black 30%);
+    mask-composite: intersect;
+    -webkit-mask-image:
+      linear-gradient(to right, transparent 0%, transparent 55%, black 72%, black 100%),
+      linear-gradient(to bottom, transparent 0%, transparent 18%, black 30%);
+    -webkit-mask-composite: source-in;
+  }
+
+  .news-page-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    will-change: transform;
+  }
+
+  .news-page-orb--sky {
+    width: min(65vw, 520px);
+    height: min(65vw, 520px);
+    top: 18%;
+    right: -8%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.42) 0%, transparent 68%);
+    animation: news-orb-sky 24s ease-in-out infinite alternate;
+  }
+
+  .news-page-orb--violet {
+    width: min(48vw, 400px);
+    height: min(48vw, 400px);
+    top: 52%;
+    right: 8%;
+    left: auto;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.34) 0%, transparent 68%);
+    animation: news-orb-violet 28s ease-in-out infinite alternate;
+  }
+
+  .news-page-orb--mint {
+    width: min(48vw, 380px);
+    height: min(48vw, 380px);
+    bottom: 4%;
+    right: 12%;
+    background: radial-gradient(circle, rgba(103, 232, 249, 0.3) 0%, transparent 68%);
+    animation: news-orb-mint 26s ease-in-out infinite alternate;
+  }
+
+  /* Liquid glass — translucent cards, readable text, backdrop shows through */
+  .news-glass-brick {
+    isolation: isolate;
+    overflow: hidden;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.58) 0%,
+      rgba(255, 255, 255, 0.42) 100%
+    );
+    backdrop-filter: blur(24px) saturate(175%);
+    -webkit-backdrop-filter: blur(24px) saturate(175%);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+  }
+
+  .news-glass-brick--strong {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.64) 0%,
+      rgba(255, 255, 255, 0.48) 100%
+    );
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 32px rgba(15, 23, 42, 0.07);
+  }
+
+  .news-glass-brick--subtle {
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.48) 0%,
+      rgba(255, 255, 255, 0.32) 100%
+    );
+    backdrop-filter: blur(20px) saturate(165%);
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    border-color: rgba(255, 255, 255, 0.38);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+  }
+
+  .news-glass-brick--inset {
+    background: rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+  }
+
+  .news-glass-brick--interactive:hover {
+    transform: translateY(-2px) scale(1.002);
+    border-color: rgba(255, 255, 255, 0.58);
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.66) 0%,
+      rgba(255, 255, 255, 0.5) 100%
+    );
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  }
+
+  .news-glass-brick--interactive:active {
+    transform: translateY(-1px) scale(0.998);
+    transition-duration: 0.15s;
+  }
+
+  .news-enter {
+    animation: news-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
+  .news-drawer-enter {
+    animation: news-drawer-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+
   .live-pin-ping {
     animation: live-pin-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
   }
@@ -228,8 +355,15 @@
 @media (prefers-reduced-motion: reduce) {
   .live-pin-ping,
   .live-pin-heartbeat,
-  .news-ticker-track {
+  .news-ticker-track,
+  .news-enter,
+  .news-drawer-enter,
+  .news-page-orb {
     animation: none;
+  }
+
+  .news-glass-brick--interactive:hover {
+    transform: none;
   }
 }
 
@@ -239,6 +373,55 @@
   }
   100% {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes news-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes news-drawer-enter {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes news-orb-sky {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-5vw, 5vh) scale(1.07);
+  }
+}
+
+@keyframes news-orb-violet {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-4vw, -3vh) scale(1.06);
+  }
+}
+
+@keyframes news-orb-mint {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-4vw, -4vh) scale(1.08);
   }
 }
 

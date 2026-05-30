@@ -82,10 +82,10 @@ export function NewsMetaLine({
   const meta = NEWS_CATEGORY_META[article.category];
 
   return (
-    <p className={cn("truncate text-[0.8125rem] text-muted-light", className)}>
-      <span className="font-medium text-muted">{article.league}</span>
+    <p className={cn("truncate text-[0.8125rem] text-neutral-500", className)}>
+      <span className="font-medium text-neutral-600">{article.league}</span>
       <span aria-hidden="true"> · </span>
-      <span className="font-medium text-muted">{meta.label}</span>
+      <span className="font-medium text-neutral-600">{meta.label}</span>
       <span aria-hidden="true"> · </span>
       <time dateTime={article.publishedAt} title={formatNewsTimestamp(article.publishedAt)}>
         {formatNewsRelativeTime(article.publishedAt)}

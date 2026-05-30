@@ -6,6 +6,13 @@ import { FootballLogo } from "@/components/overview/football-logo";
 import { formatNewsRelativeTime } from "@/lib/data/format-news-date";
 import type { NewsArticle } from "@/lib/data/news-article";
 import { NewsCategoryBadge } from "@/components/news/news-shared";
+import {
+  newsEnter,
+  newsFocus,
+  newsGlass,
+  newsGlassHover,
+  newsGlassInset,
+} from "@/components/news/news-glass";
 import { cn } from "@/lib/utils";
 
 type NewsSidebarProps = {
@@ -38,19 +45,19 @@ export function NewsSidebar({
       )}
       style={stickyTopPx !== undefined ? { top: stickyTopPx } : undefined}
     >
-      <section className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white/80 shadow-sm">
-        <div className="border-b border-border bg-surface/80 px-4 py-3">
-          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-muted">
+      <section className={cn(newsGlass, newsEnter, "overflow-hidden")}>
+        <div className="news-glass-inset border-b border-black/[0.06] px-4 py-3">
+          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-neutral-600">
             Breaking
           </p>
         </div>
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-black/[0.06]">
           {breaking.map((article) => (
             <li key={article.id}>
               <button
                 type="button"
                 onClick={() => onArticleSelect(article)}
-                className="flex w-full gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface/60"
+                className="relative z-[1] flex w-full gap-3 px-4 py-3.5 text-left transition-colors duration-200 hover:bg-black/[0.04]"
               >
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-hidden />
                 <span className="min-w-0 flex-1">
@@ -73,9 +80,9 @@ export function NewsSidebar({
         </ul>
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white/80 shadow-sm">
-        <div className="border-b border-border bg-surface/80 px-4 py-3">
-          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-muted">
+      <section className={cn(newsGlass, newsEnter, "overflow-hidden")} style={{ animationDelay: "90ms" }}>
+        <div className="news-glass-inset border-b border-black/[0.06] px-4 py-3">
+          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-neutral-600">
             Trending leagues
           </p>
         </div>
@@ -89,8 +96,10 @@ export function NewsSidebar({
                   type="button"
                   onClick={() => onLeagueSelect(league.name)}
                   className={cn(
-                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                    active ? "bg-foreground text-background" : "hover:bg-surface/80",
+                    "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-200",
+                    active
+                      ? "bg-foreground text-background shadow-sm"
+                      : "hover:bg-black/[0.04]",
                   )}
                 >
                   <span className="flex min-w-0 items-center gap-2.5">
@@ -111,7 +120,7 @@ export function NewsSidebar({
           })}
         </ul>
         {selectedLeague !== "all" ? (
-          <div className="border-t border-border px-4 py-3">
+          <div className="border-t border-black/[0.06] px-4 py-3">
             <button
               type="button"
               onClick={() => onLeagueSelect("all")}
@@ -125,10 +134,16 @@ export function NewsSidebar({
 
       <Link
         href="/"
-        className="group flex items-center justify-between gap-3 rounded-2xl border border-black/[0.06] bg-surface px-4 py-4 shadow-sm transition-colors hover:bg-surface-hover"
+        className={cn(
+          newsGlass,
+          newsGlassHover,
+          newsFocus,
+          newsEnter,
+          "group flex items-center justify-between gap-3 px-4 py-4",
+        )}
       >
         <div>
-          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-muted">
+          <p className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-neutral-600">
             Global map
           </p>
           <p className="mt-1 text-[0.9375rem] font-semibold text-foreground">

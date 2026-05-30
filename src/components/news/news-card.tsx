@@ -15,6 +15,13 @@ import {
   NewsMetaLine,
   NewsThumbnail,
 } from "@/components/news/news-shared";
+import {
+  newsEnter,
+  newsFocus,
+  newsGlass,
+  newsGlassHover,
+  newsGlassStrong,
+} from "@/components/news/news-glass";
 import { cn } from "@/lib/utils";
 
 type NewsRowCardProps = {
@@ -34,35 +41,36 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
       onClick={() => onSelect(article)}
       style={style}
       className={cn(
-        "group relative flex w-full gap-4 overflow-hidden rounded-xl border border-black/[0.06] bg-white/80 p-3 text-left shadow-sm transition-all",
-        "hover:border-black/[0.1] hover:bg-white hover:shadow-md",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20",
-        "sm:gap-5 sm:p-4",
+        newsGlass,
+        newsGlassHover,
+        newsFocus,
+        newsEnter,
+        "group relative flex w-full gap-4 overflow-hidden p-3 text-left sm:gap-5 sm:p-4",
         className,
       )}
     >
       <span
         aria-hidden
         className={cn(
-          "absolute inset-y-0 left-0 w-[3px] scale-y-0 opacity-0 transition-transform duration-200 group-hover:scale-y-100 group-hover:opacity-100",
+          "absolute inset-y-0 left-0 z-[2] w-[3px] scale-y-0 opacity-0 transition-transform duration-300 group-hover:scale-y-100 group-hover:opacity-100",
           accentBar,
         )}
       />
 
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg sm:h-[4.5rem] sm:w-[4.5rem]">
+      <div className="relative z-[1] h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/[0.06] sm:h-[4.5rem] sm:w-[4.5rem]">
         <NewsThumbnail article={article} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
       </div>
 
-      <div className="min-w-0 flex-1">
+      <div className="relative z-[1] min-w-0 flex-1">
         <div className="flex items-start gap-2">
           {isNew ? (
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-label="New" />
           ) : null}
-          <h3 className="line-clamp-2 text-[1rem] font-semibold leading-snug tracking-[-0.01em] text-foreground sm:text-[1.0625rem]">
+          <h3 className="line-clamp-2 text-[1rem] font-semibold leading-snug tracking-[-0.01em] text-neutral-950 sm:text-[1.0625rem]">
             {article.headline}
           </h3>
         </div>
-        <p className="mt-1.5 line-clamp-1 text-[0.875rem] leading-relaxed text-muted sm:line-clamp-2">
+        <p className="mt-1.5 line-clamp-1 text-[0.875rem] leading-relaxed text-neutral-600 sm:line-clamp-2">
           {article.excerpt}
         </p>
         <div className="mt-2 hidden sm:block">
@@ -72,14 +80,16 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
           <NewsCategoryBadge category={article.category} compact />
           <time
             dateTime={article.publishedAt}
-            className="text-[0.8125rem] tabular-nums text-muted-light"
+            className="text-[0.8125rem] tabular-nums text-neutral-500"
           >
             {formatNewsRelativeTime(article.publishedAt)}
           </time>
         </div>
       </div>
 
-      <ChevronRight />
+      <span className="relative z-[1] shrink-0 self-center">
+        <ChevronRight />
+      </span>
     </button>
   );
 }
@@ -97,8 +107,10 @@ export function NewsFeaturedCard({ article, onSelect }: NewsFeaturedCardProps) {
       type="button"
       onClick={() => onSelect(article)}
       className={cn(
-        "group w-full overflow-hidden rounded-2xl border border-black/[0.06] bg-white/80 text-left shadow-sm transition-all",
-        "hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20",
+        newsGlassStrong,
+        newsGlassHover,
+        newsFocus,
+        "group w-full overflow-hidden text-left",
         "border-l-[3px]",
         accent,
       )}
@@ -108,7 +120,7 @@ export function NewsFeaturedCard({ article, onSelect }: NewsFeaturedCardProps) {
           article={article}
           className="absolute inset-0 h-full w-full transition-transform duration-300 group-hover:scale-[1.01]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/5 transition-opacity duration-500 group-hover:from-black/80" />
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="text-[0.8125rem] font-semibold uppercase tracking-[0.06em] text-white/75">
@@ -129,8 +141,8 @@ export function NewsFeaturedCard({ article, onSelect }: NewsFeaturedCardProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
-        <p className="max-w-3xl text-[0.9375rem] leading-relaxed text-muted sm:text-[1rem]">
+      <div className="news-glass-inset relative z-[1] flex flex-col gap-4 border-t border-black/[0.06] p-5 sm:flex-row sm:items-end sm:justify-between sm:p-6">
+        <p className="max-w-3xl text-[0.9375rem] leading-relaxed text-neutral-600 sm:text-[1rem]">
           {article.excerpt}
         </p>
         <div className="flex shrink-0 items-center gap-2 text-[0.9375rem] font-semibold text-foreground">

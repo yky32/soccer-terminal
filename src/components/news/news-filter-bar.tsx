@@ -10,6 +10,12 @@ import {
   getMatchSignal,
   INSIGHT_SIGNAL_STYLES,
 } from "@/lib/data/news-insight-signals";
+import {
+  newsGlass,
+  newsGlassInset,
+  newsGlassStrong,
+  newsGlassSubtle,
+} from "@/components/news/news-glass";
 import { cn } from "@/lib/utils";
 
 type NewsFilterBarProps = {
@@ -75,8 +81,9 @@ export function NewsFilterBar({
 
       <div
         className={cn(
-          "flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white/90 px-2 py-1.5 shadow-sm backdrop-blur-sm sm:gap-2.5 sm:px-2.5",
-          isStuck && "rounded-lg py-1",
+          isStuck ? newsGlassSubtle : newsGlass,
+          "flex items-center gap-2 rounded-2xl px-2 py-1.5 sm:gap-2.5 sm:px-2.5",
+          isStuck && "rounded-xl py-1",
         )}
       >
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -92,12 +99,12 @@ export function NewsFilterBar({
                 type="button"
                 onClick={() => onCategoryChange(filter.id)}
                 className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all active:scale-95",
+                  "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95",
                   active
                     ? filter.id === "all"
-                      ? "bg-foreground text-background"
-                      : cn("ring-1 ring-inset", accent)
-                    : "text-muted hover:bg-surface hover:text-foreground",
+                      ? "bg-foreground text-background shadow-sm"
+                      : cn("ring-1 ring-inset shadow-sm", accent)
+                    : cn(newsGlassInset, "text-foreground/75 hover:text-foreground"),
                 )}
               >
                 <span>{filter.label}</span>
@@ -120,7 +127,7 @@ export function NewsFilterBar({
 
         <div className="flex shrink-0 items-center gap-1.5">
           {searchOpen ? (
-            <div className="flex items-center gap-1 rounded-full border border-border bg-surface pl-2.5 pr-1">
+            <div className={cn(newsGlassInset, "flex items-center gap-1 rounded-full pl-2.5 pr-1")}>
               <Search className="h-3.5 w-3.5 shrink-0 text-muted-light" aria-hidden />
               <input
                 type="search"
@@ -147,10 +154,10 @@ export function NewsFilterBar({
               type="button"
               onClick={() => setSearchOpen(true)}
               className={cn(
-                "inline-flex items-center justify-center rounded-full border p-1.5 transition-colors",
+                "inline-flex items-center justify-center rounded-full border p-1.5 transition-all duration-200 active:scale-95",
                 searchQuery
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-border bg-surface text-muted hover:text-foreground",
+                  ? "border-foreground bg-foreground text-background shadow-sm"
+                  : cn(newsGlassInset, "text-foreground/75 hover:text-foreground"),
               )}
               aria-label="Search headlines"
             >
@@ -163,10 +170,10 @@ export function NewsFilterBar({
             onClick={() => setLeaguesOpen((open) => !open)}
             aria-expanded={leaguesOpen}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.8125rem] font-medium transition-all active:scale-95",
+              "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95",
               leaguesOpen || selectedLeague !== "all"
-                ? "border-foreground bg-foreground text-background"
-                : "border-border bg-surface text-muted hover:text-foreground",
+                ? "border-foreground bg-foreground text-background shadow-sm"
+                : cn(newsGlassInset, "text-foreground/75 hover:text-foreground"),
             )}
           >
             <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden />
@@ -198,7 +205,7 @@ export function NewsFilterBar({
         )}
       >
         <div className="overflow-hidden">
-          <div className="flex flex-wrap gap-1.5 rounded-xl border border-black/[0.06] bg-surface/80 p-2">
+          <div className={cn(newsGlass, "flex flex-wrap gap-1.5 p-2")}>
             <LeagueOption
               label="All leagues"
               count={insights.total}
@@ -298,8 +305,9 @@ function NewsInsightStrip({
   return (
     <div
       className={cn(
-        "mb-2 flex items-center gap-1 overflow-x-auto rounded-lg border border-black/[0.05] bg-surface/70 px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-        isStuck && "mb-1.5 rounded-md py-0.5",
+        "mb-2 flex items-center gap-1 overflow-x-auto rounded-xl px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        newsGlassSubtle,
+        isStuck && "mb-1.5 rounded-lg py-0.5",
       )}
     >
       {stats.map((stat) => {
@@ -324,7 +332,7 @@ function NewsInsightStrip({
                 />
               ) : null}
             </span>
-            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted-light">
+            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-neutral-600">
               {stat.label}
             </span>
             <span className={cn("text-[0.9375rem] font-bold tabular-nums leading-none", styles.text)}>
@@ -362,8 +370,8 @@ function LeagueOption({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all active:scale-95",
         active
-          ? "bg-foreground text-background"
-          : "bg-background text-muted hover:text-foreground",
+          ? "bg-foreground text-background shadow-sm"
+          : cn(newsGlassInset, "text-foreground/75 hover:text-foreground"),
       )}
     >
       {logo ? <FootballLogo src={logo} label={label} size="xs" /> : null}

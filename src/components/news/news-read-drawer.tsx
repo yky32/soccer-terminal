@@ -13,6 +13,11 @@ import {
   NewsCategoryBadge,
   NewsThumbnail,
 } from "@/components/news/news-shared";
+import {
+  newsDrawerEnter,
+  newsFocus,
+  newsGlassStrong,
+} from "@/components/news/news-glass";
 import { cn } from "@/lib/utils";
 
 type NewsReadDrawerProps = {
@@ -54,7 +59,7 @@ export function NewsReadDrawer({ article, onClose }: NewsReadDrawerProps) {
         type="button"
         aria-label="Close article"
         onClick={onClose}
-        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/20 backdrop-blur-xl transition-opacity duration-300"
       />
 
       <div
@@ -62,16 +67,20 @@ export function NewsReadDrawer({ article, onClose }: NewsReadDrawerProps) {
         aria-modal="true"
         aria-labelledby="news-drawer-title"
         className={cn(
-          "relative flex h-full w-full max-w-xl flex-col border-l border-black/[0.08] bg-background shadow-2xl",
-          "transition-transform duration-300 ease-out",
+          newsGlassStrong,
+          newsDrawerEnter,
+          "relative flex h-full w-full max-w-xl flex-col border-l border-black/[0.08] shadow-2xl",
         )}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+        <div className="news-glass-inset relative z-[1] flex items-center justify-between gap-4 border-b border-black/[0.06] px-5 py-4">
           <NewsCategoryBadge category={article.category} />
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full px-3 py-1.5 text-[0.875rem] font-medium text-muted transition-colors hover:bg-surface hover:text-foreground"
+            className={cn(
+              newsFocus,
+              "rounded-full px-3 py-1.5 text-[0.875rem] font-medium text-muted transition-all duration-200 hover:bg-black/[0.05] hover:text-foreground",
+            )}
           >
             Close
           </button>
@@ -110,11 +119,14 @@ export function NewsReadDrawer({ article, onClose }: NewsReadDrawerProps) {
           </div>
         </div>
 
-        <div className="border-t border-border bg-surface/50 px-5 py-4 sm:px-6">
+        <div className="news-glass-inset border-t border-black/[0.06] px-5 py-4 sm:px-6">
           <Link
             href="/"
             onClick={onClose}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-foreground px-4 py-3 text-[0.9375rem] font-semibold text-background transition-opacity hover:opacity-90"
+            className={cn(
+              newsFocus,
+              "inline-flex w-full items-center justify-center rounded-xl bg-foreground px-4 py-3 text-[0.9375rem] font-semibold text-background transition-all hover:scale-[1.01] active:scale-[0.99]",
+            )}
           >
             Open Global map
           </Link>

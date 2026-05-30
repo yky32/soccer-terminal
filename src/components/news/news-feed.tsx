@@ -2,11 +2,19 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAppChrome } from "@/components/app-chrome-context";
-import { NewsFeaturedCard, NewsRowCard } from "@/components/news/news-card";
+import { NewsRowCard } from "@/components/news/news-card";
+import { NewsFeaturedGrid } from "@/components/news/news-featured-grid";
 import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-filter-bar";
 import { NewsReadDrawer } from "@/components/news/news-read-drawer";
 import { NewsSidebar } from "@/components/news/news-sidebar";
 import { NewsTicker } from "@/components/news/news-ticker";
+import {
+  newsEnter,
+  newsFocus,
+  newsGlass,
+  newsGlassHover,
+  newsGlassStrong,
+} from "@/components/news/news-glass";
 import type { NewsArticle } from "@/lib/data/news-article";
 import {
   buildNewsInsights,
@@ -99,9 +107,17 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
     [articles, selectedLeague],
   );
 
-  const featured =
+  const featuredLead =
     filtered.find((article) => article.featured) ?? filtered[0] ?? null;
-  const stream = filtered.filter((article) => article.id !== featured?.id);
+  const featuredSecondary = featuredLead
+    ? filtered.filter((article) => article.id !== featuredLead.id).slice(0, 4)
+    : [];
+  const featuredIds = new Set(
+    [featuredLead?.id, ...featuredSecondary.map((article) => article.id)].filter(
+      (id): id is string => Boolean(id),
+    ),
+  );
+  const stream = filtered.filter((article) => !featuredIds.has(article.id));
   const visibleStream = stream.slice(0, visibleCount);
   const breaking = articles.slice(0, 4);
   const tickerHeadlines = articles.slice(0, 6);
@@ -124,41 +140,48 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
       <div
         ref={filterRef}
         className={cn(
-          "sticky z-40 border-b border-border bg-background/95 backdrop-blur-sm transition-[top,box-shadow] duration-200",
-          isFilterStuck
-            ? "top-0 shadow-sm"
-            : "top-[7.75rem] shadow-none md:top-[4.25rem]",
+          "sticky z-40 transition-[top] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          isFilterStuck ? "top-0" : "top-[7.75rem] md:top-[4.25rem]",
         )}
       >
-        <NewsFilterBar
-          filteredCount={filtered.length}
-          insights={insights}
-          categoryCounts={categoryCounts}
-          categories={CATEGORY_FILTERS}
-          selectedCategory={selectedCategory}
-          onCategoryChange={(category) => {
-            setSelectedCategory(category);
-            handleFilterChange();
-          }}
-          leagues={leagues}
-          selectedLeague={selectedLeague}
-          onLeagueChange={(league) => {
-            setSelectedLeague(league);
-            handleFilterChange();
-          }}
-          searchQuery={searchQuery}
-          onSearchChange={(query) => {
-            setSearchQuery(query);
-            handleFilterChange();
-          }}
-          onReset={resetFilters}
-          isStuck={isFilterStuck}
-        />
+        <div
+          className={cn(
+            "transition-[box-shadow,backdrop-filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            isFilterStuck
+              ? cn(newsGlassStrong, "rounded-none border-x-0 border-t-0 border-b")
+              : "border-b border-transparent",
+          )}
+        >
+          <NewsFilterBar
+            filteredCount={filtered.length}
+            insights={insights}
+            categoryCounts={categoryCounts}
+            categories={CATEGORY_FILTERS}
+            selectedCategory={selectedCategory}
+            onCategoryChange={(category) => {
+              setSelectedCategory(category);
+              handleFilterChange();
+            }}
+            leagues={leagues}
+            selectedLeague={selectedLeague}
+            onLeagueChange={(league) => {
+              setSelectedLeague(league);
+              handleFilterChange();
+            }}
+            searchQuery={searchQuery}
+            onSearchChange={(query) => {
+              setSearchQuery(query);
+              handleFilterChange();
+            }}
+            onReset={resetFilters}
+            isStuck={isFilterStuck}
+          />
+        </div>
       </div>
 
       <section className="page-container pb-16 pt-8 sm:pb-24">
         {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-surface/50 px-6 py-16 text-center">
+          <div className={cn(newsGlass, "px-6 py-16 text-center")}>
             <p className="text-[1.125rem] font-semibold text-foreground">No headlines found</p>
             <p className="mt-2 text-[0.9375rem] text-muted">
               Try another filter or clear your search.
@@ -166,34 +189,38 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-6 rounded-full bg-foreground px-5 py-2.5 text-[0.9375rem] font-medium text-background"
+              className="mt-6 rounded-full bg-foreground px-5 py-2.5 text-[0.9375rem] font-medium text-background transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               Clear filters
             </button>
           </div>
         ) : (
           <div className="space-y-8">
-            {featured ? (
-              <NewsFeaturedCard article={featured} onSelect={setActiveArticle} />
+            {featuredLead ? (
+              <NewsFeaturedGrid
+                lead={featuredLead}
+                secondary={featuredSecondary}
+                onSelect={setActiveArticle}
+              />
             ) : null}
 
             <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
               <div>
                 <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="text-[1rem] font-semibold text-foreground">Latest</h2>
-                  <p className="text-[0.8125rem] tabular-nums text-muted">
+                  <h2 className="text-[1rem] font-semibold text-neutral-950">Latest</h2>
+                  <p className="text-[0.8125rem] tabular-nums text-neutral-600">
                     Showing {visibleStream.length} of {stream.length}
                   </p>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {visibleStream.map((article, index) => (
                     <NewsRowCard
                       key={article.id}
                       article={article}
                       onSelect={setActiveArticle}
-                      style={{ animationDelay: `${index * 40}ms` }}
-                      className="opacity-0 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-backwards motion-reduce:animate-none motion-reduce:opacity-100"
+                      style={{ animationDelay: `${index * 45}ms` }}
+                      className={newsEnter}
                     />
                   ))}
                 </div>
@@ -202,7 +229,12 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
                   <button
                     type="button"
                     onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                    className="mt-6 w-full rounded-xl border border-border bg-surface py-3 text-[0.9375rem] font-semibold text-foreground transition-colors hover:bg-surface-hover"
+                    className={cn(
+                      newsGlass,
+                      newsGlassHover,
+                      newsFocus,
+                      "mt-6 w-full py-3 text-[0.9375rem] font-semibold text-foreground",
+                    )}
                   >
                     Load more headlines
                   </button>
