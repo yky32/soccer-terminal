@@ -1,0 +1,257 @@
+import type {
+  LeagueLeaderBoards,
+  LeaguePlayerStat,
+  LeaguePlayerStatKind,
+  LeagueProfile,
+  LeagueSeasonRecord,
+  LeagueStandingRow,
+  LeagueTeamStat,
+} from "@/lib/data/league-profile";
+
+const FIRST_NAMES = [
+  "James",
+  "Lucas",
+  "Marco",
+  "Yuki",
+  "Omar",
+  "Diego",
+  "Kai",
+  "Victor",
+  "Antoine",
+  "Bruno",
+  "Gabriel",
+  "Hugo",
+  "Leandro",
+  "Matheus",
+  "Pedro",
+  "Rafael",
+];
+
+const LAST_NAMES = [
+  "Silva",
+  "García",
+  "Kim",
+  "Alves",
+  "Fernández",
+  "Müller",
+  "Santos",
+  "Rossi",
+  "Johnson",
+  "Martinez",
+  "Okonkwo",
+  "Petrov",
+  "Nielsen",
+  "Costa",
+  "Walker",
+  "Brooks",
+];
+
+const PLAYER_STAT_KINDS: LeaguePlayerStatKind[] = ["rating", "goals", "assists", "fouls"];
+
+/** Maps league profile ids to news wire league labels. */
+export const LEAGUE_NEWS_LABELS: Record<string, string> = {
+  "premier-league": "Premier League",
+  "la-liga": "La Liga",
+  "serie-a": "Serie A",
+  bundesliga: "Bundesliga",
+  "ligue-1": "Ligue 1",
+  ucl: "Champions League",
+  uel: "Europa League",
+  mls: "MLS",
+  j1: "J1 League",
+  "k-league": "K League 1",
+  "saudi-pro": "Pro League",
+  eredivisie: "Eredivisie",
+  "liga-portugal": "Liga Portugal",
+  "nsw-npl": "NSW NPL",
+};
+
+function hashString(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function playerName(leagueId: string, team: string, slot: number) {
+  const hash = hashString(`${leagueId}:${team}:${slot}`);
+  const first = FIRST_NAMES[hash % FIRST_NAMES.length] ?? "Alex";
+  const last = LAST_NAMES[(hash >> 4) % LAST_NAMES.length] ?? "Morgan";
+  return `${first} ${last}`;
+}
+
+function statValue(kind: LeaguePlayerStatKind, leagueId: string, team: string, slot: number) {
+  const hash = hashString(`${kind}:${leagueId}:${team}:${slot}`);
+
+  switch (kind) {
+    case "rating":
+      return 6.4 + (hash % 35) / 10;
+    case "goals":
+      return 28 - slot * 3 - (hash % 4);
+    case "assists":
+      return 18 - slot * 2 - (hash % 3);
+    case "fouls":
+      return 42 + slot * 2 + (hash % 8);
+    default:
+      return 0;
+  }
+}
+
+function buildPlayerLeaderRows(
+  league: LeagueProfile,
+  teams: LeagueStandingRow[],
+  kind: LeaguePlayerStatKind,
+  limit: number,
+  teamFilter?: string,
+): LeaguePlayerStat[] {
+  const pool = teamFilter ? teams.filter((team) => team.team === teamFilter) : teams;
+
+  const rows = pool.flatMap((standing, teamIndex) =>
+    Array.from({ length: teamFilter ? 3 : 2 }, (_, slot) => {
+      const value = statValue(kind, league.id, standing.team, teamIndex + slot);
+      return {
+        playerName: playerName(league.id, standing.team, teamIndex + slot),
+        team: standing.team,
+        teamLogo: standing.teamLogo,
+        value,
+        appearances: Math.max(8, standing.played - (slot % 3)),
+      };
+    }),
+  );
+
+  const sorted = [...rows].sort((a, b) => b.value - a.value);
+
+  return sorted.slice(0, limit).map((row, index) => ({
+    ...row,
+    rank: index + 1,
+    value: kind === "rating" ? Math.round(row.value * 10) / 10 : Math.round(row.value),
+  }));
+}
+
+function buildTeamWinRates(standings: LeagueStandingRow[], limit: number): LeagueTeamStat[] {
+  return [...standings]
+    .map((standing) => ({
+      team: standing.team,
+      teamLogo: standing.teamLogo,
+      value:
+        standing.played > 0 ? Math.round((standing.won / standing.played) * 100) : 0,
+      played: standing.played,
+      won: standing.won,
+      rank: 0,
+    }))
+    .sort((a, b) => b.value - a.value || b.won - a.won || a.team.localeCompare(b.team))
+    .slice(0, limit)
+    .map((row, index) => ({ ...row, rank: index + 1 }));
+}
+
+function buildLeaderBoards(
+  league: LeagueProfile,
+  teamFilter?: string,
+): LeagueLeaderBoards {
+  const teams = teamFilter
+    ? league.standings.filter((row) => row.team === teamFilter)
+    : league.standings;
+
+  const players = PLAYER_STAT_KINDS.reduce(
+    (acc, kind) => {
+      acc[kind] = buildPlayerLeaderRows(league, teams, kind, 5, teamFilter);
+      return acc;
+    },
+    {} as Record<LeaguePlayerStatKind, LeaguePlayerStat[]>,
+  );
+
+  return {
+    players,
+    teamWinRates: buildTeamWinRates(league.standings, 5),
+  };
+}
+
+export function buildLeagueLeaderBoards(league: LeagueProfile): LeagueLeaderBoards {
+  return buildLeaderBoards(league);
+}
+
+export function buildTeamLeaderBoards(
+  league: LeagueProfile,
+  teamName: string,
+): LeagueLeaderBoards {
+  return buildLeaderBoards(league, teamName);
+}
+
+/** @deprecated Use buildLeagueLeaderBoards */
+export const buildLeagueStatLeaders = buildLeagueLeaderBoards;
+
+/** @deprecated Use buildTeamLeaderBoards */
+export const buildTeamStatLeaders = buildTeamLeaderBoards;
+
+export function buildLeagueSeasons(league: LeagueProfile): LeagueSeasonRecord[] {
+  const teams = league.standings;
+  const currentLabel = league.season;
+
+  const historyLabels =
+    currentLabel.includes("/")
+      ? ["2024/25", "2023/24", "2022/23", "2021/22", "2020/21"]
+      : ["2025", "2024", "2023", "2022", "2021"];
+
+  const seasons: LeagueSeasonRecord[] = [
+    {
+      id: `${league.id}-${currentLabel}`,
+      label: currentLabel,
+      champion: teams[0]?.team ?? "TBD",
+      championLogo: teams[0]?.teamLogo ?? null,
+      topScorer: playerName(league.id, teams[0]?.team ?? "League", 0),
+      topScorerGoals: 24,
+      isCurrent: true,
+    },
+  ];
+
+  historyLabels.forEach((label, index) => {
+    const champion = teams[(index + 1) % teams.length] ?? teams[0];
+    if (!champion) return;
+
+    seasons.push({
+      id: `${league.id}-${label}`,
+      label,
+      champion: champion.team,
+      championLogo: champion.teamLogo,
+      topScorer: playerName(league.id, champion.team, index + 2),
+      topScorerGoals: 22 - index,
+    });
+  });
+
+  return seasons;
+}
+
+export function getLeagueNewsLabel(league: LeagueProfile) {
+  return LEAGUE_NEWS_LABELS[league.id] ?? league.name;
+}
+
+export const LEAGUE_PLAYER_STAT_LABELS: Record<LeaguePlayerStatKind, string> = {
+  rating: "Top rated",
+  goals: "Top scorers",
+  assists: "Top assists",
+  fouls: "Most fouls",
+};
+
+export const LEAGUE_TEAM_WIN_RATE_LABEL = "Team win rate";
+
+export function formatPlayerStatValue(kind: LeaguePlayerStatKind, value: number) {
+  if (kind === "rating") return value.toFixed(1);
+  return String(value);
+}
+
+export function formatTeamWinRate(value: number) {
+  return `${value}%`;
+}
+
+export function formatTeamWinRateMeta(won: number, played: number) {
+  return `${won}W · ${played} played`;
+}
+
+/** @deprecated Use LEAGUE_PLAYER_STAT_LABELS */
+export const LEAGUE_STAT_LABELS = LEAGUE_PLAYER_STAT_LABELS;
+
+/** @deprecated Use formatPlayerStatValue */
+export function formatStatValue(kind: LeaguePlayerStatKind, value: number) {
+  return formatPlayerStatValue(kind, value);
+}

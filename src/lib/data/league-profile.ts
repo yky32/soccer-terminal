@@ -28,6 +28,47 @@ export type LeagueFixture = {
   matchday: string;
 };
 
+export type LeaguePlayerStatKind = "rating" | "goals" | "assists" | "fouls";
+
+export type LeaguePlayerStat = {
+  rank: number;
+  playerName: string;
+  team: string;
+  teamLogo: string | null;
+  value: number;
+  appearances: number;
+};
+
+export type LeagueTeamStat = {
+  rank: number;
+  team: string;
+  teamLogo: string | null;
+  value: number;
+  played: number;
+  won: number;
+};
+
+export type LeagueLeaderBoards = {
+  players: Record<LeaguePlayerStatKind, LeaguePlayerStat[]>;
+  teamWinRates: LeagueTeamStat[];
+};
+
+/** @deprecated Use LeaguePlayerStatKind */
+export type LeagueStatKind = LeaguePlayerStatKind;
+
+/** @deprecated Use LeagueLeaderBoards */
+export type LeagueStatLeaders = LeagueLeaderBoards;
+
+export type LeagueSeasonRecord = {
+  id: string;
+  label: string;
+  champion: string;
+  championLogo: string | null;
+  topScorer: string;
+  topScorerGoals: number;
+  isCurrent?: boolean;
+};
+
 export type LeagueProfile = {
   id: string;
   name: string;

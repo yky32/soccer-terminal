@@ -1,33 +1,30 @@
 "use client";
 
-import Link from "next/link";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useStickyChromeHide } from "@/components/use-sticky-chrome";
 import { FootballLogo } from "@/components/overview/football-logo";
-import { LeagueFixturesList } from "@/components/leagues/league-fixtures-list";
-import { LeagueStandingsTable } from "@/components/leagues/league-standings-table";
+import { LeagueDetailPanel } from "@/components/leagues/league-detail-panel";
+import { LeagueHero } from "@/components/leagues/league-hero";
 import {
   leaguesGlass,
   leaguesGlassEnter,
   leaguesGlassFocus,
-  leaguesGlassHover,
   leaguesGlassInset,
-  leaguesGlassInsetBar,
   leaguesGlassSticky,
-  leaguesGlassStrong,
   leaguesGlassSubtle,
 } from "@/components/leagues/leagues-glass";
-import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueProfile, LeagueRegion, LeagueTier } from "@/lib/data/league-profile";
 import {
   LEAGUE_REGION_LABELS,
   LEAGUE_TIER_LABELS,
 } from "@/lib/data/league-profile";
+import type { NewsArticle } from "@/lib/data/news-article";
 import { cn } from "@/lib/utils";
 
 type LeaguesFeedProps = {
   leagues: LeagueProfile[];
+  articles: NewsArticle[];
 };
 
 const REGIONS: (LeagueRegion | "all")[] = [
@@ -57,7 +54,7 @@ const TIER_SHORT: Record<LeagueTier | "all", string> = {
   regional: "Regional",
 };
 
-export function LeaguesFeed({ leagues }: LeaguesFeedProps) {
+export function LeaguesFeed({ leagues, articles }: LeaguesFeedProps) {
   const [region, setRegion] = useState<LeagueRegion | "all">("all");
   const [tier, setTier] = useState<LeagueTier | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -156,51 +153,7 @@ export function LeaguesFeed({ leagues }: LeaguesFeedProps) {
           {selected ? (
             <div className={cn(leaguesGlassEnter, "space-y-4")}>
               <LeagueHero league={selected} />
-
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
-                <section className={cn(leaguesGlass, "overflow-hidden")}>
-                  <header className={cn(leaguesGlassInsetBar, "flex items-center justify-between border-b border-black/[0.06] px-4 py-3 sm:px-5")}>
-                    <h2 className="text-[clamp(1.125rem,2.2vw,1.375rem)] font-semibold tracking-[-0.03em] text-neutral-950">
-                      Standings
-                    </h2>
-                    <span className="text-[0.8125rem] text-neutral-500">Matchday {selected.matchday}</span>
-                  </header>
-                  <LeagueStandingsTable standings={selected.standings} />
-                </section>
-
-                <section className={cn(leaguesGlass, "overflow-hidden")}>
-                  <header className={cn(leaguesGlassInsetBar, "flex items-center justify-between border-b border-black/[0.06] px-4 py-3 sm:px-5")}>
-                    <h2 className="text-[clamp(1.125rem,2.2vw,1.375rem)] font-semibold tracking-[-0.03em] text-neutral-950">
-                      Upcoming
-                    </h2>
-                    <span className="text-[0.8125rem] text-neutral-500">
-                      {selected.fixtures.length} fixtures
-                    </span>
-                  </header>
-                  <LeagueFixturesList fixtures={selected.fixtures} />
-                </section>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Link
-                  href="/"
-                  className={cn(leaguesGlass, leaguesGlassHover, leaguesGlassFocus, "block rounded-[1.25rem] px-5 py-4 text-[0.9375rem] font-semibold text-neutral-950")}
-                >
-                  Open Global map
-                  <span className="mt-1 block text-[0.8125rem] font-normal text-neutral-600">
-                    See live fixtures for {selected.country}
-                  </span>
-                </Link>
-                <Link
-                  href="/news"
-                  className={cn(leaguesGlass, leaguesGlassHover, leaguesGlassFocus, "block rounded-[1.25rem] px-5 py-4 text-[0.9375rem] font-semibold text-neutral-950")}
-                >
-                  View {selected.shortName} headlines
-                  <span className="mt-1 block text-[0.8125rem] font-normal text-neutral-600">
-                    Wire coverage from the news desk
-                  </span>
-                </Link>
-              </div>
+              <LeagueDetailPanel league={selected} articles={articles} />
             </div>
           ) : null}
         </>
@@ -428,78 +381,5 @@ function LeaguePickerChip({
         </span>
       ) : null}
     </button>
-  );
-}
-
-function LeagueHero({ league }: { league: LeagueProfile }) {
-  return (
-    <div className={cn(leaguesGlassStrong, "overflow-hidden")}>
-      <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-4 sm:px-5 sm:py-5">
-        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <FootballLogo
-            src={league.logo}
-            label={league.name}
-            size="lg"
-            className="h-12 w-12 sm:h-14 sm:w-14"
-          />
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <FootballLogo src={league.countryFlag} label={league.country} size="xs" />
-              <span className="text-[0.8125rem] font-medium text-neutral-600">{league.country}</span>
-              <span className="text-neutral-300" aria-hidden>
-                ·
-              </span>
-              <span className="text-[0.8125rem] text-neutral-500">{league.season}</span>
-            </div>
-            <h2 className="mt-1 text-[clamp(1.375rem,3vw,1.875rem)] font-semibold leading-tight tracking-[-0.03em] text-neutral-950">
-              {league.name}
-            </h2>
-            <p className="mt-1 text-[0.875rem] text-neutral-600">
-              {league.teams} teams · Matchday {league.matchday}
-              {league.liveMatches > 0 ? (
-                <>
-                  {" "}
-                  ·{" "}
-                  <span className="font-semibold text-emerald-700">
-                    {league.liveMatches} live now
-                  </span>
-                </>
-              ) : null}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <span className={cn(leaguesGlassInset, "rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-600")}>
-            {LEAGUE_REGION_LABELS[league.region]}
-          </span>
-          <span className={cn(leaguesGlassInset, "rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-600")}>
-            {LEAGUE_TIER_LABELS[league.tier]}
-          </span>
-        </div>
-      </div>
-
-      <div className={cn(leaguesGlassInsetBar, "grid grid-cols-3 divide-x divide-black/[0.06] border-t border-black/[0.06]")}>
-        <HeroStat label="Teams" value={String(league.teams)} />
-        <HeroStat label="Matchday" value={String(league.matchday)} />
-        <HeroStat
-          label="Updated"
-          value={formatNewsTimestamp(new Date().toISOString()).split(",")[0] ?? "Today"}
-        />
-      </div>
-    </div>
-  );
-}
-
-function HeroStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="px-4 py-3 text-center sm:px-5">
-      <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
-        {label}
-      </p>
-      <p className="mt-0.5 text-[1rem] font-bold tabular-nums tracking-[-0.02em] text-neutral-950 sm:text-[1.0625rem]">
-        {value}
-      </p>
-    </div>
   );
 }
