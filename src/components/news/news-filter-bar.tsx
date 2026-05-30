@@ -70,7 +70,7 @@ export function NewsFilterBar({
   const matchSignal = getMatchSignal(filteredCount, matchRate, hasActiveFilters);
 
   return (
-    <div className="page-container py-2 sm:py-2.5">
+    <div className="page-container py-1.5 sm:py-2">
       <NewsInsightStrip
         insights={insights}
         filteredCount={filteredCount}
@@ -82,8 +82,8 @@ export function NewsFilterBar({
       <div
         className={cn(
           isStuck ? newsGlassSubtle : newsGlass,
-          "flex items-center gap-2 rounded-2xl px-2 py-1.5 sm:gap-2.5 sm:px-2.5",
-          isStuck && "rounded-xl py-1",
+          "flex items-center gap-1.5 rounded-xl px-1.5 py-1 sm:gap-2 sm:px-2",
+          isStuck && "rounded-lg py-0.5",
         )}
       >
         <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -201,11 +201,11 @@ export function NewsFilterBar({
       <div
         className={cn(
           "grid transition-[grid-template-rows,opacity,margin] duration-200 ease-out",
-          leaguesOpen ? "mt-2 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0",
+          leaguesOpen ? "mt-1.5 grid-rows-[1fr] opacity-100" : "mt-0 grid-rows-[0fr] opacity-0",
         )}
       >
         <div className="overflow-hidden">
-          <div className={cn(newsGlass, "flex flex-wrap gap-1.5 p-2")}>
+          <div className={cn(newsGlass, "flex flex-wrap gap-1 p-1.5")}>
             <LeagueOption
               label="All leagues"
               count={insights.total}
@@ -235,8 +235,8 @@ export function NewsFilterBar({
       <div
         className={cn(
           "flex items-center justify-between gap-3 transition-all duration-200",
-          hasActiveFilters ? "mt-2 opacity-100" : "mt-0 h-0 overflow-hidden opacity-0",
-          isStuck && hasActiveFilters && "mt-1.5",
+          hasActiveFilters ? "mt-1.5 opacity-100" : "mt-0 h-0 overflow-hidden opacity-0",
+          isStuck && hasActiveFilters && "mt-1",
         )}
       >
         <p className="min-w-0 truncate text-[0.75rem] text-muted">
@@ -305,9 +305,9 @@ function NewsInsightStrip({
   return (
     <div
       className={cn(
-        "mb-2 flex items-center gap-1 overflow-x-auto rounded-xl px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "mb-1.5 flex items-center gap-1 overflow-x-auto rounded-lg px-1 py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
         newsGlassSubtle,
-        isStuck && "mb-1.5 rounded-lg py-0.5",
+        isStuck && "mb-1 rounded-md py-0",
       )}
     >
       {stats.map((stat) => {

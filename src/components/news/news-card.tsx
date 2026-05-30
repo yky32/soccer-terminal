@@ -45,7 +45,7 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
         newsGlassHover,
         newsFocus,
         newsEnter,
-        "group relative flex w-full gap-4 overflow-hidden p-3 text-left sm:gap-5 sm:p-4",
+        "group relative flex w-full gap-2.5 overflow-hidden p-2 text-left sm:gap-3 sm:p-2.5",
         className,
       )}
     >
@@ -57,7 +57,7 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
         )}
       />
 
-      <div className="relative z-[1] h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-black/[0.06] sm:h-[4.5rem] sm:w-[4.5rem]">
+      <div className="relative z-[1] h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-black/[0.06] sm:h-16 sm:w-16">
         <NewsThumbnail article={article} className="h-full w-full transition-transform duration-300 group-hover:scale-105" />
       </div>
 
@@ -66,17 +66,17 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
           {isNew ? (
             <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" aria-label="New" />
           ) : null}
-          <h3 className="line-clamp-2 text-[1rem] font-semibold leading-snug tracking-[-0.01em] text-neutral-950 sm:text-[1.0625rem]">
+          <h3 className="line-clamp-2 text-[0.875rem] font-semibold leading-snug tracking-[-0.01em] text-neutral-950 sm:text-[0.9375rem]">
             {article.headline}
           </h3>
         </div>
-        <p className="mt-1.5 line-clamp-1 text-[0.875rem] leading-relaxed text-neutral-600 sm:line-clamp-2">
+        <p className="mt-1 line-clamp-1 text-[0.8125rem] leading-snug text-neutral-600 sm:line-clamp-2">
           {article.excerpt}
         </p>
-        <div className="mt-2 hidden sm:block">
+        <div className="mt-1.5 hidden sm:block">
           <NewsMetaLine article={article} />
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2 sm:hidden">
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:hidden">
           <NewsCategoryBadge category={article.category} compact />
           <time
             dateTime={article.publishedAt}

@@ -12,6 +12,14 @@ export function isRecentNews(isoDate: string, hours = 2) {
   return Date.now() - new Date(isoDate).getTime() < hours * 3_600_000;
 }
 
+const PLACEHOLDER_GRADIENT: Record<NewsArticle["category"], string> = {
+  transfer: "from-amber-100 via-amber-50 to-orange-100",
+  "match-report": "from-emerald-100 via-emerald-50 to-teal-100",
+  preview: "from-sky-100 via-sky-50 to-cyan-100",
+  injury: "from-rose-100 via-rose-50 to-red-100",
+  analysis: "from-violet-100 via-violet-50 to-indigo-100",
+};
+
 export function NewsThumbnail({
   article,
   className,
@@ -20,16 +28,29 @@ export function NewsThumbnail({
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  const gradient = PLACEHOLDER_GRADIENT[article.category];
 
   if (failed) {
     return (
       <div
         className={cn(
-          "flex items-center justify-center bg-surface-hover text-[0.6875rem] font-semibold uppercase tracking-[0.06em] text-muted-light",
+          "relative flex items-center justify-center overflow-hidden bg-gradient-to-br",
+          gradient,
           className,
         )}
       >
-        —
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.9), transparent 55%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.35), transparent 45%)",
+          }}
+          aria-hidden
+        />
+        <span className="relative text-[1.125rem] leading-none" aria-hidden>
+          ⚽
+        </span>
+        <span className="sr-only">{article.imageAlt}</span>
       </div>
     );
   }

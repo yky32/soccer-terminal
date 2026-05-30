@@ -1,25 +1,23 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppChrome } from "@/components/app-chrome-context";
-import { NewsRowCard } from "@/components/news/news-card";
 import { NewsFeaturedGrid } from "@/components/news/news-featured-grid";
 import { NewsFilterBar, type NewsCategoryFilter } from "@/components/news/news-filter-bar";
+import { NewsLeagueRail } from "@/components/news/news-league-rail";
 import { NewsReadDrawer } from "@/components/news/news-read-drawer";
-import { NewsSidebar } from "@/components/news/news-sidebar";
+import { NewsSectionRenderer } from "@/components/news/news-sections";
 import { useNewsWireSlot } from "@/components/news/news-wire-slot-context";
-import {
-  newsEnter,
-  newsFocus,
-  newsGlass,
-  newsGlassHover,
-  newsGlassStrong,
-} from "@/components/news/news-glass";
+import { newsGlass, newsGlassStrong } from "@/components/news/news-glass";
 import type { NewsArticle } from "@/lib/data/news-article";
 import {
   buildNewsInsights,
   buildScopedCategoryCounts,
 } from "@/lib/data/news-insights";
+import {
+  buildNewsPageSections,
+  getNewsLayoutSeed,
+} from "@/lib/data/news-page-layout";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 8;
@@ -47,7 +45,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [activeArticle, setActiveArticle] = useState<NewsArticle | null>(null);
   const [isFilterStuck, setIsFilterStuck] = useState(false);
-  const [stickyFilterHeight, setStickyFilterHeight] = useState(0);
   const filterRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { setHeaderHidden } = useAppChrome();
@@ -70,19 +67,6 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
     setHeaderHidden(isFilterStuck);
     return () => setHeaderHidden(false);
   }, [isFilterStuck, setHeaderHidden]);
-
-  useLayoutEffect(() => {
-    const element = filterRef.current;
-    if (!element) return;
-
-    const update = () => setStickyFilterHeight(element.offsetHeight);
-    update();
-
-    const observer = new ResizeObserver(update);
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [selectedCategory, selectedLeague, searchQuery, isFilterStuck]);
 
   const filtered = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -113,14 +97,27 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
   const featuredSecondary = featuredLead
     ? filtered.filter((article) => article.id !== featuredLead.id).slice(0, 4)
     : [];
-  const featuredIds = new Set(
-    [featuredLead?.id, ...featuredSecondary.map((article) => article.id)].filter(
-      (id): id is string => Boolean(id),
-    ),
+  const featuredIds = useMemo(
+    () =>
+      new Set(
+        [featuredLead?.id, ...featuredSecondary.map((article) => article.id)].filter(
+          (id): id is string => Boolean(id),
+        ),
+      ),
+    [featuredLead, featuredSecondary],
   );
-  const stream = filtered.filter((article) => !featuredIds.has(article.id));
-  const visibleStream = stream.slice(0, visibleCount);
-  const breaking = articles.slice(0, 4);
+
+  const timelineSource = useMemo(
+    () => filtered.filter((article) => !featuredIds.has(article.id)),
+    [filtered, featuredIds],
+  );
+
+  const layoutSeed = useMemo(() => getNewsLayoutSeed(filtered), [filtered]);
+  const sections = useMemo(
+    () => buildNewsPageSections(filtered, featuredIds, layoutSeed),
+    [filtered, featuredIds, layoutSeed],
+  );
+
   const tickerHeadlines = useMemo(() => articles.slice(0, 6), [articles]);
 
   useEffect(() => {
@@ -183,7 +180,17 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
         </div>
       </div>
 
-      <section className="page-container pb-16 pt-8 sm:pb-24">
+      <NewsLeagueRail
+        leagues={leagues}
+        selectedLeague={selectedLeague}
+        onLeagueSelect={(league) => {
+          setSelectedLeague(league);
+          setVisibleCount(PAGE_SIZE);
+        }}
+        className="-mt-0.5"
+      />
+
+      <section className="page-container pb-12 pt-2 sm:pb-16 sm:pt-3">
         {filtered.length === 0 ? (
           <div className={cn(newsGlass, "px-6 py-16 text-center")}>
             <p className="text-[1.125rem] font-semibold text-foreground">No headlines found</p>
@@ -199,7 +206,7 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
             </button>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="min-w-0 space-y-6">
             {featuredLead ? (
               <NewsFeaturedGrid
                 lead={featuredLead}
@@ -208,68 +215,20 @@ export function NewsFeed({ articles, leagues }: NewsFeedProps) {
               />
             ) : null}
 
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
-              <div>
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="text-[1rem] font-semibold text-neutral-950">Latest</h2>
-                  <p className="text-[0.8125rem] tabular-nums text-neutral-600">
-                    Showing {visibleStream.length} of {stream.length}
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  {visibleStream.map((article, index) => (
-                    <NewsRowCard
-                      key={article.id}
-                      article={article}
-                      onSelect={setActiveArticle}
-                      style={{ animationDelay: `${index * 45}ms` }}
-                      className={newsEnter}
-                    />
-                  ))}
-                </div>
-
-                {visibleCount < stream.length ? (
-                  <button
-                    type="button"
-                    onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                    className={cn(
-                      newsGlass,
-                      newsGlassHover,
-                      newsFocus,
-                      "mt-6 w-full py-3 text-[0.9375rem] font-semibold text-foreground",
-                    )}
-                  >
-                    Load more headlines
-                  </button>
-                ) : null}
-              </div>
-
-              <NewsSidebar
-                breaking={breaking}
-                leagues={leagues}
-                selectedLeague={selectedLeague}
-                stickyTopPx={isFilterStuck ? stickyFilterHeight + 12 : undefined}
-                onLeagueSelect={(league) => {
-                  setSelectedLeague(league);
-                  setVisibleCount(PAGE_SIZE);
-                }}
-                onArticleSelect={setActiveArticle}
-                className="hidden lg:block"
+            {sections.map((section) => (
+              <NewsSectionRenderer
+                key={section.id}
+                section={section}
+                onSelect={setActiveArticle}
+                timelineSource={section.kind === "timeline" ? timelineSource : undefined}
+                latestVisibleCount={section.kind === "latest" ? visibleCount : undefined}
+                onLoadMore={
+                  section.kind === "latest"
+                    ? () => setVisibleCount((count) => count + PAGE_SIZE)
+                    : undefined
+                }
               />
-            </div>
-
-            <NewsSidebar
-              breaking={breaking}
-              leagues={leagues}
-              selectedLeague={selectedLeague}
-              onLeagueSelect={(league) => {
-                setSelectedLeague(league);
-                setVisibleCount(PAGE_SIZE);
-              }}
-              onArticleSelect={setActiveArticle}
-              className="lg:hidden"
-            />
+            ))}
           </div>
         )}
       </section>
