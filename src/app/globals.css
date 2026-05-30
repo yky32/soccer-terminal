@@ -227,9 +227,23 @@
 
 @media (prefers-reduced-motion: reduce) {
   .live-pin-ping,
-  .live-pin-heartbeat {
+  .live-pin-heartbeat,
+  .news-ticker-track {
     animation: none;
   }
+}
+
+@keyframes news-ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.news-ticker-track {
+  animation: news-ticker-scroll 40s linear infinite;
 }
 
 .dark {

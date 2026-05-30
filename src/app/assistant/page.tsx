@@ -2,7 +2,7 @@ import { FeaturePlaceholder } from "@/components/feature-placeholder";
 import { PageHeader } from "@/components/page-header";
 
 export const metadata = {
-  title: "AI Assistant",
+  title: "AI",
 };
 
 export default function AssistantPage() {
@@ -10,7 +10,7 @@ export default function AssistantPage() {
     <>
       <PageHeader
         compact
-        title="AI Assistant"
+        title="AI"
         description="Daily briefings, tactical trend analysis, and a conversational interface for football insights."
       />
       <FeaturePlaceholder

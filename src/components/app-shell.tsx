@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
 import { mainNav } from "@/lib/navigation";
 
@@ -21,11 +22,21 @@ function ChevronRight() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  return (
+    <AppChromeProvider>
+      <AppShellFrame>{children}</AppShellFrame>
+    </AppChromeProvider>
+  );
+}
+
+function AppShellFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { headerHidden } = useAppChrome();
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
+      {!headerHidden ? (
+        <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="page-container flex h-[4.25rem] items-center justify-between gap-6">
           <Logo />
 
@@ -75,7 +86,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-      </header>
+        </header>
+      ) : null}
 
       <main className="flex-1">{children}</main>
 

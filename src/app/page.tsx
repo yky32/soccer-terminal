@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { FeatureCard } from "@/components/feature-card";
 import { PageHeader } from "@/components/page-header";
 import { WorldMapPreview } from "@/components/overview/world-map-preview";
 import { mainNav } from "@/lib/navigation";
+
+export const metadata: Metadata = {
+  title: "Global",
+};
 
 const featureNav = mainNav.filter((item) => item.href !== "/");
 
@@ -10,7 +15,7 @@ export default function Home() {
     <>
       <PageHeader
         title="Monitor football everywhere."
-        description="Live matches, deep analytics, and scouting intelligence — built for analysts, coaches, and serious football professionals."
+        description="Live and upcoming matches on a global map — with news, league coverage, and AI insights when you need them."
       />
 
       <WorldMapPreview />
@@ -33,25 +38,13 @@ export default function Home() {
       </section>
 
       <section className="border-t border-border bg-surface">
-        <div className="page-container grid gap-14 py-20 sm:grid-cols-3 sm:py-24">
-          <div>
-            <p className="text-heading font-semibold">Live</p>
-            <p className="text-body mt-4 text-muted">
-              Real-time match monitoring across leagues worldwide.
-            </p>
-          </div>
-          <div>
-            <p className="text-heading font-semibold">Deep</p>
-            <p className="text-body mt-4 text-muted">
-              Analytics and scouting tools beyond consumer apps.
-            </p>
-          </div>
-          <div>
-            <p className="text-heading font-semibold">Clear</p>
-            <p className="text-body mt-4 text-muted">
-              Simple, scannable interface so you act faster.
-            </p>
-          </div>
+        <div className="page-container grid gap-14 py-20 sm:grid-cols-2 sm:py-24 lg:grid-cols-4">
+          {mainNav.map((item) => (
+            <div key={item.href}>
+              <p className="text-heading font-semibold">{item.shortLabel}</p>
+              <p className="text-body mt-4 text-muted">{item.description}</p>
+            </div>
+          ))}
         </div>
       </section>
     </>

@@ -20,12 +20,10 @@ Soccer World Monitor is a global football intelligence dashboard inspired by the
 
 The platform is designed to combine:
 
-- **Global interactive map** — live and upcoming matches on a world map, color-coded by importance and league tier, with filter layers for Youth, Women's, Top Leagues, and high-xG fixtures
-- **Analytics dashboard** — customizable multi-panel views for live matches, tactical pitch maps, player radars, team form, xG trends, and league tables
-- **Youth academies monitor** — track promising talents with performance curves, minutes played, physical data, and potential ratings *(primary focus)*
-- **Women's football hub** — dedicated coverage and insights for women's leagues worldwide
-- **Scouting intelligence** — advanced player search, side-by-side comparison, and similarity discovery
-- **AI assistant** — daily briefings, tactical trend analysis, and a conversational interface for plain-language questions
+- **Global** — live and upcoming matches on an interactive world map with country drill-down and league filters
+- **News** — football headlines, transfers, and curated stories from leagues worldwide
+- **Leagues** — standings, fixtures, and league dashboards across competitions
+- **AI** — daily briefings, tactical trend analysis, and a conversational interface for plain-language questions
 
 For the full product vision, UX philosophy, and differentiation strategy, see **[product-summary.md](./product-summary.md)**.
 
@@ -35,11 +33,10 @@ For the full product vision, UX philosophy, and differentiation strategy, see **
 
 | Audience | Use case |
 |----------|----------|
-| Scouts & talent analysts | Discover, compare, and track players globally |
-| Youth academy coaches & directors | Monitor development curves and minutes progression |
-| Women's football professionals | Dedicated league and player intelligence |
-| Tactical & data analysts | Live match context, xG, form, and tactical views |
-| Serious football enthusiasts | Deeper insight than consumer apps, cleaner than raw data platforms |
+| Analysts & coaches | Live global match context and league coverage |
+| News & media professionals | Headlines, transfers, and story tracking |
+| League operators & fans | Standings, fixtures, and competition dashboards |
+| Tactical & data analysts | AI briefings and conversational insights |
 
 ---
 
@@ -49,13 +46,10 @@ The project is in **early alpha**. The app shell, navigation, and route structur
 
 | Module | Route | Status |
 |--------|-------|--------|
-| Overview | `/` | ✅ Shell live |
-| Global Map | `/map` | 🚧 Planned |
-| Analytics Dashboard | `/dashboard` | 🚧 Planned |
-| Youth Academies | `/youth` | 🚧 Planned |
-| Women's Football | `/women` | 🚧 Planned |
-| Scouting | `/scouting` | 🚧 Planned |
-| AI Assistant | `/assistant` | 🚧 Planned |
+| Global | `/` | ✅ Map live (mock or API-Football) |
+| News | `/news` | 🚧 Planned |
+| Leagues | `/leagues` | 🚧 Planned |
+| AI | `/assistant` | 🚧 Planned |
 
 ---
 
@@ -92,7 +86,7 @@ cp .env.example .env.local
 | `API_FOOTBALL_KEY` | Key from [API-Football](https://www.api-football.com/) |
 | `FOOTBALL_DATA_PROVIDER` | Data source (`api-football`; more providers can be added) |
 
-The homepage map loads live fixtures via `GET /api/map/live-countries` (cached ~60s on the server).
+The Global map loads fixtures via `GET /api/map/live-countries` (cached ~60s on the server). Set `FOOTBALL_DATA_PROVIDER=mock` for offline development.
 
 All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request DTO** and **Response DTO** to the console by default. Set `API_HTTP_LOG=false` to turn logging off.
 
@@ -125,11 +119,8 @@ All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request D
 ```
 src/
 ├── app/              # Routes and layouts (App Router)
-│   ├── map/          # Global map
-│   ├── dashboard/    # Analytics panels
-│   ├── youth/        # Youth academies
-│   ├── women/        # Women's football
-│   ├── scouting/     # Scouting tools
+│   ├── news/         # News feed
+│   ├── leagues/      # League browser
 │   └── assistant/    # AI assistant
 ├── components/       # Shared UI components
 ├── lib/              # Utilities and config
@@ -159,11 +150,10 @@ When data sources and AI features are wired up, secrets will go in the Vercel da
 
 ## Roadmap
 
-1. **Global Map** — interactive world map with live match pins and layer filters
-2. **Dashboard** — card-based multi-panel layout with saved preferences
-3. **Youth & Women's modules** — first real data integrations and watchlists
-4. **Scouting** — search, compare, and similarity engine
-5. **AI Assistant** — daily briefings and chat interface
+1. **Global** — interactive world map with live/future match pins and country drill-down
+2. **News** — headline feed, transfers, and match-related stories
+3. **Leagues** — standings, fixtures, and league dashboards
+4. **AI** — daily briefings and chat interface
 
 ---
 
@@ -171,9 +161,9 @@ When data sources and AI features are wired up, secrets will go in the Vercel da
 
 | vs. consumer apps (e.g. FotMob) | vs. data-heavy platforms |
 |--------------------------------|--------------------------|
-| Deeper analytical depth | Cleaner, simpler UI |
-| Youth & women's football focus | Faster to scan and act on |
-| Professional scouting workflows | Uber-level simplicity |
+| Global live map with drill-down | Cleaner, simpler UI |
+| News and league coverage in one place | Faster to scan and act on |
+| AI briefings on demand | Uber-level simplicity |
 
 ---
 
