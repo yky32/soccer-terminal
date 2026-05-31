@@ -182,7 +182,7 @@ export function WorldMapPreview() {
   const showMatchPins = Boolean(showMatchColumn);
 
   return (
-    <section className="relative w-full">
+    <section id="global-map" className="relative w-full scroll-mt-[4.25rem]">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-px bg-gradient-to-r from-transparent via-sky-400/70 to-transparent"
         aria-hidden

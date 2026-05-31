@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { FeatureCard } from "@/components/feature-card";
 import { glass } from "@/components/glass-surface";
-import { PageHeader } from "@/components/page-header";
+import { GlobalPageHeader } from "@/components/overview/global-page-header";
+import { MatchMonitorSection } from "@/components/overview/match-monitor-section";
 import { WorldMapPreview } from "@/components/overview/world-map-preview";
 import { mainNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -15,14 +16,11 @@ const featureNav = mainNav.filter((item) => item.href !== "/");
 export default function Home() {
   return (
     <>
-      <PageHeader
-        compact
-        onGlass
-        title="Monitor football everywhere."
-        description="Live and upcoming matches on a global map — with news, league coverage, and AI insights when you need them."
-      />
+      <GlobalPageHeader />
 
       <WorldMapPreview />
+
+      <MatchMonitorSection />
 
       <section className="page-container pb-16 pt-16 sm:pb-24 sm:pt-20">
         <div className={cn(glass, "p-8 sm:p-10 lg:p-12")}>

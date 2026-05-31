@@ -110,10 +110,22 @@ export function PlayerHero({ player }: PlayerHeroProps) {
           </div>
         </div>
 
-        <div className="relative min-h-[140px] lg:min-h-0">
+        <div className="relative min-h-[160px] overflow-hidden bg-gradient-to-br from-emerald-200/35 via-lime-50/20 to-transparent lg:min-h-0">
+          <div
+            className="pointer-events-none absolute -right-4 top-6 h-28 w-28 rounded-full bg-emerald-300/25 blur-2xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute bottom-4 left-0 h-20 w-20 rounded-full bg-lime-300/30 blur-xl"
+            aria-hidden
+          />
           <PlayerPitchPin player={player} className="absolute inset-0" />
           <div
-            className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r from-white/90 via-white/35 to-transparent lg:from-white/82 lg:via-white/20"
+            className="pointer-events-none absolute inset-y-0 left-0 z-[2] w-12 bg-gradient-to-r from-white/85 to-transparent sm:w-16 lg:w-20"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-6 bg-gradient-to-b from-white/60 to-transparent lg:hidden"
             aria-hidden
           />
         </div>

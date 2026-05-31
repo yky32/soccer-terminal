@@ -3,6 +3,8 @@ type PageHeaderProps = {
   title: string;
   description: string;
   compact?: boolean;
+  /** Less space below — for full-bleed sections that follow immediately */
+  flush?: boolean;
   /** Stronger contrast when sitting on glass / colored backdrops */
   onGlass?: boolean;
 };
@@ -12,12 +14,17 @@ export function PageHeader({
   title,
   description,
   compact = false,
+  flush = false,
   onGlass = false,
 }: PageHeaderProps) {
+  const spacing = flush
+    ? "pt-10 pb-3 sm:pt-12 sm:pb-4"
+    : compact
+      ? "pt-10 pb-8 sm:pt-12 sm:pb-10"
+      : "pt-14 pb-10 sm:pt-20 sm:pb-14";
+
   return (
-    <header
-      className={`page-container ${compact ? "pt-10 pb-8 sm:pt-12 sm:pb-10" : "pt-14 pb-10 sm:pt-20 sm:pb-14"}`}
-    >
+    <header className={`page-container ${spacing}`}>
       {eyebrow ? (
         <p
           className={`text-label mb-4 font-medium uppercase tracking-[0.06em] ${
