@@ -1,26 +1,31 @@
-import { FeaturePlaceholder } from "@/components/feature-placeholder";
+import { buildAssistantBriefing } from "@/lib/assistant/build-briefing";
+import { enrichAssistantBriefing } from "@/lib/assistant/generate-assistant";
+import { isLlmEnabled } from "@/lib/assistant/llm";
+import { AssistantDemo } from "@/components/assistant/assistant-demo";
 import { PageHeader } from "@/components/page-header";
 
 export const metadata = {
   title: "AI",
 };
 
-export default function AssistantPage() {
+export const dynamic = "force-dynamic";
+
+export default async function AssistantPage() {
+  const briefing = await enrichAssistantBriefing(await buildAssistantBriefing());
+
   return (
     <>
       <PageHeader
         compact
         onGlass
-        title="AI"
-        description="Daily briefings, tactical trend analysis, and a conversational interface for football insights."
+        title="Your briefing."
+        description={
+          briefing.mode === "llm"
+            ? "Live map context, news pulse, and league snapshots — summarized by AI from your terminal data."
+            : "Live map context, news pulse, and league snapshots — grounded in your terminal data. Add OPENAI_API_KEY for AI summaries."
+        }
       />
-      <FeaturePlaceholder
-        milestones={[
-          "Daily briefing summary",
-          "Chat interface for plain-language questions",
-          "Tactical trend highlights",
-        ]}
-      />
+      <AssistantDemo briefing={briefing} llmConfigured={isLlmEnabled()} />
     </>
   );
 }
