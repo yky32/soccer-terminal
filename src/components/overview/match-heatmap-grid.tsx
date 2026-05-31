@@ -46,6 +46,15 @@ type HeatmapScorelineProps = {
   awayState: SideState;
 };
 
+function LeadingDot({ label }: { label: string }) {
+  return (
+    <span
+      className="h-1 w-1 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.85)]"
+      aria-label={label}
+    />
+  );
+}
+
 function HeatmapScoreline({
   homeTeam,
   awayTeam,
@@ -56,33 +65,52 @@ function HeatmapScoreline({
   homeState,
   awayState,
 }: HeatmapScorelineProps) {
+  const scoreTextClass =
+    "text-[0.8125rem] font-bold tabular-nums leading-none tracking-tight";
+
   return (
-    <div className="mt-auto flex items-center gap-1.5 pt-2">
-      <FootballLogo src={homeLogo} label={homeTeam} size="xs" />
-      <p className="flex min-w-0 flex-1 items-center justify-center gap-1 text-[0.8125rem] font-bold tabular-nums leading-none tracking-tight">
-        <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(homeState, "label"))}>
-          {teamAbbrev(homeTeam)}
-          {homeState === "leading" ? (
-            <span
-              className="h-1 w-1 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.85)]"
-              aria-label="Home leading"
-            />
-          ) : null}
-        </span>
-        <span className={scoreSideClass(homeState, "goals")}>{homeGoals}</span>
-        <span className="px-0.5 text-[0.6875rem] font-semibold opacity-55">vs</span>
-        <span className={scoreSideClass(awayState, "goals")}>{awayGoals}</span>
-        <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(awayState, "label"))}>
-          {awayState === "leading" ? (
-            <span
-              className="h-1 w-1 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.85)]"
-              aria-label="Away leading"
-            />
-          ) : null}
-          {teamAbbrev(awayTeam)}
-        </span>
-      </p>
-      <FootballLogo src={awayLogo} label={awayTeam} size="xs" />
+    <div className="mt-auto pt-2">
+      <div className="hidden items-center gap-1.5 @[9rem]:flex">
+        <FootballLogo src={homeLogo} label={homeTeam} size="xs" />
+        <p
+          className={cn(
+            "flex min-w-0 flex-1 items-center justify-center gap-1",
+            scoreTextClass,
+          )}
+        >
+          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(homeState, "label"))}>
+            {teamAbbrev(homeTeam)}
+            {homeState === "leading" ? <LeadingDot label="Home leading" /> : null}
+          </span>
+          <span className={scoreSideClass(homeState, "goals")}>{homeGoals}</span>
+          <span className="px-0.5 text-[0.6875rem] font-semibold opacity-55">vs</span>
+          <span className={scoreSideClass(awayState, "goals")}>{awayGoals}</span>
+          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(awayState, "label"))}>
+            {awayState === "leading" ? <LeadingDot label="Away leading" /> : null}
+            {teamAbbrev(awayTeam)}
+          </span>
+        </p>
+        <FootballLogo src={awayLogo} label={awayTeam} size="xs" />
+      </div>
+
+      <div className={cn("flex flex-col gap-1 @[9rem]:hidden", scoreTextClass)}>
+        <div className="flex items-center gap-1.5">
+          <FootballLogo src={homeLogo} label={homeTeam} size="xs" />
+          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(homeState, "label"))}>
+            {teamAbbrev(homeTeam)}
+            {homeState === "leading" ? <LeadingDot label="Home leading" /> : null}
+          </span>
+          <span className={cn("ml-auto", scoreSideClass(homeState, "goals"))}>{homeGoals}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <FootballLogo src={awayLogo} label={awayTeam} size="xs" />
+          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(awayState, "label"))}>
+            {teamAbbrev(awayTeam)}
+            {awayState === "leading" ? <LeadingDot label="Away leading" /> : null}
+          </span>
+          <span className={cn("ml-auto", scoreSideClass(awayState, "goals"))}>{awayGoals}</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -106,7 +134,7 @@ function MatchHeatmapCell({ item, onRemove, className, style }: MatchHeatmapCell
   return (
     <div
       className={cn(
-        "group relative flex min-h-[5.75rem] min-w-[6rem] flex-col overflow-hidden rounded-[3px] p-2.5 transition-[filter,transform] duration-200 hover:brightness-110",
+        "@container group relative flex min-h-[5.75rem] min-w-[6rem] flex-col overflow-hidden rounded-[3px] p-2.5 transition-[filter,transform] duration-200 hover:brightness-110",
         className,
       )}
       style={{ ...style, backgroundColor: palette.background, color: palette.foreground }}
