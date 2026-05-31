@@ -1,7 +1,5 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import { buildNewsInsights } from "@/lib/data/news-insights";
-import { getMockLeagues } from "@/lib/data/mock-leagues";
-import { getMockNewsArticles } from "@/lib/data/mock-news";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
 import {
   compareHeatmapOrder,
@@ -50,8 +48,8 @@ function sortLive(items: MonitoredMatch[]) {
   return [...items].sort(compareHeatmapOrder);
 }
 
-function buildTablePulse() {
-  const league = getMockLeagues().find((item) => item.id === "premier-league");
+async function buildTablePulse() {
+  const league = await getFootballDataProvider().getLeagueById("premier-league");
   if (!league?.standings?.length) return null;
 
   const top = league.standings.slice(0, 3);
@@ -63,8 +61,8 @@ function buildTablePulse() {
   return `PL: ${leader.team} lead by ${gap} pt${gap === 1 ? "" : "s"} — ${top.map((row) => `${row.rank}. ${teamAbbrev(row.team)}`).join(", ")}`;
 }
 
-function buildNewsPulse() {
-  const articles = getMockNewsArticles();
+async function buildNewsPulse() {
+  const articles = await getFootballDataProvider().getNewsArticles();
   const insights = buildNewsInsights(articles);
   const parts: string[] = [];
 
@@ -81,8 +79,9 @@ function buildNewsPulse() {
   return parts.join(" · ");
 }
 
-function buildTopHeadlines(limit = 3) {
-  return getMockNewsArticles()
+async function buildTopHeadlines(limit = 3) {
+  const articles = await getFootballDataProvider().getNewsArticles();
+  return articles
     .slice()
     .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
     .slice(0, limit)
@@ -138,8 +137,8 @@ export async function buildAssistantBriefing(): Promise<AssistantContext> {
     });
   }
 
-  const newsPulse = buildNewsPulse();
-  const topHeadlines = buildTopHeadlines();
+  const newsPulse = await buildNewsPulse();
+  const topHeadlines = await buildTopHeadlines();
   if (topHeadlines[0]) {
     bullets.push({
       id: "news-top",
@@ -149,7 +148,7 @@ export async function buildAssistantBriefing(): Promise<AssistantContext> {
     });
   }
 
-  const tablePulse = buildTablePulse();
+  const tablePulse = await buildTablePulse();
   if (tablePulse) {
     bullets.push({
       id: "table-pl",

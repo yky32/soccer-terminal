@@ -1,14 +1,16 @@
 import { NewsFeed } from "@/components/news/news-feed";
 import { PageHeader } from "@/components/page-header";
-import { getMockNewsArticles, getMockNewsLeagues } from "@/lib/data/mock-news";
+import { fetchNewsArticles, getNewsLeaguesFromArticles } from "@/lib/football/data";
 
 export const metadata = {
   title: "News",
 };
 
-export default function NewsPage() {
-  const articles = getMockNewsArticles();
-  const leagues = getMockNewsLeagues(articles);
+export const dynamic = "force-dynamic";
+
+export default async function NewsPage() {
+  const articles = await fetchNewsArticles();
+  const leagues = getNewsLeaguesFromArticles(articles);
 
   return (
     <>

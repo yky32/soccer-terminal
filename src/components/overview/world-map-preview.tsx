@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 
 const WORLD_VIEW = { center: [0, 22] as [number, number], zoom: 1.2 };
 const COUNTRY_FOCUS_ZOOM = 3.25;
-const REFRESH_MS = 60_000;
+const REFRESH_MS = 120_000;
 const SPLIT_TRANSITION_MS = 700;
 const MAP_FLY_MS = 900;
 

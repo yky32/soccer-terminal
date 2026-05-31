@@ -1,44 +1,42 @@
 import { notFound } from "next/navigation";
 import { TeamDetailPanel } from "@/components/teams/team-detail-panel";
-import { getMockLeagueById } from "@/lib/data/mock-leagues";
-import { getMockNewsArticles } from "@/lib/data/mock-news";
-import { buildTeamProfile, getTeamNewsArticles } from "@/lib/data/team-mock";
-import { findStandingBySlug, getAllTeamStaticParams } from "@/lib/team-paths";
+import { getTeamNewsArticles } from "@/lib/data/team-mock";
+import {
+  fetchNewsArticles,
+  fetchTeamProfile,
+} from "@/lib/football/data";
+
+export const dynamic = "force-dynamic";
 
 type TeamPageProps = {
   params: Promise<{ leagueId: string; teamSlug: string }>;
 };
 
-export async function generateStaticParams() {
-  return getAllTeamStaticParams();
-}
-
 export async function generateMetadata({ params }: TeamPageProps) {
   const { leagueId, teamSlug } = await params;
-  const league = getMockLeagueById(leagueId);
-  const standing = league ? findStandingBySlug(league, teamSlug) : null;
+  const team = await fetchTeamProfile(leagueId, teamSlug);
 
-  if (!league || !standing) {
+  if (!team) {
     return { title: "Team not found" };
   }
 
   return {
-    title: `${standing.team} · ${league.shortName}`,
-    description: `${standing.team} overview, table, fixtures, squad, and news in ${league.name}.`,
+    title: `${team.name} · ${team.league.shortName}`,
+    description: `${team.name} overview, table, fixtures, squad, and news in ${team.league.name}.`,
   };
 }
 
 export default async function TeamPage({ params }: TeamPageProps) {
   const { leagueId, teamSlug } = await params;
-  const league = getMockLeagueById(leagueId);
-  const standing = league ? findStandingBySlug(league, teamSlug) : null;
+  const [team, articles] = await Promise.all([
+    fetchTeamProfile(leagueId, teamSlug),
+    fetchNewsArticles(),
+  ]);
 
-  if (!league || !standing) {
+  if (!team) {
     notFound();
   }
 
-  const team = buildTeamProfile(league, standing);
-  const articles = getMockNewsArticles();
   const teamNews = getTeamNewsArticles(articles, team.name);
 
   return (

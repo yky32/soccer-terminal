@@ -2,22 +2,20 @@ import { notFound } from "next/navigation";
 import { NewsArticleDetail } from "@/components/news/news-article-detail";
 import { NewsWireBootstrap } from "@/components/news/news-wire-bootstrap";
 import {
-  getMockNewsArticleById,
-  getMockNewsArticles,
-  getRelatedMockNewsArticles,
-} from "@/lib/data/mock-news";
+  fetchNewsArticleById,
+  fetchNewsArticles,
+  fetchRelatedNewsArticles,
+} from "@/lib/football/data";
+
+export const dynamic = "force-dynamic";
 
 type NewsArticlePageProps = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateStaticParams() {
-  return getMockNewsArticles().map((article) => ({ id: article.id }));
-}
-
 export async function generateMetadata({ params }: NewsArticlePageProps) {
   const { id } = await params;
-  const article = getMockNewsArticleById(id);
+  const article = await fetchNewsArticleById(id);
 
   if (!article) {
     return { title: "Article not found" };
@@ -31,14 +29,16 @@ export async function generateMetadata({ params }: NewsArticlePageProps) {
 
 export default async function NewsArticlePage({ params }: NewsArticlePageProps) {
   const { id } = await params;
-  const article = getMockNewsArticleById(id);
+  const article = await fetchNewsArticleById(id);
 
   if (!article) {
     notFound();
   }
 
-  const related = getRelatedMockNewsArticles(article);
-  const wireHeadlines = getMockNewsArticles();
+  const [related, wireHeadlines] = await Promise.all([
+    fetchRelatedNewsArticles(article),
+    fetchNewsArticles(),
+  ]);
 
   return (
     <>

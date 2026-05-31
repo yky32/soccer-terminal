@@ -7,7 +7,7 @@ import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchHeatmapGrid } from "@/components/overview/match-heatmap-grid";
 import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
 import type { LiveMatch } from "@/lib/data/live-match";
-import type { LiveCountriesResponse } from "@/lib/data/live-match-countries";
+import type { LiveCountriesBothResponse } from "@/lib/data/live-match-countries";
 import {
   bulkAddToWatchlist,
   countAddableMatches,
@@ -29,7 +29,7 @@ import {
 import { apiRequest } from "@/lib/http/api-client";
 import { cn } from "@/lib/utils";
 
-const REFRESH_MS = 60_000;
+const REFRESH_MS = 120_000;
 
 function QuickAddButton({
   icon: Icon,
@@ -177,33 +177,23 @@ export function MatchMonitorSection() {
   const loadCatalog = useCallback(async () => {
     try {
       setLoading(true);
-      const [liveRes, futureRes] = await Promise.all([
-        apiRequest<LiveCountriesResponse>({
-          scope: "client",
-          provider: "internal",
-          method: "GET",
-          url: "/api/map/live-countries",
-          query: { mode: "live" },
-        }),
-        apiRequest<LiveCountriesResponse>({
-          scope: "client",
-          provider: "internal",
-          method: "GET",
-          url: "/api/map/live-countries",
-          query: { mode: "future" },
-        }),
-      ]);
+      const { data } = await apiRequest<LiveCountriesBothResponse>({
+        scope: "client",
+        provider: "internal",
+        method: "GET",
+        url: "/api/map/live-countries",
+        query: { mode: "both" },
+      });
 
-      if (liveRes.data.error) throw new Error(liveRes.data.error);
-      if (futureRes.data.error) throw new Error(futureRes.data.error);
+      if (data.error) throw new Error(data.error);
 
       setCatalog(
         flattenMapMatches(
-          liveRes.data.matchesByCountry ?? {},
-          futureRes.data.matchesByCountry ?? {},
+          data.live.matchesByCountry ?? {},
+          data.future.matchesByCountry ?? {},
         ),
       );
-      setUpdatedAt(liveRes.data.updatedAt ?? futureRes.data.updatedAt ?? null);
+      setUpdatedAt(data.live.updatedAt ?? data.future.updatedAt ?? null);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load matches");

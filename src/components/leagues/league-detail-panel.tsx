@@ -45,7 +45,10 @@ export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) 
     setTab("overview");
   }, [league.id]);
 
-  const leagueBoards = useMemo(() => buildLeagueLeaderBoards(league), [league]);
+  const leagueBoards = useMemo(
+    () => league.leaderBoards ?? buildLeagueLeaderBoards(league),
+    [league],
+  );
   const seasons = useMemo(() => buildLeagueSeasons(league), [league]);
   const newsLabel = getLeagueNewsLabel(league);
   const leagueNews = useMemo(

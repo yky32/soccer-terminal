@@ -1,19 +1,19 @@
 import { notFound } from "next/navigation";
 import { PlayerDetailPanel } from "@/components/players/player-detail-panel";
-import { buildPlayerProfile } from "@/lib/data/player-mock";
-import { findPlayerBySlug, getAllPlayerStaticParams } from "@/lib/player-paths";
+import {
+  fetchPlayerProfile,
+  findPlayerBySlug,
+} from "@/lib/football/data";
+
+export const dynamic = "force-dynamic";
 
 type PlayerPageProps = {
   params: Promise<{ leagueId: string; playerSlug: string }>;
 };
 
-export async function generateStaticParams() {
-  return getAllPlayerStaticParams();
-}
-
 export async function generateMetadata({ params }: PlayerPageProps) {
   const { leagueId, playerSlug } = await params;
-  const match = findPlayerBySlug(leagueId, playerSlug);
+  const match = await findPlayerBySlug(leagueId, playerSlug);
 
   if (!match) {
     return { title: "Player not found" };
@@ -27,13 +27,13 @@ export async function generateMetadata({ params }: PlayerPageProps) {
 
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const { leagueId, playerSlug } = await params;
-  const match = findPlayerBySlug(leagueId, playerSlug);
+  const match = await findPlayerBySlug(leagueId, playerSlug);
 
   if (!match) {
     notFound();
   }
 
-  const player = buildPlayerProfile(match.league, match.standing, match.slot);
+  const player = await fetchPlayerProfile(match);
 
   return (
     <div className="page-container pb-14 pt-6 sm:pb-16 sm:pt-8">

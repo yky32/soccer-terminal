@@ -8,6 +8,8 @@ export type LeagueStandingRow = {
   rank: number;
   team: string;
   teamLogo: string | null;
+  /** API-Football team id — used for squad/fixture lookups */
+  teamId?: number;
   played: number;
   won: number;
   drawn: number;
@@ -86,6 +88,8 @@ export type LeagueProfile = {
   liveMatches: number;
   standings: LeagueStandingRow[];
   fixtures: LeagueFixture[];
+  /** Populated from API topscorers / assists when available */
+  leaderBoards?: LeagueLeaderBoards;
 };
 
 export const LEAGUE_REGION_LABELS: Record<LeagueRegion | "all", string> = {

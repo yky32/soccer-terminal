@@ -1,15 +1,13 @@
 import { LeaguesFeed } from "@/components/leagues/leagues-feed";
 import { PageHeader } from "@/components/page-header";
-import { getMockLeagues } from "@/lib/data/mock-leagues";
-import { getMockNewsArticles } from "@/lib/data/mock-news";
+import { fetchLeagues, fetchNewsArticles } from "@/lib/football/data";
 
 export const metadata = {
   title: "Leagues",
 };
 
-export default function LeaguesPage() {
-  const leagues = getMockLeagues();
-  const articles = getMockNewsArticles();
+export default async function LeaguesPage() {
+  const [leagues, articles] = await Promise.all([fetchLeagues(), fetchNewsArticles()]);
 
   return (
     <>

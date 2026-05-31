@@ -22,6 +22,12 @@ export type LiveCountriesResponse = {
   error?: string;
 };
 
+export type LiveCountriesBothResponse = {
+  live: LiveCountriesResponse;
+  future: LiveCountriesResponse;
+  error?: string;
+};
+
 export function getLiveMatchStats(countries: CountryMatchActivity[]) {
   const active = countries.filter((c) => c.liveMatches > 0);
   const totalMatches = active.reduce((sum, c) => sum + c.liveMatches, 0);

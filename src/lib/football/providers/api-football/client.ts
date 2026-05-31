@@ -7,6 +7,11 @@ import { enrichMatchesWithLocations } from "@/lib/football/enrich-match-location
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { buildLiveFixturesSnapshot } from "@/lib/football/providers/api-football/normalize-fixtures";
 import { enrichMatchesWithEvents } from "@/lib/football/providers/api-football/enrich-fixture-events";
+import {
+  assertNoApiErrors,
+  isRateLimitError,
+} from "@/lib/football/providers/api-football/errors";
+import { getCachedMapSnapshot } from "@/lib/football/providers/api-football/snapshot-cache";
 import type {
   ApiFootballLiveFixture,
   ApiFootballLiveResponse,
@@ -16,32 +21,15 @@ const API_BASE = "https://v3.football.api-sports.io";
 const FUTURE_DAYS = 7;
 const UPCOMING_STATUSES = new Set(["NS", "TBD"]);
 
-function assertNoApiErrors(data: ApiFootballLiveResponse) {
-  if (Array.isArray(data.errors) && data.errors.length > 0) {
-    throw new Error("API-Football returned errors for fixtures");
-  }
+function upcomingDateRange(days: number) {
+  const from = new Date();
+  const to = new Date();
+  to.setUTCDate(to.getUTCDate() + days - 1);
 
-  if (
-    data.errors &&
-    typeof data.errors === "object" &&
-    !Array.isArray(data.errors) &&
-    Object.keys(data.errors).length > 0
-  ) {
-    const message = Object.values(data.errors).join("; ");
-    throw new Error(message || "API-Football returned errors");
-  }
-}
-
-function upcomingDates(days: number) {
-  const dates: string[] = [];
-
-  for (let offset = 0; offset < days; offset += 1) {
-    const date = new Date();
-    date.setUTCDate(date.getUTCDate() + offset);
-    dates.push(date.toISOString().slice(0, 10));
-  }
-
-  return dates;
+  return {
+    from: from.toISOString().slice(0, 10),
+    to: to.toISOString().slice(0, 10),
+  };
 }
 
 function isUpcomingFixture(fixture: ApiFootballLiveFixture) {
@@ -51,16 +39,18 @@ function isUpcomingFixture(fixture: ApiFootballLiveFixture) {
   return Date.parse(fixture.fixture.date) >= Date.now() - 60_000;
 }
 
-async function fetchFixturesByDate(
+async function fetchUpcomingFixtures(
   apiKey: string,
-  date: string,
+  days: number,
 ): Promise<ApiFootballLiveFixture[]> {
+  const range = upcomingDateRange(days);
+
   const { data } = await apiRequest<ApiFootballLiveResponse>({
     scope: "server",
     provider: "api-football",
     method: "GET",
     url: `${API_BASE}/fixtures`,
-    query: { date },
+    query: range,
     headers: {
       "x-apisports-key": apiKey,
     },
@@ -81,7 +71,11 @@ async function buildSnapshot(
   let matchesByCountry = snapshot.matchesByCountry;
 
   if (withEvents) {
-    matchesByCountry = await enrichMatchesWithEvents(matchesByCountry, apiKey);
+    try {
+      matchesByCountry = await enrichMatchesWithEvents(matchesByCountry, apiKey);
+    } catch (error) {
+      if (!isRateLimitError(error)) throw error;
+    }
   }
 
   matchesByCountry = await enrichMatchesWithLocations(matchesByCountry);
@@ -95,46 +89,101 @@ async function buildSnapshot(
   };
 }
 
+async function fetchLiveSnapshot(
+  apiKey: string,
+  mode: MapMatchMode,
+): Promise<LiveCountriesSnapshot> {
+  const { data } = await apiRequest<ApiFootballLiveResponse>({
+    scope: "server",
+    provider: "api-football",
+    method: "GET",
+    url: `${API_BASE}/fixtures`,
+    query: { live: "all" },
+    headers: {
+      "x-apisports-key": apiKey,
+    },
+    next: { revalidate: 60 },
+  });
+
+  assertNoApiErrors(data);
+  return buildSnapshot(apiKey, mode, data.response ?? [], true);
+}
+
+async function fetchFutureSnapshot(
+  apiKey: string,
+  mode: MapMatchMode,
+): Promise<LiveCountriesSnapshot> {
+  const fixtures = await fetchUpcomingFixtures(apiKey, FUTURE_DAYS);
+
+  const seen = new Set<number>();
+  const upcoming: ApiFootballLiveFixture[] = [];
+
+  for (const fixture of fixtures) {
+    if (!isUpcomingFixture(fixture)) continue;
+    if (seen.has(fixture.fixture.id)) continue;
+    seen.add(fixture.fixture.id);
+    upcoming.push(fixture);
+  }
+
+  return buildSnapshot(apiKey, mode, upcoming);
+}
+
 export function createApiFootballProvider(apiKey: string): FootballDataProvider {
   return {
     id: "api-football",
 
     async getMapCountries(mode: MapMatchMode): Promise<LiveCountriesSnapshot> {
-      if (mode === "live") {
-        const { data } = await apiRequest<ApiFootballLiveResponse>({
-          scope: "server",
-          provider: "api-football",
-          method: "GET",
-          url: `${API_BASE}/fixtures`,
-          query: { live: "all" },
-          headers: {
-            "x-apisports-key": apiKey,
-          },
-          next: { revalidate: 60 },
-        });
-
-        assertNoApiErrors(data);
-        return buildSnapshot(apiKey, mode, data.response ?? [], true);
-      }
-
-      const dates = upcomingDates(FUTURE_DAYS);
-      const batches = await Promise.all(
-        dates.map((date) => fetchFixturesByDate(apiKey, date)),
+      return getCachedMapSnapshot(mode, () =>
+        mode === "live"
+          ? fetchLiveSnapshot(apiKey, mode)
+          : fetchFutureSnapshot(apiKey, mode),
       );
+    },
 
-      const seen = new Set<number>();
-      const fixtures: ApiFootballLiveFixture[] = [];
+    async getLeagues() {
+      const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+      const { fetchAllLeagueProfiles } = await import(
+        "@/lib/football/providers/api-football/fetch-league-profile"
+      );
+      return fetchAllLeagueProfiles(apiKey, LEAGUE_CATALOG);
+    },
 
-      for (const batch of batches) {
-        for (const fixture of batch) {
-          if (!isUpcomingFixture(fixture)) continue;
-          if (seen.has(fixture.fixture.id)) continue;
-          seen.add(fixture.fixture.id);
-          fixtures.push(fixture);
-        }
-      }
+    async getLeagueById(id) {
+      const { getCatalogEntryById } = await import("@/lib/football/league-catalog");
+      const { fetchLeagueProfile } = await import(
+        "@/lib/football/providers/api-football/fetch-league-profile"
+      );
+      const entry = getCatalogEntryById(id);
+      if (!entry) return null;
+      return fetchLeagueProfile(apiKey, entry);
+    },
 
-      return buildSnapshot(apiKey, mode, fixtures);
+    async getTeamProfile(leagueId, teamSlug) {
+      const { fetchTeamProfile } = await import(
+        "@/lib/football/providers/api-football/fetch-team-profile"
+      );
+      return fetchTeamProfile(apiKey, leagueId, teamSlug);
+    },
+
+    async findPlayerBySlug(leagueId, playerSlug) {
+      const { findPlayerBySlug } = await import(
+        "@/lib/football/providers/api-football/fetch-player-profile"
+      );
+      return findPlayerBySlug(apiKey, leagueId, playerSlug);
+    },
+
+    async getPlayerProfile(match) {
+      const { fetchPlayerProfile } = await import(
+        "@/lib/football/providers/api-football/fetch-player-profile"
+      );
+      return fetchPlayerProfile(apiKey, match);
+    },
+
+    async getNewsArticles() {
+      const { fetchNewsArticles } = await import(
+        "@/lib/football/providers/api-football/fetch-news"
+      );
+      return fetchNewsArticles(apiKey);
     },
   };
 }
