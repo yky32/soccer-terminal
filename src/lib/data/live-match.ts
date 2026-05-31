@@ -1,3 +1,13 @@
+export type MatchEventType = "goal" | "yellow" | "red";
+
+export type MatchLiveEvent = {
+  minute: number;
+  extraMinute?: number | null;
+  type: MatchEventType;
+  team: "home" | "away";
+  detail?: string | null;
+};
+
 export type LiveMatch = {
   id: number;
   homeTeam: string;
@@ -22,4 +32,5 @@ export type LiveMatch = {
   longitude: number | null;
   halftimeHome: number | null;
   halftimeAway: number | null;
+  events: MatchLiveEvent[];
 };

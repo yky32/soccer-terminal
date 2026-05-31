@@ -1,4 +1,4 @@
-import type { LiveMatch } from "@/lib/data/live-match";
+import type { LiveMatch, MatchLiveEvent } from "@/lib/data/live-match";
 
 const LOGO = {
   sydney: "https://media.api-sports.io/football/teams/3773.png",
@@ -61,8 +61,10 @@ function hoursFromNow(hours: number) {
   return new Date(Date.now() + hours * 3_600_000).toISOString();
 }
 
-function liveMatch(partial: LiveMatch): LiveMatch {
-  return partial;
+function liveMatch(
+  partial: Omit<LiveMatch, "events"> & { events?: MatchLiveEvent[] },
+): LiveMatch {
+  return { events: [], ...partial };
 }
 
 /** Static mock live fixtures for offline / API-free development */
@@ -91,6 +93,7 @@ export const MOCK_LIVE_MATCHES: LiveMatch[] = [
     longitude: 151.14,
     halftimeHome: null,
     halftimeAway: null,
+    events: [{ minute: 32, type: "goal", team: "away", detail: "Normal Goal" }],
   }),
   liveMatch({
     id: 900002,
@@ -116,6 +119,11 @@ export const MOCK_LIVE_MATCHES: LiveMatch[] = [
     longitude: 144.96,
     halftimeHome: 0,
     halftimeAway: 1,
+    events: [
+      { minute: 28, type: "goal", team: "away", detail: "Normal Goal" },
+      { minute: 54, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 61, type: "yellow", team: "away", detail: "Yellow Card" },
+    ],
   }),
   liveMatch({
     id: 900003,
@@ -191,6 +199,12 @@ export const MOCK_LIVE_MATCHES: LiveMatch[] = [
     longitude: -0.108,
     halftimeHome: 1,
     halftimeAway: 0,
+    events: [
+      { minute: 19, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 44, type: "yellow", team: "away", detail: "Yellow Card" },
+      { minute: 63, type: "goal", team: "away", detail: "Normal Goal" },
+      { minute: 74, type: "goal", team: "home", detail: "Normal Goal" },
+    ],
   }),
   liveMatch({
     id: 900006,
@@ -216,6 +230,11 @@ export const MOCK_LIVE_MATCHES: LiveMatch[] = [
     longitude: -2.96,
     halftimeHome: 0,
     halftimeAway: 1,
+    events: [
+      { minute: 37, type: "goal", team: "away", detail: "Normal Goal" },
+      { minute: 52, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 55, type: "goal", team: "away", detail: "Normal Goal" },
+    ],
   }),
   liveMatch({
     id: 900007,
@@ -291,6 +310,14 @@ export const MOCK_LIVE_MATCHES: LiveMatch[] = [
     longitude: 11.62,
     halftimeHome: 2,
     halftimeAway: 1,
+    events: [
+      { minute: 11, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 24, type: "goal", team: "away", detail: "Normal Goal" },
+      { minute: 38, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 41, type: "yellow", team: "away", detail: "Yellow Card" },
+      { minute: 58, type: "goal", team: "home", detail: "Normal Goal" },
+      { minute: 69, type: "goal", team: "away", detail: "Normal Goal" },
+    ],
   }),
   liveMatch({
     id: 900010,

@@ -416,6 +416,24 @@
   .pitch-pin-bob {
     animation: pitch-pin-bob 2.6s ease-in-out infinite;
   }
+
+  .heatmap-event-line-enter {
+    animation: heatmap-event-line-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .heatmap-event-lyrics-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  }
+
+  .heatmap-event-lyrics-scroll::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .heatmap-event-lyrics-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+  }
 }
 
 @keyframes live-pin-ping {
@@ -478,11 +496,23 @@
   }
 }
 
+@keyframes heatmap-event-line-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .live-pin-ping,
   .live-pin-heartbeat,
   .pitch-pin-enter,
   .pitch-pin-bob,
+  .heatmap-event-line-enter,
   .news-ticker-track,
   .news-wire-badge__ping,
   .news-enter,

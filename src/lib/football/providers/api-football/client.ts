@@ -6,6 +6,7 @@ import type {
 import { enrichMatchesWithLocations } from "@/lib/football/enrich-match-locations";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { buildLiveFixturesSnapshot } from "@/lib/football/providers/api-football/normalize-fixtures";
+import { enrichMatchesWithEvents } from "@/lib/football/providers/api-football/enrich-fixture-events";
 import type {
   ApiFootballLiveFixture,
   ApiFootballLiveResponse,
@@ -74,9 +75,16 @@ async function buildSnapshot(
   apiKey: string,
   mode: MapMatchMode,
   fixtures: ApiFootballLiveFixture[],
+  withEvents = false,
 ): Promise<LiveCountriesSnapshot> {
   const snapshot = buildLiveFixturesSnapshot(fixtures);
-  const matchesByCountry = await enrichMatchesWithLocations(snapshot.matchesByCountry);
+  let matchesByCountry = snapshot.matchesByCountry;
+
+  if (withEvents) {
+    matchesByCountry = await enrichMatchesWithEvents(matchesByCountry, apiKey);
+  }
+
+  matchesByCountry = await enrichMatchesWithLocations(matchesByCountry);
 
   return {
     mode,
@@ -106,7 +114,7 @@ export function createApiFootballProvider(apiKey: string): FootballDataProvider 
         });
 
         assertNoApiErrors(data);
-        return buildSnapshot(apiKey, mode, data.response ?? []);
+        return buildSnapshot(apiKey, mode, data.response ?? [], true);
       }
 
       const dates = upcomingDates(FUTURE_DAYS);

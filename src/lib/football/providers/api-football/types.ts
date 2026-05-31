@@ -1,3 +1,26 @@
+export type ApiFootballFixtureEvent = {
+  time: {
+    elapsed: number;
+    extra: number | null;
+  };
+  team: {
+    id: number;
+    name: string;
+    logo?: string | null;
+  };
+  player: {
+    id: number | null;
+    name: string | null;
+  };
+  assist: {
+    id: number | null;
+    name: string | null;
+  };
+  type: string;
+  detail: string;
+  comments?: string | null;
+};
+
 export type ApiFootballLiveFixture = {
   fixture: {
     id: number;
@@ -35,6 +58,7 @@ export type ApiFootballLiveFixture = {
       away: number | null;
     };
   };
+  events?: ApiFootballFixtureEvent[];
 };
 
 export type ApiFootballLiveResponse = {

@@ -1,18 +1,24 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import {
   groupMatchesByLeague,
   isMatchLive,
+  matchEventGlyph,
+  matchEventLineLabel,
+  matchEventStrip,
   matchHeatStyle,
   matchHeatWeight,
   matchMinuteLabel,
+  matchMonitorInsight,
   matchSideState,
   teamAbbrev,
   type MonitoredMatch,
 } from "@/lib/match-monitor";
+import type { LiveMatch } from "@/lib/data/live-match";
 import { cn } from "@/lib/utils";
 
 type MatchHeatmapGridProps = {
@@ -115,6 +121,82 @@ function HeatmapScoreline({
   );
 }
 
+function HeatmapInsight({ match }: { match: LiveMatch }) {
+  const insight = matchMonitorInsight(match);
+  if (!insight) return null;
+
+  return (
+    <p className="max-w-full truncate text-center text-[0.625rem] font-medium leading-tight tracking-[0.02em] text-white/70">
+      <span>{insight.lead}</span>
+      {insight.tail ? (
+        <>
+          <span className="text-white/35"> · </span>
+          <span className="text-white/82">{insight.tail}</span>
+        </>
+      ) : null}
+    </p>
+  );
+}
+
+function eventLyricsRowClass(total: number, index: number) {
+  const distanceFromLatest = total - 1 - index;
+
+  if (distanceFromLatest === 0) return "text-[0.6875rem] text-white/92";
+  if (distanceFromLatest === 1) return "text-[0.625rem] text-white/58";
+  if (distanceFromLatest === 2) return "text-[0.625rem] text-white/42";
+  return "text-[0.625rem] text-white/34";
+}
+
+function HeatmapEventLyrics({ match }: { match: LiveMatch }) {
+  const events = matchEventStrip(match, 10);
+  const latestRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    latestRef.current?.scrollIntoView({ block: "end", behavior: reduced ? "auto" : "smooth" });
+  }, [events.length, match.id]);
+
+  if (events.length === 0) return null;
+
+  return (
+    <div className="heatmap-event-lyrics-scroll max-h-[4.625rem] w-full overflow-y-auto overscroll-contain px-1 py-0.5">
+      <div className="flex flex-col items-center gap-0.5">
+        {events.map((event, index) => (
+          <p
+            key={`${event.minute}-${event.type}-${event.team}-${index}`}
+            ref={index === events.length - 1 ? latestRef : undefined}
+            className={cn(
+              "inline-flex max-w-full shrink-0 items-center justify-center gap-1 truncate font-medium leading-none tracking-[0.01em]",
+              eventLyricsRowClass(events.length, index),
+            )}
+          >
+            <span className="shrink-0 text-[0.5625rem] leading-none" aria-hidden>
+              {matchEventGlyph(event.type, event.detail)}
+            </span>
+            <span className="truncate">{matchEventLineLabel(event, match)}</span>
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HeatmapMiddleBand({ match }: { match: LiveMatch }) {
+  const hasEvents = match.events.length > 0;
+  const insight = matchMonitorInsight(match);
+
+  if (!hasEvents && !insight) {
+    return <div className="min-h-0 flex-1" aria-hidden />;
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-0.5 py-0.5">
+      {hasEvents ? <HeatmapEventLyrics match={match} /> : null}
+      {insight && !hasEvents ? <HeatmapInsight match={match} /> : null}
+    </div>
+  );
+}
+
 type MatchHeatmapCellProps = {
   item: MonitoredMatch;
   onRemove: (matchId: number) => void;
@@ -166,6 +248,8 @@ function MatchHeatmapCell({ item, onRemove, className, style }: MatchHeatmapCell
           ) : null}
         </div>
       </div>
+
+      <HeatmapMiddleBand match={match} />
 
       <HeatmapScoreline
         homeTeam={match.homeTeam}

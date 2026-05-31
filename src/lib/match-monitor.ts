@@ -1,4 +1,4 @@
-import type { LiveMatch } from "@/lib/data/live-match";
+import type { LiveMatch, MatchLiveEvent, MatchEventType } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 
 export type MonitoredMatch = {
@@ -233,6 +233,124 @@ export function matchMinuteLabel(match: LiveMatch) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export type MatchMonitorInsight = {
+  lead: string;
+  tail?: string;
+};
+
+function shortenLeagueRound(round: string) {
+  const matchday = round.match(/(\d+)\s*$/);
+  if (/regular/i.test(round) && matchday) {
+    return `MD ${matchday[1]}`;
+  }
+
+  const dash = round.split(" - ").pop()?.trim();
+  if (dash && dash.length <= 20) return dash;
+
+  return round.length > 20 ? `${round.slice(0, 18)}…` : round;
+}
+
+function kickoffCountdownLabel(kickoffAt: string, now = Date.now()) {
+  const ms = new Date(kickoffAt).getTime() - now;
+  if (ms <= 0) return "Starting soon";
+  if (ms >= 24 * 3_600_000) return null;
+
+  const hours = Math.floor(ms / 3_600_000);
+  const minutes = Math.floor((ms % 3_600_000) / 60_000);
+
+  if (hours > 0) return `In ${hours}h ${minutes}m`;
+  if (minutes > 0) return `In ${minutes}m`;
+  return "Starting soon";
+}
+
+/** One-line context for the heatmap tile middle band — live HT delta, countdown, venue, etc. */
+export function matchMonitorInsight(match: LiveMatch, now = Date.now()): MatchMonitorInsight | null {
+  if (isMatchLive(match)) {
+    if (match.halftimeHome !== null && match.halftimeAway !== null) {
+      const htScore = `${match.halftimeHome}–${match.halftimeAway}`;
+      const secondHalfGoals =
+        match.homeGoals + match.awayGoals - (match.halftimeHome + match.halftimeAway);
+
+      if (match.statusShort === "HT") {
+        return { lead: `HT ${htScore}` };
+      }
+
+      const pastHalf = ["2H", "ET", "BT", "P"].includes(match.statusShort);
+      const elapsedPastHalf = match.elapsed !== null && match.elapsed > 45;
+
+      if (pastHalf || elapsedPastHalf) {
+        if (secondHalfGoals > 0) {
+          return { lead: `HT ${htScore}`, tail: `+${secondHalfGoals} since HT` };
+        }
+        return { lead: `HT ${htScore}` };
+      }
+    }
+
+    const totalGoals = match.homeGoals + match.awayGoals;
+    if (totalGoals >= 3) {
+      return { lead: `${totalGoals} goals` };
+    }
+
+    if (match.venueCity) {
+      return { lead: match.venueCity };
+    }
+
+    return null;
+  }
+
+  if (match.kickoffAt) {
+    const countdown = kickoffCountdownLabel(match.kickoffAt, now);
+    if (countdown) {
+      return { lead: countdown };
+    }
+  }
+
+  if (match.leagueRound) {
+    return { lead: shortenLeagueRound(match.leagueRound) };
+  }
+
+  if (match.venueCity) {
+    return { lead: match.venueCity };
+  }
+
+  return null;
+}
+
+export function matchEventMinuteLabel(event: MatchLiveEvent) {
+  if (event.extraMinute) {
+    return `${event.minute}+${event.extraMinute}`;
+  }
+  return `${event.minute}`;
+}
+
+export function matchEventStrip(match: LiveMatch, limit = 10): MatchLiveEvent[] {
+  if (!match.events.length) return [];
+  return match.events.slice(-limit);
+}
+
+export function matchEventLineLabel(
+  event: MatchLiveEvent,
+  match: Pick<LiveMatch, "homeTeam" | "awayTeam">,
+): string {
+  const team = event.team === "home" ? teamAbbrev(match.homeTeam) : teamAbbrev(match.awayTeam);
+  const minute = matchEventMinuteLabel(event);
+
+  if (event.type === "goal") {
+    if (event.detail === "Own Goal") return `${team} own goal · ${minute}'`;
+    return `${team} goal · ${minute}'`;
+  }
+
+  if (event.type === "yellow") return `${team} yellow · ${minute}'`;
+  return `${team} red · ${minute}'`;
+}
+
+export function matchEventGlyph(type: MatchEventType, detail?: string | null) {
+  if (type === "goal" && detail === "Own Goal") return "⚽";
+  if (type === "goal") return "⚽";
+  if (type === "yellow") return "🟨";
+  return "🟥";
 }
 
 export function readWatchlistIds(): number[] {
