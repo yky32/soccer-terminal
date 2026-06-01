@@ -23,6 +23,10 @@ import type { NewsArticle } from "@/lib/data/news-article";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { FEATURED_LEAGUE_ID } from "@/lib/football/league-catalog";
 import {
+  isLoadedLeagueProfile,
+  isValidCachedLeagueProfile,
+} from "@/lib/football/league-profile-cache";
+import {
   readCachedLeagueProfile,
   writeCachedLeagueProfile,
 } from "@/lib/football/local-league-cache";
@@ -41,10 +45,6 @@ type NewsApiResponse = {
   articles: NewsArticle[];
   error?: string;
 };
-
-function isLeagueLoaded(league: LeagueProfile | undefined) {
-  return Boolean(league && league.standings.length > 0);
-}
 
 const REGIONS: (LeagueRegion | "all")[] = [
   "all",
@@ -104,7 +104,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
     const cached = readCachedLeagueProfile(leagueId);
     const cachedFresh = cached ? Date.now() - cached.cachedAt < LEAGUE_LOCAL_TTL_MS : false;
 
-    if (cached && isLeagueLoaded(cached.profile)) {
+    if (cached && isValidCachedLeagueProfile(cached.profile)) {
       // Instant render from local cache.
       setProfiles((current) => ({ ...current, [leagueId]: cached.profile }));
       loadedRef.current.add(leagueId);
@@ -124,7 +124,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
         url: `/api/leagues/${leagueId}`,
       });
 
-      if (data.error || !isLeagueLoaded(data)) return;
+      if (data.error || !isValidCachedLeagueProfile(data)) return;
 
       loadedRef.current.add(leagueId);
       setProfiles((current) => ({ ...current, [leagueId]: data }));
@@ -148,7 +148,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
   }, [selectedId, loadLeague]);
 
   useEffect(() => {
-    if (initialLeague && isLeagueLoaded(initialLeague)) {
+    if (initialLeague && isValidCachedLeagueProfile(initialLeague)) {
       writeCachedLeagueProfile(initialLeague.id, initialLeague);
     }
   }, [initialLeague]);
@@ -273,7 +273,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
               <LeagueDetailPanel
                 league={selected}
                 articles={articles}
-                loading={loadingId === selected.id && !isLeagueLoaded(selected)}
+                loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
               />
             </div>
           ) : null}

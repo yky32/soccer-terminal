@@ -1,15 +1,20 @@
 import type { LeagueLeaderBoards, LeagueProfile } from "@/lib/data/league-profile";
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import { seasonYearForEntry } from "@/lib/football/league-catalog";
+import { finalizeApiLeaderBoards } from "@/lib/data/league-stats";
 import {
   buildLeagueShell,
   normalizeFixture,
+  normalizeLeaderBoards,
   normalizeStandingRow,
   teamWinRatesFromStandings,
   type ApiFootballStandingsBlock,
+  type ApiFootballTopPlayer,
 } from "@/lib/football/providers/api-football/normalize-catalog";
+import { fetchLeagueSeasonHistory } from "@/lib/football/providers/api-football/fetch-league-seasons";
 import { getLeagueProfileCached, primeLeagueCache } from "@/lib/football/providers/api-football/league-cache";
 import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
+import { API_REVALIDATE_DEFAULT_SEC } from "@/lib/football/refresh-policy";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
 function parseMatchday(round: string | null | undefined) {
@@ -18,9 +23,46 @@ function parseMatchday(round: string | null | undefined) {
   return match ? Number.parseInt(match[0], 10) : 0;
 }
 
-function leaderBoardsFromStandings(standings: LeagueProfile["standings"]): LeagueLeaderBoards {
+function emptyLeaderBoards(): LeagueLeaderBoards {
   return {
     players: { rating: [], goals: [], assists: [], fouls: [] },
+    teamWinRates: [],
+  };
+}
+
+async function fetchLeaderBoardsFromApi(
+  apiKey: string,
+  entry: LeagueCatalogEntry,
+  season: number,
+  standings: LeagueProfile["standings"],
+): Promise<LeagueLeaderBoards> {
+  const query = { league: entry.apiId, season };
+
+  const [topscorers, topassists] = await Promise.all([
+    apiFootballGetSafe<ApiFootballTopPlayer>(
+      apiKey,
+      "/players/topscorers",
+      query,
+      API_REVALIDATE_DEFAULT_SEC,
+    ),
+    apiFootballGetSafe<ApiFootballTopPlayer>(
+      apiKey,
+      "/players/topassists",
+      query,
+      API_REVALIDATE_DEFAULT_SEC,
+    ),
+  ]);
+
+  if (topscorers.length === 0 && topassists.length === 0) {
+    return {
+      ...emptyLeaderBoards(),
+      teamWinRates: teamWinRatesFromStandings(standings),
+    };
+  }
+
+  const boards = normalizeLeaderBoards(topscorers, topassists);
+  return {
+    ...boards,
     teamWinRates: teamWinRatesFromStandings(standings),
   };
 }
@@ -49,7 +91,8 @@ async function fetchLeagueProfileUncached(
       liveMatches: 0,
       standings: [],
       fixtures: [],
-      leaderBoards: leaderBoardsFromStandings([]),
+      leaderBoards: emptyLeaderBoards(),
+      seasonHistory: [],
     };
   }
 
@@ -69,6 +112,22 @@ async function fetchLeagueProfileUncached(
   ).length;
 
   const matchday = parseMatchday(upcoming[0]?.league.round);
+  const leaderBoards = await fetchLeaderBoardsFromApi(apiKey, entry, season, standings);
+
+  const champion = standings.find((row) => row.rank === 1) ?? standings[0];
+  const topGoalscorer = leaderBoards.players.goals[0];
+
+  const seasonHistory = await fetchLeagueSeasonHistory(
+    apiKey,
+    entry,
+    season,
+    champion
+      ? { team: champion.team, logo: champion.teamLogo }
+      : null,
+    topGoalscorer
+      ? { name: topGoalscorer.playerName, goals: topGoalscorer.value }
+      : null,
+  );
 
   return {
     ...shell,
@@ -77,7 +136,8 @@ async function fetchLeagueProfileUncached(
     liveMatches,
     standings,
     fixtures,
-    leaderBoards: leaderBoardsFromStandings(standings),
+    leaderBoards,
+    seasonHistory,
   };
 }
 
@@ -85,7 +145,14 @@ export async function fetchLeagueProfile(
   apiKey: string,
   entry: LeagueCatalogEntry,
 ): Promise<LeagueProfile> {
-  return getLeagueProfileCached(entry, () => fetchLeagueProfileUncached(apiKey, entry));
+  const profile = await getLeagueProfileCached(entry, () =>
+    fetchLeagueProfileUncached(apiKey, entry),
+  );
+
+  return {
+    ...profile,
+    leaderBoards: finalizeApiLeaderBoards(profile.leaderBoards ?? emptyLeaderBoards(), profile),
+  };
 }
 
 export async function fetchAllLeagueProfiles(

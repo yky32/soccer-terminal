@@ -1,6 +1,7 @@
 import type { LeagueProfile } from "@/lib/data/league-profile";
 
-const STORAGE_PREFIX = "soccer-terminal.leagueProfile.v1.";
+/** Bump when LeagueProfile shape or API sourcing changes. */
+const STORAGE_PREFIX = "soccer-terminal.leagueProfile.v2.";
 
 type StoredLeagueProfile = {
   cachedAt: number;

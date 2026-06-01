@@ -217,7 +217,6 @@ function topPlayerStat(
 export function normalizeLeaderBoards(
   topscorers: ApiFootballTopPlayer[],
   topassists: ApiFootballTopPlayer[],
-  topyellow: ApiFootballTopPlayer[],
 ): LeagueLeaderBoards {
   const goals = topscorers.slice(0, 8).map((item, index) =>
     topPlayerStat(
@@ -253,14 +252,21 @@ export function normalizeLeaderBoards(
       ),
     );
 
-  const fouls = topyellow.slice(0, 8).map((item, index) =>
-    topPlayerStat(
-      item,
-      index + 1,
-      item.statistics[0]?.fouls.committed ?? 0,
-      item.statistics[0]?.games.appearences ?? 0,
-    ),
-  );
+  const fouls = [...topscorers]
+    .sort((a, b) => {
+      const left = a.statistics[0]?.fouls.committed ?? 0;
+      const right = b.statistics[0]?.fouls.committed ?? 0;
+      return right - left;
+    })
+    .slice(0, 8)
+    .map((item, index) =>
+      topPlayerStat(
+        item,
+        index + 1,
+        item.statistics[0]?.fouls.committed ?? 0,
+        item.statistics[0]?.games.appearences ?? 0,
+      ),
+    );
 
   return {
     players: { rating, goals, assists, fouls },

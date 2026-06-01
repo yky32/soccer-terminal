@@ -108,28 +108,31 @@ export async function findPlayerBySlug(
   const league =
     getCachedLeagueProfile(leagueId) ?? (await fetchLeagueProfile(apiKey, entry));
 
-  for (const standing of league.standings) {
-    const prefix = `${teamSlugFromName(standing.team)}-`;
-    if (!playerSlug.startsWith(prefix) || !standing.teamId) continue;
+  const standing =
+    league.standings.find((row) => {
+      const prefix = `${teamSlugFromName(row.team)}-`;
+      return playerSlug.startsWith(prefix) && Boolean(row.teamId);
+    }) ?? null;
 
-    const nameSlug = playerSlug.slice(prefix.length);
-    const squads = await apiFootballGet<ApiFootballSquad>(apiKey, "/players/squads", {
-      team: standing.teamId,
-    });
-    const players = squads[0]?.players ?? [];
+  if (!standing?.teamId) return null;
 
-    for (let slot = 0; slot < players.length; slot += 1) {
-      const player = players[slot];
-      if (!player) continue;
-      if (playerSlugFromName(player.name) === nameSlug) {
-        return {
-          league,
-          standing,
-          playerId: player.id,
-          name: player.name,
-          slot,
-        };
-      }
+  const nameSlug = playerSlug.slice(`${teamSlugFromName(standing.team)}-`.length);
+  const squads = await apiFootballGet<ApiFootballSquad>(apiKey, "/players/squads", {
+    team: standing.teamId,
+  });
+  const players = squads[0]?.players ?? [];
+
+  for (let slot = 0; slot < players.length; slot += 1) {
+    const player = players[slot];
+    if (!player) continue;
+    if (playerSlugFromName(player.name) === nameSlug) {
+      return {
+        league,
+        standing,
+        playerId: player.id,
+        name: player.name,
+        slot,
+      };
     }
   }
 

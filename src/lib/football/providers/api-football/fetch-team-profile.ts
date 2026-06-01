@@ -8,7 +8,7 @@ import type {
   TeamProfile,
   TeamSquadPlayer,
 } from "@/lib/data/team-profile";
-import { buildTeamLeaderBoards } from "@/lib/data/league-stats";
+import { leaderBoardsForTeam } from "@/lib/data/league-stats";
 import { playerSlugFromTeamAndName } from "@/lib/player-paths";
 import { findStandingBySlug, teamSlugFromName } from "@/lib/team-paths";
 import {
@@ -199,6 +199,6 @@ export async function fetchTeamProfile(
     })),
     recentResults,
     upcomingFixtures,
-    leaderBoards: league.leaderBoards ?? buildTeamLeaderBoards(league, standing.team),
+    leaderBoards: leaderBoardsForTeam(league.leaderBoards, standing.team),
   };
 }

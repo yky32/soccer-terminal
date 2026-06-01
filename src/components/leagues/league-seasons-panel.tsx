@@ -20,7 +20,11 @@ export function LeagueSeasonsPanel({ league, seasons }: LeagueSeasonsPanelProps)
   const history = seasons.filter((season) => !season.isCurrent);
 
   if (!current) {
-    return null;
+    return (
+      <p className={cn(leaguesGlass, "px-4 py-6 text-center text-[0.8125rem] text-neutral-500")}>
+        Season history is not available from API-Football for this league yet.
+      </p>
+    );
   }
 
   return (

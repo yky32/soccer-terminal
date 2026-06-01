@@ -20,10 +20,13 @@ export const API_REVALIDATE_LIVE_SEC = 600;
 export const API_REVALIDATE_DEFAULT_SEC = 1800;
 
 /** Client localStorage TTL for league profiles on /leagues. */
-export const LEAGUE_LOCAL_TTL_MS = 60 * 60_000;
+export const LEAGUE_LOCAL_TTL_MS = 2 * 60 * 60_000;
+
+/** Client localStorage TTL for map + match monitor snapshot. */
+export const MAP_LOCAL_TTL_MS = CLIENT_MAP_REFRESH_MS;
 
 /** Server in-memory league profile cache. */
-export const LEAGUE_SERVER_CACHE_MS = 30 * 60_000;
+export const LEAGUE_SERVER_CACHE_MS = 60 * 60_000;
 
 /** Catalog fixture fetches — sequential to avoid burst rate limits. */
 export const CATALOG_FETCH_CONCURRENCY = 1;

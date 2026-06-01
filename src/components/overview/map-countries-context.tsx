@@ -10,7 +10,11 @@ import {
   type ReactNode,
 } from "react";
 import type { LiveCountriesBothResponse } from "@/lib/data/live-match-countries";
-import { CLIENT_MAP_REFRESH_MS } from "@/lib/football/refresh-policy";
+import {
+  readCachedMapSnapshot,
+  writeCachedMapSnapshot,
+} from "@/lib/football/local-map-cache";
+import { CLIENT_MAP_REFRESH_MS, MAP_LOCAL_TTL_MS } from "@/lib/football/refresh-policy";
 import { apiRequest } from "@/lib/http/api-client";
 
 type MapCountriesContextValue = {
@@ -29,9 +33,19 @@ export function MapCountriesProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async (options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false;
+    const cached = readCachedMapSnapshot();
+    const cachedFresh = cached ? Date.now() - cached.cachedAt < MAP_LOCAL_TTL_MS : false;
+
+    if (cached && !silent) {
+      setData(cached.snapshot);
+      setLoading(false);
+      setError(null);
+    }
+
+    if (cachedFresh) return;
 
     try {
-      if (!silent) setLoading(true);
+      if (!silent && !cached) setLoading(true);
 
       const { data: response } = await apiRequest<LiveCountriesBothResponse>({
         scope: "client",
@@ -46,9 +60,10 @@ export function MapCountriesProvider({ children }: { children: ReactNode }) {
       }
 
       setData(response);
+      writeCachedMapSnapshot(response);
       setError(null);
     } catch (err) {
-      if (!silent) {
+      if (!silent && !cached) {
         setError(err instanceof Error ? err.message : "Failed to load matches");
       }
     } finally {

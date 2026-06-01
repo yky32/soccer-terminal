@@ -215,6 +215,52 @@ export function buildLeagueLeaderBoards(league: LeagueProfile): LeagueLeaderBoar
   return buildLeaderBoards(league);
 }
 
+const PLAYER_LEADER_KINDS: LeaguePlayerStatKind[] = ["rating", "goals", "assists", "fouls"];
+
+export function hasPlayerLeaderData(boards: LeagueLeaderBoards) {
+  return PLAYER_LEADER_KINDS.some((kind) => boards.players[kind].length > 0);
+}
+
+/** Attach team win rates from API standings when missing from leader payload. */
+export function finalizeApiLeaderBoards(
+  boards: LeagueLeaderBoards,
+  league: LeagueProfile,
+): LeagueLeaderBoards {
+  return {
+    ...boards,
+    teamWinRates:
+      boards.teamWinRates.length > 0
+        ? boards.teamWinRates
+        : buildTeamWinRates(league.standings, 8),
+  };
+}
+
+/** Slice league-wide API leader stats for one club (team page). */
+export function leaderBoardsForTeam(
+  boards: LeagueLeaderBoards | undefined,
+  teamName: string,
+): LeagueLeaderBoards {
+  if (!boards) {
+    return {
+      players: { rating: [], goals: [], assists: [], fouls: [] },
+      teamWinRates: [],
+    };
+  }
+
+  const filterRows = <T extends { team: string }>(rows: T[]) =>
+    rows.filter((row) => row.team === teamName).slice(0, 5);
+
+  return {
+    players: {
+      rating: filterRows(boards.players.rating),
+      goals: filterRows(boards.players.goals),
+      assists: filterRows(boards.players.assists),
+      fouls: filterRows(boards.players.fouls),
+    },
+    teamWinRates: filterRows(boards.teamWinRates),
+  };
+}
+
 export function buildTeamLeaderBoards(
   league: LeagueProfile,
   teamName: string,

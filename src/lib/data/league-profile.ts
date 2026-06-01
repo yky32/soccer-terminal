@@ -90,6 +90,8 @@ export type LeagueProfile = {
   fixtures: LeagueFixture[];
   /** Populated from API topscorers / assists when available */
   leaderBoards?: LeagueLeaderBoards;
+  /** Past seasons from API-Football league + standings history */
+  seasonHistory?: LeagueSeasonRecord[];
 };
 
 export const LEAGUE_REGION_LABELS: Record<LeagueRegion | "all", string> = {

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { TeamDetailPanel } from "@/components/teams/team-detail-panel";
-import { getTeamNewsArticles } from "@/lib/data/team-mock";
+import { getTeamNewsArticles } from "@/lib/data/team-news";
 import {
   fetchNewsArticles,
   fetchTeamProfile,

@@ -15,11 +15,7 @@ import {
   leaguesGlassInsetBar,
 } from "@/components/leagues/leagues-glass";
 import type { LeagueProfile } from "@/lib/data/league-profile";
-import {
-  buildLeagueLeaderBoards,
-  buildLeagueSeasons,
-  getLeagueNewsLabel,
-} from "@/lib/data/league-stats";
+import { getLeagueNewsLabel } from "@/lib/data/league-stats";
 import type { NewsArticle } from "@/lib/data/news-article";
 import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
@@ -46,11 +42,11 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
     setTab("overview");
   }, [league.id]);
 
-  const leagueBoards = useMemo(
-    () => league.leaderBoards ?? buildLeagueLeaderBoards(league),
-    [league],
-  );
-  const seasons = useMemo(() => buildLeagueSeasons(league), [league]);
+  const leagueBoards = league.leaderBoards ?? {
+    players: { rating: [], goals: [], assists: [], fouls: [] },
+    teamWinRates: [],
+  };
+  const seasons = league.seasonHistory ?? [];
   const newsLabel = getLeagueNewsLabel(league);
   const leagueNews = useMemo(
     () => articles.filter((article) => article.league === newsLabel).slice(0, 8),

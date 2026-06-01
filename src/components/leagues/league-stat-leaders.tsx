@@ -77,11 +77,15 @@ function PlayerStatColumn({
         {LEAGUE_PLAYER_STAT_LABELS[kind]}
       </h3>
       <ol className="mt-2 space-y-1.5">
-        {rows.map((row) => (
-          <li key={`${kind}-${row.rank}-${row.playerName}`}>
-            <PlayerStatRow row={row} kind={kind} leagueId={leagueId} />
-          </li>
-        ))}
+        {rows.length === 0 ? (
+          <li className="py-2 text-[0.75rem] text-neutral-500">No API data for this stat.</li>
+        ) : (
+          rows.map((row) => (
+            <li key={`${kind}-${row.rank}-${row.playerName}`}>
+              <PlayerStatRow row={row} kind={kind} leagueId={leagueId} />
+            </li>
+          ))
+        )}
       </ol>
     </div>
   );
@@ -151,7 +155,10 @@ function TeamWinRateColumn({
         {LEAGUE_TEAM_WIN_RATE_LABEL}
       </h3>
       <ol className="mt-2 space-y-1.5">
-        {rows.map((row) => {
+        {rows.length === 0 ? (
+          <li className="py-2 text-[0.75rem] text-neutral-500">No API data for this stat.</li>
+        ) : (
+          rows.map((row) => {
           const isFocused = focusTeam === row.team;
 
           return (
@@ -187,7 +194,8 @@ function TeamWinRateColumn({
               </div>
             </li>
           );
-        })}
+        })
+        )}
       </ol>
     </div>
   );
