@@ -9,20 +9,10 @@ import {
 import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import { API_REVALIDATE_DEFAULT_SEC } from "@/lib/football/refresh-policy";
 
-type ApiFootballLeagueSeason = {
-  year: number;
-  start: string;
-  end: string;
-  current: boolean;
-};
-
-type ApiFootballLeagueDetail = {
-  league: {
-    id: number;
-    name: string;
-    seasons: ApiFootballLeagueSeason[];
-  };
-};
+import {
+  type ApiFootballLeagueDetail,
+  seasonsFromLeagueDetail,
+} from "@/lib/football/providers/api-football/league-detail";
 
 const MAX_SEASONS = 3;
 
@@ -41,7 +31,8 @@ export async function fetchLeagueSeasonHistory(
   );
 
   const leagueInfo = details[0];
-  if (!leagueInfo?.league.seasons?.length) {
+  const leagueSeasons = seasonsFromLeagueDetail(leagueInfo);
+  if (!leagueSeasons.length) {
     if (!currentChampion) return [];
 
     return [
@@ -57,7 +48,7 @@ export async function fetchLeagueSeasonHistory(
     ];
   }
 
-  const seasons = [...leagueInfo.league.seasons]
+  const seasons = [...leagueSeasons]
     .sort((a, b) => b.year - a.year)
     .slice(0, MAX_SEASONS);
 

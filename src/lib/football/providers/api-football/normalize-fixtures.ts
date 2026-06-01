@@ -1,7 +1,11 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import { getCountryCentroid } from "@/lib/football/country-centroids";
-import { countryCodeFromLeagueFlag } from "@/lib/football/providers/api-football/country-code";
+import { getCatalogEntryByApiId } from "@/lib/football/league-catalog";
+import {
+  countryCodeFromLeagueCountry,
+  countryCodeFromLeagueFlag,
+} from "@/lib/football/providers/api-football/country-code";
 import { normalizeFixtureEvents } from "@/lib/football/providers/api-football/normalize-events";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
@@ -61,7 +65,11 @@ export function buildLiveFixturesSnapshot(
 }
 
 function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
-  const countryCode = countryCodeFromLeagueFlag(fixture.league.flag);
+  const catalogEntry = getCatalogEntryByApiId(fixture.league.id);
+  const countryCode =
+    countryCodeFromLeagueFlag(fixture.league.flag) ??
+    countryCodeFromLeagueCountry(fixture.league.country) ??
+    countryCodeFromLeagueFlag(catalogEntry?.countryFlag);
   if (!countryCode) return null;
 
   const halftime = fixture.score?.halftime;

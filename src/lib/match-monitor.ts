@@ -32,7 +32,27 @@ export type FamousLeague = (typeof FAMOUS_LEAGUES)[number];
 
 export const FAMOUS_LEAGUE_NAMES = FAMOUS_LEAGUES.map((league) => league.name);
 
-const FAMOUS_LEAGUE_SET = new Set<string>(FAMOUS_LEAGUE_NAMES);
+/** API-Football `league.name` values that map to our famous-league labels. */
+const FAMOUS_LEAGUE_ALIASES: Record<string, readonly string[]> = {
+  "World Cup": ["FIFA World Cup"],
+  "Champions League": ["UEFA Champions League"],
+  "Europa League": ["UEFA Europa League", "UEFA Europa Conference League"],
+  "Major League Soccer": ["MLS"],
+  "Saudi Pro League": ["Pro League"],
+};
+
+export function leagueMatchesCatalogName(matchLeague: string, catalogName: string) {
+  if (matchLeague === catalogName) return true;
+
+  const aliases = FAMOUS_LEAGUE_ALIASES[catalogName];
+  if (aliases?.includes(matchLeague)) return true;
+
+  if (catalogName === "World Cup" && /world\s*cup/i.test(matchLeague)) {
+    return true;
+  }
+
+  return false;
+}
 
 const LIVE_STATUSES = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE"]);
 
@@ -115,16 +135,21 @@ export function searchMatches(items: MonitoredMatch[], query: string) {
   return sortHeatmapItems(pool).slice(0, 12);
 }
 
-/** Live elapsed minutes — higher = closer to full time, ranks earlier (top-left). */
+/**
+ * Sort key for heatmap order — higher ranks earlier (top-left).
+ * Live: later minute first. Upcoming: sooner kickoff first.
+ */
 export function matchElapsedSortValue(match: LiveMatch) {
   if (isMatchLive(match)) {
     if (match.elapsed !== null) return match.elapsed;
     return 120;
   }
 
-  if (match.kickoffAt) return -1_000_000 + new Date(match.kickoffAt).getTime() / 1_000_000;
+  if (match.kickoffAt) {
+    return -new Date(match.kickoffAt).getTime() / 1_000_000;
+  }
 
-  return -2_000_000;
+  return Number.NEGATIVE_INFINITY;
 }
 
 export function compareHeatmapOrder(a: MonitoredMatch, b: MonitoredMatch) {
@@ -392,7 +417,7 @@ export function isMatchToday(match: LiveMatch, now = new Date()) {
 }
 
 export function isFamousLeague(league: string) {
-  return FAMOUS_LEAGUE_SET.has(league);
+  return FAMOUS_LEAGUE_NAMES.some((name) => leagueMatchesCatalogName(league, name));
 }
 
 export function filterTodayMatches(items: MonitoredMatch[]) {
@@ -404,7 +429,7 @@ export function filterFamousLeagueMatches(items: MonitoredMatch[]) {
 }
 
 export function filterLeagueMatches(items: MonitoredMatch[], leagueName: string) {
-  return items.filter(({ match }) => match.league === leagueName);
+  return items.filter(({ match }) => leagueMatchesCatalogName(match.league, leagueName));
 }
 
 export function countAddableMatches(items: MonitoredMatch[], watchlistIds: number[]) {

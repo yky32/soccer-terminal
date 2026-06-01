@@ -1,18 +1,11 @@
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import { seasonYearForEntry } from "@/lib/football/league-catalog";
+import {
+  type ApiFootballLeagueDetail,
+  seasonsFromLeagueDetail,
+} from "@/lib/football/providers/api-football/league-detail";
 import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import { API_REVALIDATE_DEFAULT_SEC } from "@/lib/football/refresh-policy";
-
-type ApiFootballLeagueSeason = {
-  year: number;
-  current: boolean;
-};
-
-type ApiFootballLeagueDetail = {
-  league: {
-    seasons: ApiFootballLeagueSeason[];
-  };
-};
 
 const seasonCache = new Map<number, { year: number; cachedAt: number }>();
 const SEASON_CACHE_MS = 24 * 60 * 60_000;
@@ -42,7 +35,7 @@ export async function resolveSeasonYearForEntry(
     API_REVALIDATE_DEFAULT_SEC,
   );
 
-  const seasons = details[0]?.league.seasons ?? [];
+  const seasons = seasonsFromLeagueDetail(details[0]);
   const current = seasons.find((season) => season.current);
   const year =
     current?.year ??

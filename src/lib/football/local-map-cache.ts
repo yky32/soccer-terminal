@@ -1,6 +1,6 @@
 import type { LiveCountriesBothResponse } from "@/lib/data/live-match-countries";
 
-const STORAGE_KEY = "soccer-terminal.mapSnapshot.v1";
+const STORAGE_KEY = "soccer-terminal.mapSnapshot.v2";
 
 type StoredMapSnapshot = {
   cachedAt: number;

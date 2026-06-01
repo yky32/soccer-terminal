@@ -47,6 +47,8 @@ const CENTROIDS: Record<string, { latitude: number; longitude: number }> = {
   UY: { latitude: -32.5, longitude: -55.8 },
   VE: { latitude: 8.0, longitude: -66.0 },
   ZA: { latitude: -30.6, longitude: 22.9 },
+  /** FIFA World Cup and other world-flag leagues (map pin in the Americas for WC 2026). */
+  WORLD: { latitude: 28.5, longitude: -99.0 },
 };
 
 export function getCountryCentroid(code: string) {

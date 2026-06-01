@@ -52,7 +52,7 @@ export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
     name: "FIFA World Cup",
     shortName: "WC",
     country: "World",
-    countryFlag: null,
+    countryFlag: "https://media.api-sports.io/flags/world.svg",
     logo: leagueLogo(1),
     region: "world",
     tier: "continental",
