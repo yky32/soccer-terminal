@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchHeatmapGrid } from "@/components/overview/match-heatmap-grid";
-import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
+import { glassFocus, glassInset } from "@/components/glass-surface";
 import type { LiveMatch } from "@/lib/data/live-match";
 import {
   bulkAddToWatchlist,
@@ -124,8 +124,8 @@ function SearchResultRow({
       className={cn(
         "flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors",
         selected
-          ? "cursor-default bg-neutral-100/80 opacity-60"
-          : "hover:bg-white/70",
+          ? "cursor-default bg-neutral-100 opacity-70"
+          : "hover:bg-neutral-50",
       )}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -331,9 +331,9 @@ export function MatchMonitorSection() {
             <div
               id="match-monitor-search-results"
               className={cn(
-                glassStrong,
                 "!overflow-y-auto overflow-x-hidden",
-                "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 max-h-[min(22rem,50vh)] overscroll-contain rounded-xl shadow-[0_16px_48px_rgba(15,23,42,0.14)]",
+                "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 max-h-[min(22rem,50vh)] overscroll-contain",
+                "rounded-xl border border-black/[0.08] bg-white/[0.78] shadow-[0_16px_48px_rgba(15,23,42,0.16)] backdrop-blur-xl",
               )}
             >
               {loading ? (
