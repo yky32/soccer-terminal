@@ -1,4 +1,5 @@
 import { FootballLogo } from "@/components/overview/football-logo";
+import { LeagueIcon } from "@/components/leagues/league-icon";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
@@ -298,9 +299,8 @@ function MatchCardHeader({
       </div>
 
       <div className={cn("flex items-start gap-2", compact ? "mt-2" : "mt-1.5")}>
-        <FootballLogo
-          src={match.leagueLogo}
-          label={match.league}
+        <LeagueIcon
+          league={{ logo: match.leagueLogo, name: match.league }}
           size={compact ? "md" : "sm"}
           className="mt-0.5"
         />

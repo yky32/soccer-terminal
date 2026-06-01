@@ -1,7 +1,11 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import { getCountryCentroid } from "@/lib/football/country-centroids";
-import { getCatalogEntryByApiId } from "@/lib/football/league-catalog";
+import {
+  getCatalogEntryForApiLeague,
+  resolveLeagueFlag,
+  resolveLeagueLogo,
+} from "@/lib/football/league-catalog";
 import {
   countryCodeFromLeagueCountry,
   countryCodeFromLeagueFlag,
@@ -65,7 +69,10 @@ export function buildLiveFixturesSnapshot(
 }
 
 function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
-  const catalogEntry = getCatalogEntryByApiId(fixture.league.id);
+  const catalogEntry = getCatalogEntryForApiLeague(
+    fixture.league.id,
+    fixture.league.name,
+  );
   const countryCode =
     countryCodeFromLeagueFlag(fixture.league.flag) ??
     countryCodeFromLeagueCountry(fixture.league.country) ??
@@ -89,11 +96,19 @@ function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
     statusLong: fixture.fixture.status.long,
     elapsed: fixture.fixture.status.elapsed,
     league: fixture.league.name,
-    leagueLogo: fixture.league.logo ?? null,
+    leagueLogo: resolveLeagueLogo(
+      fixture.league.id,
+      fixture.league.name,
+      fixture.league.logo,
+    ),
     leagueRound: fixture.league.round?.trim() || null,
     country: fixture.league.country.trim() || countryCode,
     countryCode,
-    countryFlag: fixture.league.flag ?? null,
+    countryFlag: resolveLeagueFlag(
+      fixture.league.id,
+      fixture.league.name,
+      fixture.league.flag,
+    ),
     venue: formatVenue(fixture.fixture.venue?.name, fixture.fixture.venue?.city),
     venueCity: fixture.fixture.venue?.city?.trim() || null,
     latitude: null,

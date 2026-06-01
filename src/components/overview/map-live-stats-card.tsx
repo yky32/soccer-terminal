@@ -8,6 +8,28 @@ import { cn } from "@/lib/utils";
 
 const PREVIEW_COUNT = 3;
 
+/** Pulsing dot — same pattern as news wire / breaking Live badges. */
+function LivePulseDot({ active }: { active: boolean }) {
+  return (
+    <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+      <span
+        className={cn(
+          "absolute inset-0 animate-ping rounded-full",
+          active ? "bg-emerald-500/60" : "bg-emerald-500/35",
+        )}
+      />
+      <span
+        className={cn(
+          "relative m-auto h-1.5 w-1.5 rounded-full",
+          active
+            ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.85)]"
+            : "bg-emerald-500/75",
+        )}
+      />
+    </span>
+  );
+}
+
 type MapLiveStatsCardProps = {
   mode: MapMatchMode;
   onModeChange: (mode: MapMatchMode) => void;
@@ -55,7 +77,7 @@ export function MapLiveStatsCard({
       onClick={handleCardClick}
       className={cn(
         glass,
-        "pointer-events-auto w-[12.25rem] cursor-default px-3 py-2.5 sm:w-[12.75rem]",
+        "pointer-events-auto flex max-h-full min-h-0 w-full cursor-default flex-col overflow-hidden px-3 py-2.5",
       )}
     >
       <div className={cn(glassInset, "flex items-center gap-1 p-0.5")} data-map-list-action>
@@ -68,7 +90,7 @@ export function MapLiveStatsCard({
               type="button"
               onClick={() => onModeChange(option)}
               className={cn(
-                "flex-1 rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors",
+                "flex flex-1 items-center justify-center gap-1 rounded px-2 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors",
                 active
                   ? option === "live"
                     ? "bg-white text-emerald-800 shadow-sm"
@@ -76,7 +98,14 @@ export function MapLiveStatsCard({
                   : "text-neutral-500 hover:text-neutral-800",
               )}
             >
-              {option === "live" ? "Live" : "Future"}
+              {option === "live" ? (
+                <>
+                  <LivePulseDot active={active} />
+                  <span>Live</span>
+                </>
+              ) : (
+                "Future"
+              )}
             </button>
           );
         })}
@@ -125,8 +154,11 @@ export function MapLiveStatsCard({
       ) : null}
 
       {!error && sorted.length > 0 ? (
-        <div className="mt-2 border-t border-neutral-100 pt-2" data-map-list-action>
-          <ul className="space-y-0.5">
+        <div
+          className="mt-2 flex min-h-0 flex-1 flex-col border-t border-neutral-100 pt-2"
+          data-map-list-action
+        >
+          <ul className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain">
             {visible.map((country) => {
               const isSelected = selectedCountryCode === country.code;
 

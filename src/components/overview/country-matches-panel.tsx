@@ -11,7 +11,7 @@ import { MatchEventCard } from "@/components/overview/match-event-card";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
-import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
+import { glassFocus, glassInset } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
 type CountryMatchesPanelProps = {
@@ -92,19 +92,13 @@ export function CountryMatchesPanel({
   return (
     <aside
       className={cn(
-        glassStrong,
-        "relative flex h-full min-h-0 w-full flex-col rounded-none border-l border-white/45 shadow-[-10px_0_36px_rgba(15,23,42,0.07)] transition-opacity duration-700 ease-in-out",
+        "relative flex h-full min-h-0 w-full flex-col rounded-none bg-transparent transition-opacity duration-700 ease-in-out",
         visible ? "opacity-100" : "pointer-events-none opacity-0",
       )}
       aria-hidden={!visible}
     >
-      <div
-        className="pointer-events-none absolute inset-y-0 left-0 z-[1] w-10 bg-gradient-to-r from-white/0 via-white/10 to-white/35"
-        aria-hidden
-      />
-
-      <div className="relative z-[2] flex min-h-0 flex-1 flex-col">
-        <div className={cn(glassInset, "shrink-0 border-b border-black/[0.06] px-3 py-3")}>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 px-3 py-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex min-w-0 flex-1 items-start gap-2.5">
               {matches[0]?.countryFlag ? (

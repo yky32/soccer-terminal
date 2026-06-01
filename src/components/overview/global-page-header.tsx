@@ -2,17 +2,8 @@
 
 import { Globe2, MonitorDot, type LucideIcon } from "lucide-react";
 import { glassInset, glassHover, glassFocus } from "@/components/glass-surface";
+import { scrollToSection } from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
-
-const HEADER_OFFSET = 72;
-
-function scrollToSection(id: string) {
-  const target = document.getElementById(id);
-  if (!target) return;
-
-  const top = target.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
-  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-}
 
 function JumpIconButton({
   icon: Icon,

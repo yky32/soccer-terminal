@@ -26,6 +26,7 @@ import {
   type MonitoredMatch,
 } from "@/lib/match-monitor";
 import { useMapCountries } from "@/components/overview/map-countries-context";
+import { getCatalogEntryByDisplayName } from "@/lib/football/league-catalog";
 import { cn } from "@/lib/utils";
 
 function QuickAddButton({
@@ -239,7 +240,10 @@ export function MatchMonitorSection() {
         const pool = filterLeagueMatches(catalog, league.name);
         return {
           ...league,
-          logo: pool[0]?.match.leagueLogo ?? null,
+          logo:
+            pool[0]?.match.leagueLogo ??
+            getCatalogEntryByDisplayName(league.name)?.logo ??
+            null,
           pool,
           addable: countAddableMatches(pool, watchlistIds),
         };

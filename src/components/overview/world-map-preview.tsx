@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUpToLine, Globe2 } from "lucide-react";
 import { CountryLivePin } from "@/components/overview/country-live-pin";
 import { CountryMatchesPanel } from "@/components/overview/country-matches-panel";
 import { MapLiveStatsCard } from "@/components/overview/map-live-stats-card";
@@ -12,6 +13,8 @@ import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
 import { useMapCountries } from "@/components/overview/map-countries-context";
+import { glassFocus, glassHover, glassInset } from "@/components/glass-surface";
+import { scrollToSection } from "@/lib/scroll-to-section";
 import { cn } from "@/lib/utils";
 
 const EMPTY_STATS = getLiveMatchStats([]);
@@ -32,6 +35,64 @@ function mapFocusPadding(pane: HTMLElement | null, withLegend: boolean) {
     left: Math.min(220, Math.round(width * 0.2)),
     bottom: withLegend ? Math.min(150, Math.round(height * 0.2)) : 48,
   };
+}
+
+type MapControlsToolbarProps = {
+  onFocusMapSection: () => void;
+  onResetMapView: () => void;
+  /** Lift toolbar when the bottom-center live chip is visible. */
+  raised: boolean;
+};
+
+function MapControlsToolbar({
+  onFocusMapSection,
+  onResetMapView,
+  raised,
+}: MapControlsToolbarProps) {
+  return (
+    <div
+      className={cn(
+        "pointer-events-none absolute right-4 z-10 sm:right-6",
+        raised ? "bottom-20 sm:bottom-[4.75rem]" : "bottom-6 sm:bottom-8",
+      )}
+    >
+      <div
+        className={cn(
+          glassInset,
+          "pointer-events-auto flex items-center gap-1 rounded-full p-1 shadow-[0_8px_24px_rgba(15,23,42,0.12)]",
+        )}
+        role="toolbar"
+        aria-label="Map controls"
+      >
+        <button
+          type="button"
+          onClick={onFocusMapSection}
+          title="Scroll to map"
+          aria-label="Scroll to map"
+          className={cn(
+            glassHover,
+            glassFocus,
+            "flex h-9 w-9 items-center justify-center rounded-full text-neutral-600 transition-colors hover:text-neutral-950",
+          )}
+        >
+          <ArrowUpToLine className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={onResetMapView}
+          title="Reset map to world view"
+          aria-label="Reset map to world view"
+          className={cn(
+            glassHover,
+            glassFocus,
+            "flex h-9 w-9 items-center justify-center rounded-full text-neutral-600 transition-colors hover:text-neutral-950",
+          )}
+        >
+          <Globe2 className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function WorldMapPreview() {
@@ -102,24 +163,44 @@ export function WorldMapPreview() {
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [splitOpen, selectedCountry]);
 
-  const resetWorldView = useCallback(() => {
-    setSplitOpen(false);
-
-    window.setTimeout(() => {
+  const fitMapToWorld = useCallback((afterLayoutMs = 0) => {
+    const fly = () => {
       const map = mapRef.current;
       if (!map) return;
 
       map.resize();
       map.flyTo({
-        ...WORLD_VIEW,
+        center: WORLD_VIEW.center,
+        zoom: WORLD_VIEW.zoom,
+        bearing: 0,
+        pitch: 0,
         padding: NO_PADDING,
         duration: MAP_FLY_MS,
         essential: true,
       });
-    }, SPLIT_TRANSITION_MS + 60);
+    };
 
-    window.setTimeout(() => setSelectedCountryCode(null), SPLIT_TRANSITION_MS);
+    if (afterLayoutMs > 0) {
+      window.setTimeout(fly, afterLayoutMs);
+      return;
+    }
+
+    fly();
   }, []);
+
+  const resetWorldView = useCallback(() => {
+    setSplitOpen(false);
+    fitMapToWorld(SPLIT_TRANSITION_MS + 60);
+    window.setTimeout(() => setSelectedCountryCode(null), SPLIT_TRANSITION_MS);
+  }, [fitMapToWorld]);
+
+  const focusMapSection = useCallback(() => {
+    scrollToSection("global-map");
+  }, []);
+
+  const resetMapCamera = useCallback(() => {
+    fitMapToWorld(splitOpen ? SPLIT_TRANSITION_MS + 60 : 0);
+  }, [fitMapToWorld, splitOpen]);
 
   const focusCountry = useCallback((country: CountryMatchActivity) => {
     setSelectedCountryCode(country.code);
@@ -141,6 +222,8 @@ export function WorldMapPreview() {
 
   const showMatchColumn = splitOpen && selectedCountry;
   const showMatchPins = Boolean(showMatchColumn);
+
+  const showLiveChip = !showMatchColumn && !loading;
 
   return (
     <section id="global-map" className="relative w-full scroll-mt-[4.25rem]">
@@ -204,6 +287,12 @@ export function WorldMapPreview() {
                 ))
               : null}
           </Map>
+
+          <MapControlsToolbar
+            onFocusMapSection={focusMapSection}
+            onResetMapView={resetMapCamera}
+            raised={showLiveChip}
+          />
 
           {!showMatchColumn && !loading ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex justify-center px-4 sm:bottom-10">

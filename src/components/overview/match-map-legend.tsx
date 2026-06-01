@@ -15,11 +15,11 @@ export function MatchMapLegend({ matches }: MatchMapLegendProps) {
   if (located.length === 0) return null;
 
   return (
-    <div className={cn(glassSubtle, "pointer-events-none max-w-[14rem] px-2.5 py-2")}>
+    <div className={cn(glassSubtle, "w-full max-w-[14rem] px-2.5 py-2")}>
       <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-neutral-500">
         Map pins
       </p>
-      <ul className="mt-1.5 space-y-1">
+      <ul className="mt-1.5 max-h-[12rem] space-y-1 overflow-y-auto overscroll-contain">
         {located.map((match, index) => {
           const color = getMatchPinColor(index);
           return (

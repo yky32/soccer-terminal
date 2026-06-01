@@ -1,5 +1,9 @@
 import type { LiveMatch, MatchLiveEvent, MatchEventType } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
+import {
+  getCatalogEntryByDisplayName,
+  getCatalogEntryByLeagueName,
+} from "@/lib/football/league-catalog";
 
 export type MonitoredMatch = {
   match: LiveMatch;
@@ -12,7 +16,52 @@ export type LeagueMatchGroup = {
 };
 
 export const WATCHLIST_STORAGE_KEY = "soccer-terminal.match-watchlist";
+export const HEATMAP_LAYOUT_STORAGE_KEY = "soccer-terminal.heatmap-layout";
 export const MAX_WATCHLIST = 16;
+
+export type HeatmapLayout = "treemap" | "grid" | "timeline" | "mosaic";
+export type HeatmapDensity = "normal" | "compact";
+
+export type HeatmapViewPrefs = {
+  layout: HeatmapLayout;
+  density: HeatmapDensity;
+};
+
+const DEFAULT_HEATMAP_PREFS: HeatmapViewPrefs = {
+  layout: "treemap",
+  density: "normal",
+};
+
+export function readHeatmapViewPrefs(): HeatmapViewPrefs {
+  if (typeof window === "undefined") return DEFAULT_HEATMAP_PREFS;
+
+  try {
+    const raw = window.localStorage.getItem(HEATMAP_LAYOUT_STORAGE_KEY);
+    if (!raw) return DEFAULT_HEATMAP_PREFS;
+
+    const parsed = JSON.parse(raw) as Partial<HeatmapViewPrefs>;
+    const layout =
+      parsed.layout === "grid" ||
+      parsed.layout === "timeline" ||
+      parsed.layout === "treemap" ||
+      parsed.layout === "mosaic"
+        ? parsed.layout
+        : DEFAULT_HEATMAP_PREFS.layout;
+    const density =
+      parsed.density === "compact" || parsed.density === "normal"
+        ? parsed.density
+        : DEFAULT_HEATMAP_PREFS.density;
+
+    return { layout, density };
+  } catch {
+    return DEFAULT_HEATMAP_PREFS;
+  }
+}
+
+export function writeHeatmapViewPrefs(prefs: HeatmapViewPrefs) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(HEATMAP_LAYOUT_STORAGE_KEY, JSON.stringify(prefs));
+}
 
 /** Top-tier leagues for one-tap bulk add. */
 export const FAMOUS_LEAGUES = [
@@ -32,26 +81,12 @@ export type FamousLeague = (typeof FAMOUS_LEAGUES)[number];
 
 export const FAMOUS_LEAGUE_NAMES = FAMOUS_LEAGUES.map((league) => league.name);
 
-/** API-Football `league.name` values that map to our famous-league labels. */
-const FAMOUS_LEAGUE_ALIASES: Record<string, readonly string[]> = {
-  "World Cup": ["FIFA World Cup"],
-  "Champions League": ["UEFA Champions League"],
-  "Europa League": ["UEFA Europa League", "UEFA Europa Conference League"],
-  "Major League Soccer": ["MLS"],
-  "Saudi Pro League": ["Pro League"],
-};
-
 export function leagueMatchesCatalogName(matchLeague: string, catalogName: string) {
-  if (matchLeague === catalogName) return true;
+  const target = getCatalogEntryByDisplayName(catalogName);
+  if (!target) return matchLeague === catalogName;
 
-  const aliases = FAMOUS_LEAGUE_ALIASES[catalogName];
-  if (aliases?.includes(matchLeague)) return true;
-
-  if (catalogName === "World Cup" && /world\s*cup/i.test(matchLeague)) {
-    return true;
-  }
-
-  return false;
+  const matchEntry = getCatalogEntryByLeagueName(matchLeague);
+  return matchEntry?.id === target.id;
 }
 
 const LIVE_STATUSES = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE"]);
@@ -171,6 +206,56 @@ export function compareHeatmapOrder(a: MonitoredMatch, b: MonitoredMatch) {
 
 export function sortHeatmapItems(items: MonitoredMatch[]) {
   return [...items].sort(compareHeatmapOrder);
+}
+
+export type MosaicTier = "xl" | "lg" | "md" | "sm";
+
+export type HeatmapMosaicPlacement = {
+  colSpan: number;
+  rowSpan: number;
+  tier: MosaicTier;
+};
+
+/** Rank bucket for mosaic tiles — first in sort order is xl, last is sm. */
+export function heatmapMosaicTier(index: number, total: number): MosaicTier {
+  if (total <= 1) return "xl";
+
+  const rank = index / (total - 1);
+  if (rank <= 0.12) return "xl";
+  if (rank <= 0.38) return "lg";
+  if (rank <= 0.68) return "md";
+  return "sm";
+}
+
+const MOSAIC_SPANS: Record<HeatmapDensity, Record<MosaicTier, { col: number; row: number }>> = {
+  normal: {
+    xl: { col: 8, row: 5 },
+    lg: { col: 6, row: 4 },
+    md: { col: 4, row: 3 },
+    sm: { col: 3, row: 3 },
+  },
+  compact: {
+    xl: { col: 7, row: 4 },
+    lg: { col: 5, row: 3 },
+    md: { col: 4, row: 3 },
+    sm: { col: 3, row: 2 },
+  },
+};
+
+/** CSS grid span for ranked mosaic — index 0 is largest, last index is smallest. */
+export function heatmapMosaicPlacement(
+  index: number,
+  total: number,
+  density: HeatmapDensity = "normal",
+): HeatmapMosaicPlacement {
+  const tier = heatmapMosaicTier(index, total);
+  const span = MOSAIC_SPANS[density][tier];
+
+  return {
+    tier,
+    colSpan: span.col,
+    rowSpan: span.row,
+  };
 }
 
 export function groupMatchesByLeague(items: MonitoredMatch[]): LeagueMatchGroup[] {

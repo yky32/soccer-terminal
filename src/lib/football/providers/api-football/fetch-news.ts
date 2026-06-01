@@ -1,6 +1,7 @@
 import type { NewsArticle, NewsCategory } from "@/lib/data/news-article";
 import {
   getCatalogEntryByApiId,
+  resolveLeagueLogo,
   type LeagueCatalogEntry,
 } from "@/lib/football/league-catalog";
 import {
@@ -63,7 +64,7 @@ function matchReportArticle(fixture: ApiFootballLiveFixture, entry: LeagueCatalo
     publishedAt: fixture.fixture.date ?? new Date().toISOString(),
     category: "match-report",
     league: leagueLabel,
-    leagueLogo: entry?.logo ?? fixture.league.logo,
+    leagueLogo: resolveLeagueLogo(fixture.league.id, fixture.league.name, fixture.league.logo),
     imageUrl: MATCH_REPORT_IMAGE,
     imageAlt: `${home} vs ${away} match report`,
   };

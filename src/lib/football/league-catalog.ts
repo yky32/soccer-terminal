@@ -32,6 +32,83 @@ export function entryHasKnockoutStage(entry: LeagueCatalogEntry) {
 const leagueLogo = (id: number) =>
   `https://media.api-sports.io/football/leagues/${id}.png`;
 
+/** Fixture / API `league.name` values that map to a catalog entry. */
+const CATALOG_LEAGUE_ALIASES: Partial<Record<string, readonly string[]>> = {
+  "world-cup": ["World Cup", "FIFA World Cup"],
+  ucl: ["Champions League", "UEFA Champions League"],
+  uel: ["Europa League", "UEFA Europa League", "UEFA Europa Conference League"],
+  mls: ["MLS"],
+  "saudi-pro": ["Pro League"],
+};
+
+function entryMatchesLeagueName(entry: LeagueCatalogEntry, leagueName: string) {
+  if (
+    leagueName === entry.name ||
+    leagueName === entry.newsLabel ||
+    leagueName === entry.shortName
+  ) {
+    return true;
+  }
+
+  const aliases = CATALOG_LEAGUE_ALIASES[entry.id];
+  return aliases?.includes(leagueName) ?? false;
+}
+
+export function getCatalogEntryByLeagueName(leagueName: string): LeagueCatalogEntry | null {
+  const trimmed = leagueName.trim();
+  if (!trimmed) return null;
+
+  for (const entry of LEAGUE_CATALOG) {
+    if (entryMatchesLeagueName(entry, trimmed)) return entry;
+  }
+
+  if (/world\s*cup/i.test(trimmed)) {
+    return getCatalogEntryById("world-cup");
+  }
+
+  return null;
+}
+
+/** UI labels such as famous-league chips (`newsLabel`, `name`, or `shortName`). */
+export function getCatalogEntryByDisplayName(displayName: string): LeagueCatalogEntry | null {
+  const trimmed = displayName.trim();
+  if (!trimmed) return null;
+
+  return (
+    LEAGUE_CATALOG.find(
+      (entry) =>
+        entry.name === trimmed ||
+        entry.newsLabel === trimmed ||
+        entry.shortName === trimmed,
+    ) ?? getCatalogEntryByLeagueName(trimmed)
+  );
+}
+
+export function getCatalogEntryForApiLeague(
+  apiId: number,
+  leagueName?: string | null,
+): LeagueCatalogEntry | null {
+  return getCatalogEntryByApiId(apiId) ?? (leagueName ? getCatalogEntryByLeagueName(leagueName) : null);
+}
+
+export function resolveLeagueLogo(
+  apiId: number,
+  leagueName: string | null | undefined,
+  apiLogo: string | null | undefined,
+): string | null {
+  if (apiLogo) return apiLogo;
+  return getCatalogEntryForApiLeague(apiId, leagueName)?.logo ?? null;
+}
+
+export function resolveLeagueFlag(
+  apiId: number,
+  leagueName: string | null | undefined,
+  apiFlag: string | null | undefined,
+): string | null {
+  if (apiFlag) return apiFlag;
+  return getCatalogEntryForApiLeague(apiId, leagueName)?.countryFlag ?? null;
+}
+
 export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
   {
     id: "premier-league",
