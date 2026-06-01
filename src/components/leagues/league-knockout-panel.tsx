@@ -19,6 +19,8 @@ import type {
   LeagueProfile,
 } from "@/lib/data/league-profile";
 import { KnockoutBracketMatchGroup, KnockoutMatchCard } from "@/components/leagues/knockout-match-card";
+import { KnockoutWinnerLegend } from "@/components/leagues/knockout-winner-legend";
+import { buildKnockoutAggregateByMatchId } from "@/lib/football/knockout-match-result";
 import { useKnockoutShortTeamNames } from "@/lib/football/knockout-team-name";
 import { cn } from "@/lib/utils";
 
@@ -76,6 +78,10 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
   const leftSf = splitHalf(sf?.matches ?? [], "left");
   const rightSf = splitHalf(sf?.matches ?? [], "right");
   const shortTeamNames = useKnockoutShortTeamNames(league.id);
+  const outerAggregateByMatchId = buildKnockoutAggregateByMatchId(outerRound?.matches ?? []);
+  const r16AggregateByMatchId = buildKnockoutAggregateByMatchId(r16?.matches ?? []);
+  const qfAggregateByMatchId = buildKnockoutAggregateByMatchId(qf?.matches ?? []);
+  const sfAggregateByMatchId = buildKnockoutAggregateByMatchId(sf?.matches ?? []);
 
   return (
     <div className="space-y-4">
@@ -84,9 +90,12 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
             {league.shortName} · {league.season}
           </p>
-          <h2 className="mt-0.5 text-[clamp(1.25rem,2.5vw,1.625rem)] font-semibold tracking-[-0.03em] text-neutral-950">
-            Knockout bracket
-          </h2>
+          <div className="mt-0.5 flex items-start justify-between gap-3">
+            <h2 className="text-[clamp(1.25rem,2.5vw,1.625rem)] font-semibold tracking-[-0.03em] text-neutral-950">
+              Knockout bracket
+            </h2>
+            <KnockoutWinnerLegend className="shrink-0" />
+          </div>
         </header>
 
         <div className="hidden p-3 sm:p-4 md:block">
@@ -98,6 +107,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={leftOuter}
                   align="left"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={outerAggregateByMatchId}
                 />
               ) : null}
               {r32 ? (
@@ -106,6 +116,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={leftInner}
                   align="left"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={r16AggregateByMatchId}
                 />
               ) : (
                 <BracketColumn
@@ -113,6 +124,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={leftOuter}
                   align="left"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={outerAggregateByMatchId}
                 />
               )}
               <BracketColumn
@@ -120,12 +132,14 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                 matches={leftQf}
                 align="left"
                 shortTeamNames={shortTeamNames}
+                roundAggregateByMatchId={qfAggregateByMatchId}
               />
               <BracketColumn
                 label="Semi-finals"
                 matches={leftSf}
                 align="left"
                 shortTeamNames={shortTeamNames}
+                roundAggregateByMatchId={sfAggregateByMatchId}
               />
               <BracketCenter bronze={bronze} final={final} shortTeamNames={shortTeamNames} />
               <BracketColumn
@@ -133,12 +147,14 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                 matches={rightSf}
                 align="right"
                 shortTeamNames={shortTeamNames}
+                roundAggregateByMatchId={sfAggregateByMatchId}
               />
               <BracketColumn
                 label="Quarter-finals"
                 matches={rightQf}
                 align="right"
                 shortTeamNames={shortTeamNames}
+                roundAggregateByMatchId={qfAggregateByMatchId}
               />
               {r32 ? (
                 <BracketColumn
@@ -146,6 +162,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={rightInner}
                   align="right"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={r16AggregateByMatchId}
                 />
               ) : (
                 <BracketColumn
@@ -153,6 +170,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={rightOuter}
                   align="right"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={outerAggregateByMatchId}
                 />
               )}
               {r32 ? (
@@ -161,6 +179,7 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
                   matches={rightOuter}
                   align="right"
                   shortTeamNames={shortTeamNames}
+                  roundAggregateByMatchId={outerAggregateByMatchId}
                 />
               ) : null}
             </div>
@@ -188,11 +207,13 @@ function BracketColumn({
   matches,
   align,
   shortTeamNames,
+  roundAggregateByMatchId,
 }: {
   label: string;
   matches: LeagueKnockoutMatch[];
   align: "left" | "right";
   shortTeamNames: boolean;
+  roundAggregateByMatchId: ReturnType<typeof buildKnockoutAggregateByMatchId>;
 }) {
   return (
     <div className="flex w-[7.75rem] shrink-0 flex-col">
@@ -204,6 +225,7 @@ function BracketColumn({
           matches={matches}
           align={align}
           shortTeamNames={shortTeamNames}
+          roundAggregateByMatchId={roundAggregateByMatchId}
         />
       </div>
     </div>
@@ -323,6 +345,7 @@ function MobileRound({
               stage={stage}
               wide={stage !== "default"}
               shortTeamNames={shortTeamNames}
+              roundAggregateByMatchId={buildKnockoutAggregateByMatchId(round.matches)}
             />
           </li>
         ))}
