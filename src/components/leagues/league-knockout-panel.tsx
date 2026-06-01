@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { KnockoutBracketScaler } from "@/components/leagues/knockout-bracket-scaler";
 import { LeagueKnockoutSchedule } from "@/components/leagues/league-knockout-schedule";
 import {
@@ -19,7 +20,11 @@ import type {
   LeagueProfile,
 } from "@/lib/data/league-profile";
 import { KnockoutBracketMatchGroup, KnockoutMatchCard } from "@/components/leagues/knockout-match-card";
-import { KnockoutWinnerLegend } from "@/components/leagues/knockout-winner-legend";
+import {
+  buildKnockoutBracketLayout,
+  orderRoundMatchesForDisplay,
+  selectMatchesForBracketSide,
+} from "@/lib/football/knockout-bracket-layout";
 import { buildKnockoutAggregateByMatchId } from "@/lib/football/knockout-match-result";
 import { useKnockoutShortTeamNames } from "@/lib/football/knockout-team-name";
 import { cn } from "@/lib/utils";
@@ -68,34 +73,35 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
   const bronze = bracket.rounds.find((round) => round.label === "3rd Place Final");
   const final = bracket.rounds.find((round) => round.label === "Final");
 
+  const bracketLayout = useMemo(() => buildKnockoutBracketLayout(bracket), [bracket]);
+
+  const pickSide = (round: LeagueKnockoutRound | undefined, side: "left" | "right") =>
+    round ? selectMatchesForBracketSide(round, side, bracketLayout) : [];
+
   const outerRound = r32 ?? r16;
-  const leftOuter = splitHalf(outerRound?.matches ?? [], "left");
-  const rightOuter = splitHalf(outerRound?.matches ?? [], "right");
-  const leftInner = r32 ? splitHalf(r16?.matches ?? [], "left") : [];
-  const rightInner = r32 ? splitHalf(r16?.matches ?? [], "right") : [];
-  const leftQf = splitHalf(qf?.matches ?? [], "left");
-  const rightQf = splitHalf(qf?.matches ?? [], "right");
-  const leftSf = splitHalf(sf?.matches ?? [], "left");
-  const rightSf = splitHalf(sf?.matches ?? [], "right");
+  const leftOuter = pickSide(outerRound, "left");
+  const rightOuter = pickSide(outerRound, "right");
+  const leftInner = r32 ? pickSide(r16, "left") : [];
+  const rightInner = r32 ? pickSide(r16, "right") : [];
+  const leftQf = pickSide(qf, "left");
+  const rightQf = pickSide(qf, "right");
+  const leftSf = pickSide(sf, "left");
+  const rightSf = pickSide(sf, "right");
   const shortTeamNames = useKnockoutShortTeamNames(league.id);
   const outerAggregateByMatchId = buildKnockoutAggregateByMatchId(outerRound?.matches ?? []);
   const r16AggregateByMatchId = buildKnockoutAggregateByMatchId(r16?.matches ?? []);
   const qfAggregateByMatchId = buildKnockoutAggregateByMatchId(qf?.matches ?? []);
   const sfAggregateByMatchId = buildKnockoutAggregateByMatchId(sf?.matches ?? []);
-
   return (
     <div className="space-y-4">
       <section className={leaguesGlassStrong}>
-        <header className="border-b border-black/[0.06] px-4 py-4 sm:px-5">
+        <header className="px-4 py-4 sm:px-5">
           <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
             {league.shortName} · {league.season}
           </p>
-          <div className="mt-0.5 flex items-start justify-between gap-3">
-            <h2 className="text-[clamp(1.25rem,2.5vw,1.625rem)] font-semibold tracking-[-0.03em] text-neutral-950">
-              Knockout bracket
-            </h2>
-            <KnockoutWinnerLegend className="shrink-0" />
-          </div>
+          <h2 className="mt-0.5 text-[clamp(1.25rem,2.5vw,1.625rem)] font-semibold tracking-[-0.03em] text-neutral-950">
+            Knockout bracket
+          </h2>
         </header>
 
         <div className="hidden p-3 sm:p-4 md:block">
@@ -188,18 +194,17 @@ export function LeagueKnockoutPanel({ league, bracket }: LeagueKnockoutPanelProp
 
         <div className="space-y-4 p-4 md:hidden sm:p-5">
           {bracket.rounds.map((round) => (
-            <MobileRound key={round.id} round={round} shortTeamNames={shortTeamNames} />
+            <MobileRound
+              key={round.id}
+              round={round}
+              shortTeamNames={shortTeamNames}
+              bracketLayout={bracketLayout}
+            />
           ))}
         </div>
       </section>
     </div>
   );
-}
-
-function splitHalf(matches: LeagueKnockoutMatch[], side: "left" | "right") {
-  const midpoint = Math.ceil(matches.length / 2);
-  if (side === "left") return matches.slice(0, midpoint);
-  return matches.slice(midpoint);
 }
 
 function BracketColumn({
@@ -220,7 +225,7 @@ function BracketColumn({
       <p className="mb-1 truncate text-center text-[0.5625rem] font-semibold uppercase tracking-[0.1em] text-neutral-500">
         {label}
       </p>
-      <div className="flex flex-1 flex-col justify-around gap-1">
+      <div className="flex min-h-[9.5rem] flex-1 flex-col justify-center gap-1.5 py-0.5">
         <KnockoutBracketMatchGroup
           matches={matches}
           align={align}
@@ -316,9 +321,11 @@ function roundStage(label: string): KnockoutStage {
 function MobileRound({
   round,
   shortTeamNames,
+  bracketLayout,
 }: {
   round: LeagueKnockoutRound;
   shortTeamNames: boolean;
+  bracketLayout: ReturnType<typeof buildKnockoutBracketLayout>;
 }) {
   const stage = roundStage(round.label);
   const meta = stage === "bronze" || stage === "final" ? KNOCKOUT_STAGE_META[stage] : null;
@@ -337,7 +344,7 @@ function MobileRound({
         )}
       </p>
       <ul className="divide-y divide-black/[0.06]">
-        {round.matches.map((match) => (
+        {orderRoundMatchesForDisplay(round, bracketLayout).map((match) => (
           <li key={match.id} className="px-3 py-2">
             <KnockoutBracketMatchGroup
               matches={[match]}

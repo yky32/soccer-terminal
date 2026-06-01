@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import {
   knockoutMatchCardClass,
@@ -9,7 +11,7 @@ import { leaguesGlassInset } from "@/components/leagues/leagues-glass";
 import type { LeagueKnockoutMatch } from "@/lib/data/league-profile";
 import {
   computeKnockoutAggregate,
-  displayKnockoutWinKind,
+  getKnockoutTieSummary,
   groupKnockoutIntoTies,
   isKnockoutMatchFinished,
   knockoutLegWinKind,
@@ -20,11 +22,6 @@ import {
 import { knockoutTeamShortName } from "@/lib/football/knockout-team-name";
 import { cn } from "@/lib/utils";
 
-const WINNER_ROW_CLASS: Record<KnockoutWinKind, string> = {
-  regulation: "bg-emerald-500/12 ring-1 ring-emerald-500/20",
-  "draw-decided": "bg-orange-500/12 ring-1 ring-orange-500/20",
-};
-
 const WINNER_NAME_CLASS: Record<KnockoutWinKind, string> = {
   regulation: "font-semibold text-emerald-950",
   "draw-decided": "font-semibold text-orange-950",
@@ -33,11 +30,6 @@ const WINNER_NAME_CLASS: Record<KnockoutWinKind, string> = {
 const WINNER_SCORE_CLASS: Record<KnockoutWinKind, string> = {
   regulation: "text-emerald-900",
   "draw-decided": "text-orange-900",
-};
-
-const ADVANCE_BADGE_CLASS: Record<KnockoutWinKind, string> = {
-  regulation: "bg-emerald-500/12 text-emerald-900 ring-emerald-500/20",
-  "draw-decided": "bg-orange-500/12 text-orange-950 ring-orange-500/20",
 };
 
 type KnockoutMatchCardProps = {
@@ -120,6 +112,8 @@ function KnockoutTieCard({
   compact?: boolean;
   roundAggregateByMatchId?: Map<string, KnockoutMatchAggregateHint>;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const summary = getKnockoutTieSummary(legs);
   const localAggregate = computeKnockoutAggregate(legs);
   const roundAggregate = roundAggregateByMatchId?.get(legs[0].id) ?? null;
   const aggregate =
@@ -132,22 +126,73 @@ function KnockoutTieCard({
         }
       : null);
 
-  return (
-    <div
-      className={cn(
-        "rounded-lg border border-black/[0.06] bg-white/30 p-1",
-        aggregate && aggregate.winKind === "regulation" && "ring-1 ring-emerald-500/25",
-        aggregate && aggregate.winKind === "draw-decided" && "ring-1 ring-orange-500/25",
-      )}
-    >
-      {aggregate ? (
-        <KnockoutAdvanceBadge
-          team={aggregate.winnerTeam}
-          logo={aggregate.winnerLogo}
+  const shellClass = "rounded-lg border border-black/[0.06] bg-white/35 shadow-sm";
+
+  if (!summary) {
+    return (
+      <div className={cn(shellClass, "p-1")}>
+        <div className="space-y-1">
+          {legs.map((leg, index) => (
+            <KnockoutMatchCard
+              key={leg.id}
+              match={leg}
+              align={align}
+              shortTeamNames={shortTeamNames}
+              stage={stage}
+              wide={wide}
+              compact={compact || index > 0}
+              aggregateWinnerTeam={aggregate?.winnerTeam ?? null}
+              aggregateWinKind={aggregate?.winKind ?? null}
+              roundAggregate={roundAggregateByMatchId?.get(leg.id) ?? null}
+              legLabel={`Leg ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className={cn(shellClass, "w-full p-1 text-left transition-colors hover:bg-white/50")}
+        aria-expanded={false}
+        aria-label="Show leg-by-leg scores"
+      >
+        <KnockoutTieSummaryCard
+          summary={summary}
+          align={align}
           shortTeamNames={shortTeamNames}
-          winKind={aggregate.winKind}
+          stage={stage}
+          wide={wide}
+          expanded={false}
         />
-      ) : null}
+      </button>
+    );
+  }
+
+  return (
+    <div className={cn(shellClass, "p-1")}>
+      <button
+        type="button"
+        onClick={() => setExpanded(false)}
+        className="mb-1 flex w-full items-center justify-between gap-1 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-black/[0.03]"
+        aria-expanded={true}
+        aria-label="Show aggregate score only"
+      >
+        {summary ? (
+          <span className="text-[0.5rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
+            Agg {summary.goalsA}–{summary.goalsB}
+          </span>
+        ) : (
+          <span className="text-[0.5rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
+            2 legs
+          </span>
+        )}
+        <ChevronDown className="h-3 w-3 shrink-0 rotate-180 text-neutral-400" aria-hidden />
+      </button>
       <div className="space-y-1">
         {legs.map((leg, index) => (
           <KnockoutMatchCard
@@ -161,7 +206,7 @@ function KnockoutTieCard({
             aggregateWinnerTeam={aggregate?.winnerTeam ?? null}
             aggregateWinKind={aggregate?.winKind ?? null}
             roundAggregate={roundAggregateByMatchId?.get(leg.id) ?? null}
-            legLabel={legs.length > 1 ? `Leg ${index + 1}` : undefined}
+            legLabel={`Leg ${index + 1}`}
           />
         ))}
       </div>
@@ -169,33 +214,76 @@ function KnockoutTieCard({
   );
 }
 
-function KnockoutAdvanceBadge({
-  team,
-  logo,
+function KnockoutTieSummaryCard({
+  summary,
+  align,
   shortTeamNames,
-  winKind,
+  stage = "default",
+  wide,
+  expanded,
 }: {
-  team: string;
-  logo: string | null;
+  summary: NonNullable<ReturnType<typeof getKnockoutTieSummary>>;
+  align: "left" | "right" | "center";
   shortTeamNames: boolean;
-  winKind: KnockoutWinKind;
+  stage?: KnockoutStage;
+  wide?: boolean;
+  expanded: boolean;
 }) {
-  const label = shortTeamNames ? knockoutTeamShortName(team) : team;
-  const advLabel = winKind === "draw-decided" ? "Adv (p)" : "Adv";
+  const showScore = summary.legsFinished > 0;
+  const finished = summary.legsFinished >= summary.legsTotal && !summary.hasLiveLeg;
 
   return (
     <div
       className={cn(
-        "mb-1 flex items-center justify-center gap-1 rounded-md px-1.5 py-0.5 ring-1 ring-inset",
-        ADVANCE_BADGE_CLASS[winKind],
+        leaguesGlassInset,
+        knockoutMatchCardClass(stage, wide ? "w-full" : undefined),
+        "p-1.5",
+        stage === "default" && "border border-black/[0.06]",
       )}
-      title={winKind === "draw-decided" ? `${team} advance on penalties` : `${team} advance`}
     >
-      <FootballLogo src={logo} label={team} size="xs" />
-      <span className="truncate text-[0.5625rem] font-semibold">{label}</span>
-      <span className="shrink-0 text-[0.5rem] font-bold uppercase tracking-[0.06em] opacity-90">
-        {advLabel}
-      </span>
+      <div className="mb-0.5 flex items-center justify-between gap-1 px-0.5">
+        <p className="text-[0.5rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
+          {summary.legsFinished === 0
+            ? "2 legs"
+            : summary.legsFinished < summary.legsTotal
+              ? `Agg · ${summary.legsFinished}/${summary.legsTotal} played`
+              : "Agg · 2 legs"}
+        </p>
+        <ChevronDown
+          className={cn(
+            "h-3 w-3 shrink-0 text-neutral-400 transition-transform",
+            expanded && "rotate-180",
+          )}
+          aria-hidden
+        />
+      </div>
+      <KnockoutTeamLine
+        name={summary.teamA}
+        logo={summary.logoA}
+        goals={showScore ? summary.goalsA : null}
+        finished={showScore}
+        align={align}
+        shortTeamNames={shortTeamNames}
+        isWinner={finished && summary.winnerTeam === summary.teamA}
+        isLoser={finished && summary.winnerTeam !== null && summary.winnerTeam !== summary.teamA}
+        winKind={finished && summary.winnerTeam === summary.teamA ? summary.winKind : null}
+        undecided={showScore && !summary.winnerTeam}
+      />
+      <KnockoutTeamLine
+        name={summary.teamB}
+        logo={summary.logoB}
+        goals={showScore ? summary.goalsB : null}
+        finished={showScore}
+        align={align}
+        shortTeamNames={shortTeamNames}
+        isWinner={finished && summary.winnerTeam === summary.teamB}
+        isLoser={finished && summary.winnerTeam !== null && summary.winnerTeam !== summary.teamB}
+        winKind={finished && summary.winnerTeam === summary.teamB ? summary.winKind : null}
+        undecided={showScore && !summary.winnerTeam}
+      />
+      {summary.hasLiveLeg ? (
+        <p className="mt-1.5 text-center text-[0.625rem] font-medium text-emerald-700">Live</p>
+      ) : null}
     </div>
   );
 }
@@ -223,7 +311,6 @@ export function KnockoutMatchCard({
   const tieAggregateWinner = aggregateWinnerTeam ?? roundAggregate?.winnerTeam ?? null;
   const tieAggregateWinKind = aggregateWinKind ?? roundAggregate?.winKind ?? null;
   const cardWinKind = tieAggregateWinner ? tieAggregateWinKind : legWinKind;
-  const displayCardWinKind = displayKnockoutWinKind(match, cardWinKind);
 
   return (
     <div
@@ -233,8 +320,6 @@ export function KnockoutMatchCard({
         "p-1.5",
         stage === "default" && !compact && "border border-black/[0.06]",
         compact && stage === "default" && "border-0 bg-transparent shadow-none ring-0",
-        finished && displayCardWinKind === "regulation" && "ring-1 ring-emerald-500/15",
-        finished && displayCardWinKind === "draw-decided" && "ring-1 ring-orange-500/15",
       )}
     >
       {legLabel ? (
@@ -328,12 +413,12 @@ function resolveKnockoutLineWinKind({
   legWinKind: KnockoutWinKind | null;
 }) {
   if (tieAggregateWinner && teamName === tieAggregateWinner) {
-    return displayKnockoutWinKind(match, tieAggregateWinKind);
+    return tieAggregateWinKind;
   }
 
   const side = teamName === match.homeTeam ? "home" : "away";
   if (legWinnerSide === side) {
-    return displayKnockoutWinKind(match, legWinKind);
+    return legWinKind;
   }
 
   return null;
@@ -371,7 +456,6 @@ function KnockoutTeamLine({
         "flex items-center gap-1.5 rounded-md px-0.5 py-0.5",
         align === "right" && "flex-row-reverse",
         align === "center" && "justify-between",
-        winnerKind && WINNER_ROW_CLASS[winnerKind],
         isLoser && "opacity-45",
         undecided && "opacity-80",
       )}

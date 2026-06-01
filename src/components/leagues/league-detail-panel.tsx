@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueFixturesList } from "@/components/leagues/league-fixtures-list";
 import { LeagueNewsPanel } from "@/components/leagues/league-news-panel";
 import { LeagueKnockoutPanel } from "@/components/leagues/league-knockout-panel";
 import { LeagueSeasonsPanel } from "@/components/leagues/league-seasons-panel";
 import { LeagueStandingsTable } from "@/components/leagues/league-standings-table";
 import { LeagueStatLeaderGrid } from "@/components/leagues/league-stat-leaders";
+import { LeagueTeamsPanel } from "@/components/leagues/league-teams-panel";
 import {
   leaguesGlass,
   leaguesGlassFocus,
@@ -19,7 +19,6 @@ import type { LeagueProfile } from "@/lib/data/league-profile";
 import { getLeagueNewsLabel } from "@/lib/data/league-stats";
 import type { NewsArticle } from "@/lib/data/news-article";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
-import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
 type LeagueDetailTab = "overview" | "teams" | "seasons" | "knockout" | "news";
@@ -148,29 +147,7 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
         </div>
       ) : null}
 
-      {tab === "teams" ? (
-        <div className="space-y-4">
-          <section className={cn(leaguesGlass, "overflow-hidden")}>
-            <SectionHeader title="Select team" meta={`${league.standings.length} clubs`} />
-            <div className="flex flex-wrap gap-1.5 px-3 py-3 sm:px-4">
-              {league.standings.map((standing) => (
-                <Link
-                  key={standing.team}
-                  href={teamHrefFromName(league.id, standing.team)}
-                  className={cn(
-                    leaguesGlassFocus,
-                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all hover:bg-white/72 hover:text-neutral-950 active:scale-95 sm:px-3",
-                    "bg-white/48 text-neutral-700",
-                  )}
-                >
-                  <FootballLogo src={standing.teamLogo} label={standing.team} size="xs" />
-                  <span>{standing.team}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
-      ) : null}
+      {tab === "teams" ? <LeagueTeamsPanel league={league} /> : null}
 
       {tab === "seasons" ? <LeagueSeasonsPanel league={league} seasons={seasons} /> : null}
 

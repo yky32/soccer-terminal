@@ -47,18 +47,24 @@ export type KnockoutAggregateResult = {
   winKind: KnockoutWinKind;
 };
 
-export function computeKnockoutAggregate(legs: LeagueKnockoutMatch[]): KnockoutAggregateResult | null {
-  if (legs.length < 2) return null;
+function tieTeams(legs: LeagueKnockoutMatch[]) {
+  return { teamA: legs[0].homeTeam, teamB: legs[0].awayTeam };
+}
 
-  const finished = legs.filter((leg) => isKnockoutMatchFinished(leg.status));
-  if (finished.length < 2) return null;
-
-  const teamA = legs[0].homeTeam;
-  const teamB = legs[0].awayTeam;
+function accumulateTieGoals(
+  legs: LeagueKnockoutMatch[],
+  teamA: string,
+  teamB: string,
+  onlyFinished = true,
+) {
   let goalsA = 0;
   let goalsB = 0;
+  let legsCounted = 0;
 
-  for (const leg of finished) {
+  for (const leg of legs) {
+    if (onlyFinished && !isKnockoutMatchFinished(leg.status)) continue;
+    legsCounted += 1;
+
     if (leg.homeTeam === teamA && leg.awayTeam === teamB) {
       goalsA += leg.homeGoals ?? 0;
       goalsB += leg.awayGoals ?? 0;
@@ -69,6 +75,72 @@ export function computeKnockoutAggregate(legs: LeagueKnockoutMatch[]): KnockoutA
       return null;
     }
   }
+
+  return { goalsA, goalsB, legsCounted };
+}
+
+export type KnockoutTieSummary = {
+  teamA: string;
+  teamB: string;
+  logoA: string | null;
+  logoB: string | null;
+  goalsA: number;
+  goalsB: number;
+  legsFinished: number;
+  legsTotal: number;
+  hasLiveLeg: boolean;
+  winnerTeam: string | null;
+  winKind: KnockoutWinKind | null;
+};
+
+/** Aggregate scoreboard for a two-legged tie (works with 0–2 legs finished). */
+export function getKnockoutTieSummary(legs: LeagueKnockoutMatch[]): KnockoutTieSummary | null {
+  if (legs.length < 2) return null;
+
+  const { teamA, teamB } = tieTeams(legs);
+  const totals = accumulateTieGoals(legs, teamA, teamB, true);
+  if (!totals) return null;
+
+  const logoA =
+    legs.find((leg) => leg.homeTeam === teamA)?.homeLogo ??
+    legs.find((leg) => leg.awayTeam === teamA)?.awayLogo ??
+    null;
+  const logoB =
+    legs.find((leg) => leg.homeTeam === teamB)?.homeLogo ??
+    legs.find((leg) => leg.awayTeam === teamB)?.awayLogo ??
+    null;
+
+  const decided = computeKnockoutAggregate(legs);
+  const hasLiveLeg = legs.some(
+    (leg) => leg.status === "1H" || leg.status === "2H" || leg.status === "HT",
+  );
+
+  return {
+    teamA,
+    teamB,
+    logoA,
+    logoB,
+    goalsA: totals.goalsA,
+    goalsB: totals.goalsB,
+    legsFinished: totals.legsCounted,
+    legsTotal: legs.length,
+    hasLiveLeg,
+    winnerTeam: decided?.winnerTeam ?? null,
+    winKind: decided?.winKind ?? null,
+  };
+}
+
+export function computeKnockoutAggregate(legs: LeagueKnockoutMatch[]): KnockoutAggregateResult | null {
+  if (legs.length < 2) return null;
+
+  const finished = legs.filter((leg) => isKnockoutMatchFinished(leg.status));
+  if (finished.length < 2) return null;
+
+  const { teamA, teamB } = tieTeams(legs);
+  const totals = accumulateTieGoals(finished, teamA, teamB, false);
+  if (!totals) return null;
+
+  const { goalsA, goalsB } = totals;
 
   if (goalsA > goalsB) {
     const logo =
@@ -100,8 +172,12 @@ export function computeKnockoutAggregate(legs: LeagueKnockoutMatch[]): KnockoutA
   return null;
 }
 
-function tieKeyForMatch(match: LeagueKnockoutMatch) {
+export function knockoutTieKey(match: LeagueKnockoutMatch) {
   return [match.homeTeam, match.awayTeam].sort().join("|");
+}
+
+function tieKeyForMatch(match: LeagueKnockoutMatch) {
+  return knockoutTieKey(match);
 }
 
 /** Groups two-legged ties; single matches stay as one-element arrays. */
@@ -133,28 +209,26 @@ export function groupKnockoutIntoTies(matches: LeagueKnockoutMatch[]): LeagueKno
   });
 }
 
+/**
+ * Splits a round into left/right bracket halves by tie (not by individual leg).
+ * Keeps both legs of a two-legged tie on the same side.
+ */
+export function splitKnockoutRoundHalf(
+  matches: LeagueKnockoutMatch[],
+  side: "left" | "right",
+) {
+  const ties = groupKnockoutIntoTies(matches);
+  const midpoint = Math.ceil(ties.length / 2);
+  const half = side === "left" ? ties.slice(0, midpoint) : ties.slice(midpoint);
+  return half.flat();
+}
+
 export function teamWonKnockoutLeg(match: LeagueKnockoutMatch, teamName: string) {
   const winner = knockoutLegWinner(match);
   if (!winner) return false;
   return winner === "home"
     ? match.homeTeam === teamName
     : match.awayTeam === teamName;
-}
-
-export function isKnockoutLevelScore(match: LeagueKnockoutMatch) {
-  if (!isKnockoutMatchFinished(match.status)) return false;
-  if (match.homeGoals === null || match.awayGoals === null) return false;
-  return match.homeGoals === match.awayGoals;
-}
-
-/** Orange on drawn scorelines when a winner/advancer is shown (e.g. 1–1 + aggregate or pens). */
-export function displayKnockoutWinKind(
-  match: LeagueKnockoutMatch,
-  winKind: KnockoutWinKind | null,
-): KnockoutWinKind | null {
-  if (!winKind) return null;
-  if (isKnockoutLevelScore(match) && winKind === "regulation") return "draw-decided";
-  return winKind;
 }
 
 export type KnockoutMatchAggregateHint = {

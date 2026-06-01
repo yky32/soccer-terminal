@@ -4,11 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueMapZone } from "@/components/leagues/league-map-zone";
-import {
-  leaguesGlassInset,
-  leaguesGlassInsetBar,
-  leaguesGlassStrong,
-} from "@/components/leagues/leagues-glass";
+import { leaguesGlassInset, leaguesGlassStrong } from "@/components/leagues/leagues-glass";
 import { Map, type MapRef } from "@/components/ui/map";
 import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueProfile } from "@/lib/data/league-profile";
@@ -89,12 +85,7 @@ export function LeagueHero({ league }: LeagueHeroProps) {
             </div>
           </div>
 
-          <div
-            className={cn(
-              leaguesGlassInsetBar,
-              "grid grid-cols-3 divide-x divide-black/[0.06] border-t border-black/[0.06]",
-            )}
-          >
+          <div className="grid grid-cols-3 gap-3 px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
             <HeroStat label="Teams" value={String(league.teams)} />
             <HeroStat label="Matchday" value={String(league.matchday)} />
             <HeroStat
