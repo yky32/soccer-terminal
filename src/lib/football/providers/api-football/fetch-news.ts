@@ -1,25 +1,23 @@
 import type { NewsArticle, NewsCategory } from "@/lib/data/news-article";
 import {
-  LEAGUE_CATALOG,
-  seasonYearForEntry,
+  getCatalogEntryByApiId,
   type LeagueCatalogEntry,
 } from "@/lib/football/league-catalog";
 import {
   type ApiFootballInjury,
 } from "@/lib/football/providers/api-football/normalize-catalog";
-import { apiFootballGet } from "@/lib/football/providers/api-football/request";
+import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
-
-const NEWS_LEAGUES = LEAGUE_CATALOG.filter((entry) =>
-  ["premier-league", "la-liga", "serie-a", "bundesliga", "ligue-1", "ucl", "mls", "saudi-pro"].includes(
-    entry.id,
-  ),
-);
 
 const MATCH_REPORT_IMAGE =
   "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1200&h=675&auto=format&fit=crop&q=80";
 const INJURY_IMAGE =
   "https://images.unsplash.com/photo-1577213661175-754a792548d1?w=1200&h=675&auto=format&fit=crop&q=80";
+
+const NEWS_CACHE_MS = 300_000;
+const MAX_INJURY_ARTICLES = 24;
+
+let newsCache: { articles: NewsArticle[]; cachedAt: number } | null = null;
 
 function injuryArticle(entry: LeagueCatalogEntry, injury: ApiFootballInjury): NewsArticle {
   const reason = injury.player.reason ?? injury.player.type ?? "Unavailable";
@@ -32,6 +30,25 @@ function injuryArticle(entry: LeagueCatalogEntry, injury: ApiFootballInjury): Ne
     category: "injury",
     league: entry.newsLabel,
     leagueLogo: entry.logo,
+    imageUrl: injury.player.photo ?? INJURY_IMAGE,
+    imageAlt: `${injury.player.name} injury update`,
+  };
+}
+
+function injuryArticleFromApi(injury: ApiFootballInjury): NewsArticle | null {
+  const entry = getCatalogEntryByApiId(injury.league.id);
+  if (entry) return injuryArticle(entry, injury);
+
+  const reason = injury.player.reason ?? injury.player.type ?? "Unavailable";
+  return {
+    id: `injury-${injury.player.id}-${injury.fixture.id}`,
+    headline: `${injury.player.name} sidelined for ${injury.team.name}`,
+    excerpt: `${injury.player.name} (${injury.team.name}) — ${reason}.`,
+    body: `${injury.player.name} is listed as unavailable for ${injury.team.name} in ${injury.league.name}. Reported status: ${reason}.`,
+    publishedAt: injury.fixture.date,
+    category: "injury",
+    league: injury.league.name,
+    leagueLogo: injury.league.logo,
     imageUrl: injury.player.photo ?? INJURY_IMAGE,
     imageAlt: `${injury.player.name} injury update`,
   };
@@ -68,32 +85,44 @@ function recentDates(days: number) {
   return dates;
 }
 
-export async function fetchNewsArticles(apiKey: string): Promise<NewsArticle[]> {
-  const articles: NewsArticle[] = [];
-
+async function fetchInjuryArticles(apiKey: string) {
+  const dates = recentDates(3);
   const injuryBatches = await Promise.all(
-    NEWS_LEAGUES.map(async (entry) => {
-      const season = seasonYearForEntry(entry);
-      try {
-        const injuries = await apiFootballGet<ApiFootballInjury>(apiKey, "/injuries", {
-          league: entry.apiId,
-          season,
-        });
-        return injuries.slice(0, 6).map((injury) => injuryArticle(entry, injury));
-      } catch {
-        return [] as NewsArticle[];
-      }
-    }),
+    dates.map((date) =>
+      apiFootballGetSafe<ApiFootballInjury>(
+        apiKey,
+        "/injuries",
+        { date },
+        { cache: "no-store" },
+      ),
+    ),
   );
 
-  articles.push(...injuryBatches.flat());
+  const seen = new Set<string>();
+  const articles: NewsArticle[] = [];
+
+  for (const batch of injuryBatches) {
+    for (const injury of batch) {
+      const article = injuryArticleFromApi(injury);
+      if (!article || seen.has(article.id)) continue;
+      seen.add(article.id);
+      articles.push(article);
+      if (articles.length >= MAX_INJURY_ARTICLES) return articles;
+    }
+  }
+
+  return articles;
+}
+
+async function fetchNewsArticlesFresh(apiKey: string): Promise<NewsArticle[]> {
+  const articles: NewsArticle[] = [];
+
+  articles.push(...(await fetchInjuryArticles(apiKey)));
 
   const dates = recentDates(3);
   const fixtureBatches = await Promise.all(
     dates.map((date) =>
-      apiFootballGet<ApiFootballLiveFixture>(apiKey, "/fixtures", { date }, 120).catch(
-        () => [] as ApiFootballLiveFixture[],
-      ),
+      apiFootballGetSafe<ApiFootballLiveFixture>(apiKey, "/fixtures", { date }, 120),
     ),
   );
 
@@ -103,7 +132,7 @@ export async function fetchNewsArticles(apiKey: string): Promise<NewsArticle[]> 
     .slice(0, 24);
 
   for (const fixture of finished) {
-    const entry = LEAGUE_CATALOG.find((item) => item.apiId === fixture.league.id) ?? null;
+    const entry = getCatalogEntryByApiId(fixture.league.id) ?? null;
     articles.push(matchReportArticle(fixture, entry));
   }
 
@@ -115,6 +144,16 @@ export async function fetchNewsArticles(apiKey: string): Promise<NewsArticle[]> 
       return true;
     })
     .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+}
+
+export async function fetchNewsArticles(apiKey: string): Promise<NewsArticle[]> {
+  if (newsCache && Date.now() - newsCache.cachedAt < NEWS_CACHE_MS) {
+    return newsCache.articles;
+  }
+
+  const articles = await fetchNewsArticlesFresh(apiKey);
+  newsCache = { articles, cachedAt: Date.now() };
+  return articles;
 }
 
 export function getNewsArticleById(articles: NewsArticle[], id: string) {

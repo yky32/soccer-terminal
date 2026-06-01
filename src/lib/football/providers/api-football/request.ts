@@ -6,12 +6,24 @@ import {
 
 const API_BASE = "https://v3.football.api-sports.io";
 
+export type ApiFootballGetOptions = {
+  revalidate?: number;
+  /** Skip Next.js data cache (use for large responses that exceed the 2MB limit). */
+  cache?: RequestCache;
+};
+
+function resolveGetOptions(options: number | ApiFootballGetOptions = 300): ApiFootballGetOptions {
+  return typeof options === "number" ? { revalidate: options } : options;
+}
+
 export async function apiFootballGet<T>(
   apiKey: string,
   path: string,
   query: Record<string, string | number>,
-  revalidate = 300,
+  options: number | ApiFootballGetOptions = 300,
 ): Promise<T[]> {
+  const { revalidate = 300, cache } = resolveGetOptions(options);
+
   const { data } = await apiRequest<ApiFootballEnvelope<T>>({
     scope: "server",
     provider: "api-football",
@@ -21,7 +33,7 @@ export async function apiFootballGet<T>(
     headers: {
       "x-apisports-key": apiKey,
     },
-    next: { revalidate },
+    ...(cache === "no-store" ? { cache: "no-store" as const } : { next: { revalidate } }),
   });
 
   assertNoApiErrors(data);
@@ -33,10 +45,10 @@ export async function apiFootballGetSafe<T>(
   apiKey: string,
   path: string,
   query: Record<string, string | number>,
-  revalidate = 300,
+  options: number | ApiFootballGetOptions = 300,
 ): Promise<T[]> {
   try {
-    return await apiFootballGet<T>(apiKey, path, query, revalidate);
+    return await apiFootballGet<T>(apiKey, path, query, options);
   } catch {
     return [];
   }
