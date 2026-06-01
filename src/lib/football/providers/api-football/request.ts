@@ -3,6 +3,7 @@ import {
   assertNoApiErrors,
   type ApiFootballEnvelope,
 } from "@/lib/football/providers/api-football/errors";
+import { enqueueApiFootballRequest } from "@/lib/football/providers/api-football/request-queue";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -24,20 +25,49 @@ export async function apiFootballGet<T>(
 ): Promise<T[]> {
   const { revalidate = 300, cache } = resolveGetOptions(options);
 
-  const { data } = await apiRequest<ApiFootballEnvelope<T>>({
-    scope: "server",
-    provider: "api-football",
-    method: "GET",
-    url: `${API_BASE}${path}`,
-    query,
-    headers: {
-      "x-apisports-key": apiKey,
-    },
-    ...(cache === "no-store" ? { cache: "no-store" as const } : { next: { revalidate } }),
-  });
+  return enqueueApiFootballRequest(async () => {
+    const { data } = await apiRequest<ApiFootballEnvelope<T>>({
+      scope: "server",
+      provider: "api-football",
+      method: "GET",
+      url: `${API_BASE}${path}`,
+      query,
+      headers: {
+        "x-apisports-key": apiKey,
+      },
+      ...(cache === "no-store" ? { cache: "no-store" as const } : { next: { revalidate } }),
+    });
 
-  assertNoApiErrors(data);
-  return (data.response ?? []) as T[];
+    assertNoApiErrors(data);
+    return (data.response ?? []) as T[];
+  });
+}
+
+/** Low-level fetch returning the full API envelope (for endpoints used outside apiFootballGet). */
+export async function apiFootballFetch<T>(
+  apiKey: string,
+  path: string,
+  query: Record<string, string | number>,
+  options: number | ApiFootballGetOptions = 300,
+): Promise<ApiFootballEnvelope<T>> {
+  const { revalidate = 300, cache } = resolveGetOptions(options);
+
+  return enqueueApiFootballRequest(async () => {
+    const { data } = await apiRequest<ApiFootballEnvelope<T>>({
+      scope: "server",
+      provider: "api-football",
+      method: "GET",
+      url: `${API_BASE}${path}`,
+      query,
+      headers: {
+        "x-apisports-key": apiKey,
+      },
+      ...(cache === "no-store" ? { cache: "no-store" as const } : { next: { revalidate } }),
+    });
+
+    assertNoApiErrors(data);
+    return data;
+  });
 }
 
 /** Same as apiFootballGet but returns an empty array instead of throwing. */

@@ -29,6 +29,7 @@ type LeagueDetailTab = "overview" | "teams" | "seasons" | "news";
 type LeagueDetailPanelProps = {
   league: LeagueProfile;
   articles: NewsArticle[];
+  loading?: boolean;
 };
 
 const TABS: { id: LeagueDetailTab; label: string }[] = [
@@ -38,7 +39,7 @@ const TABS: { id: LeagueDetailTab; label: string }[] = [
   { id: "news", label: "News" },
 ];
 
-export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) {
+export function LeagueDetailPanel({ league, articles, loading = false }: LeagueDetailPanelProps) {
   const [tab, setTab] = useState<LeagueDetailTab>("overview");
 
   useEffect(() => {
@@ -55,6 +56,10 @@ export function LeagueDetailPanel({ league, articles }: LeagueDetailPanelProps) 
     () => articles.filter((article) => article.league === newsLabel).slice(0, 8),
     [articles, newsLabel],
   );
+
+  if (loading) {
+    return <LeagueDetailSkeleton />;
+  }
 
   return (
     <div className="space-y-4">
@@ -168,6 +173,19 @@ function SectionHeader({ title, meta }: { title: string; meta: string }) {
       </h2>
       <span className="text-[0.8125rem] text-neutral-500">{meta}</span>
     </header>
+  );
+}
+
+function LeagueDetailSkeleton() {
+  return (
+    <div className={cn(leaguesGlass, "space-y-4 p-5")}>
+      <div className="h-8 w-40 animate-pulse rounded-lg bg-black/[0.06]" />
+      <div className="grid gap-3 lg:grid-cols-2">
+        <div className="h-64 animate-pulse rounded-xl bg-black/[0.05]" />
+        <div className="h-64 animate-pulse rounded-xl bg-black/[0.05]" />
+      </div>
+      <p className="text-center text-[0.8125rem] text-neutral-500">Loading standings and fixtures…</p>
+    </div>
   );
 }
 

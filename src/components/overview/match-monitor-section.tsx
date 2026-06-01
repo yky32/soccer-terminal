@@ -27,9 +27,8 @@ import {
   type MonitoredMatch,
 } from "@/lib/match-monitor";
 import { apiRequest } from "@/lib/http/api-client";
+import { CLIENT_MAP_REFRESH_MS } from "@/lib/football/refresh-policy";
 import { cn } from "@/lib/utils";
-
-const REFRESH_MS = 120_000;
 
 function QuickAddButton({
   icon: Icon,
@@ -174,9 +173,10 @@ export function MatchMonitorSection() {
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const loadCatalog = useCallback(async () => {
+  const loadCatalog = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const { data } = await apiRequest<LiveCountriesBothResponse>({
         scope: "client",
         provider: "internal",
@@ -196,16 +196,21 @@ export function MatchMonitorSection() {
       setUpdatedAt(data.live.updatedAt ?? data.future.updatedAt ?? null);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load matches");
+      if (!silent) {
+        setError(err instanceof Error ? err.message : "Failed to load matches");
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     setWatchlistIds(readWatchlistIds());
-    loadCatalog();
-    const interval = setInterval(loadCatalog, REFRESH_MS);
+    void loadCatalog();
+    const interval = setInterval(
+      () => void loadCatalog({ silent: true }),
+      CLIENT_MAP_REFRESH_MS,
+    );
     return () => clearInterval(interval);
   }, [loadCatalog]);
 

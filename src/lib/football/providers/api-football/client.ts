@@ -7,17 +7,20 @@ import { enrichMatchesWithLocations } from "@/lib/football/enrich-match-location
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { buildLiveFixturesSnapshot } from "@/lib/football/providers/api-football/normalize-fixtures";
 import { enrichMatchesWithEvents } from "@/lib/football/providers/api-football/enrich-fixture-events";
+import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
 import {
-  assertNoApiErrors,
-  isRateLimitError,
-} from "@/lib/football/providers/api-football/errors";
+  API_REVALIDATE_DEFAULT_SEC,
+  API_REVALIDATE_LIVE_SEC,
+} from "@/lib/football/refresh-policy";
+import {
+  apiFootballFetch,
+  mapInBatches,
+} from "@/lib/football/providers/api-football/request";
 import { getCachedMapSnapshot } from "@/lib/football/providers/api-football/snapshot-cache";
 import type {
   ApiFootballLiveFixture,
-  ApiFootballLiveResponse,
 } from "@/lib/football/providers/api-football/types";
 
-const API_BASE = "https://v3.football.api-sports.io";
 const FUTURE_DAYS = 7;
 const UPCOMING_STATUSES = new Set(["NS", "TBD"]);
 
@@ -29,6 +32,8 @@ function upcomingDateRange(days: number) {
   return {
     from: from.toISOString().slice(0, 10),
     to: to.toISOString().slice(0, 10),
+    // API-Football rejects from/to without another constraint; fetch only not-started fixtures.
+    status: "NS",
   };
 }
 
@@ -43,22 +48,24 @@ async function fetchUpcomingFixtures(
   apiKey: string,
   days: number,
 ): Promise<ApiFootballLiveFixture[]> {
+  const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+  const { seasonYearForEntry } = await import("@/lib/football/league-catalog");
   const range = upcomingDateRange(days);
 
-  const { data } = await apiRequest<ApiFootballLiveResponse>({
-    scope: "server",
-    provider: "api-football",
-    method: "GET",
-    url: `${API_BASE}/fixtures`,
-    query: range,
-    headers: {
-      "x-apisports-key": apiKey,
-    },
-    next: { revalidate: 300 },
+  // API-Football rejects from/to without a constraint like league/team.
+  // Since the app focuses on a fixed league set, fetch upcoming fixtures per league.
+  const batches = await mapInBatches(LEAGUE_CATALOG, 2, async (entry) => {
+    const season = seasonYearForEntry(entry);
+    const data = await apiFootballFetch<ApiFootballLiveFixture[]>(
+      apiKey,
+      "/fixtures",
+      { league: entry.apiId, season, ...range },
+      API_REVALIDATE_DEFAULT_SEC,
+    );
+    return data.response ?? [];
   });
 
-  assertNoApiErrors(data);
-  return data.response ?? [];
+  return batches.flat();
 }
 
 async function buildSnapshot(
@@ -93,20 +100,21 @@ async function fetchLiveSnapshot(
   apiKey: string,
   mode: MapMatchMode,
 ): Promise<LiveCountriesSnapshot> {
-  const { data } = await apiRequest<ApiFootballLiveResponse>({
-    scope: "server",
-    provider: "api-football",
-    method: "GET",
-    url: `${API_BASE}/fixtures`,
-    query: { live: "all" },
-    headers: {
-      "x-apisports-key": apiKey,
-    },
-    next: { revalidate: 60 },
+  const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+  const { seasonYearForEntry } = await import("@/lib/football/league-catalog");
+
+  const batches = await mapInBatches(LEAGUE_CATALOG, 2, async (entry) => {
+    const season = seasonYearForEntry(entry);
+    const data = await apiFootballFetch<ApiFootballLiveFixture[]>(
+      apiKey,
+      "/fixtures",
+      { live: "all", league: entry.apiId, season },
+      API_REVALIDATE_LIVE_SEC,
+    );
+    return data.response ?? [];
   });
 
-  assertNoApiErrors(data);
-  return buildSnapshot(apiKey, mode, data.response ?? [], true);
+  return buildSnapshot(apiKey, mode, batches.flat(), true);
 }
 
 async function fetchFutureSnapshot(
@@ -140,12 +148,13 @@ export function createApiFootballProvider(apiKey: string): FootballDataProvider 
       );
     },
 
+    async getLeagueCatalog() {
+      const { getLeagueCatalogShells } = await import("@/lib/football/league-catalog");
+      return getLeagueCatalogShells();
+    },
+
     async getLeagues() {
-      const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
-      const { fetchAllLeagueProfiles } = await import(
-        "@/lib/football/providers/api-football/fetch-league-profile"
-      );
-      return fetchAllLeagueProfiles(apiKey, LEAGUE_CATALOG);
+      return this.getLeagueCatalog();
     },
 
     async getLeagueById(id) {

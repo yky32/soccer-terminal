@@ -8,6 +8,7 @@ import type {
 import type { TeamPosition } from "@/lib/data/team-profile";
 import type { PlayerSlugMatch } from "@/lib/football/provider";
 import { getCatalogEntryById, seasonYearForEntry } from "@/lib/football/league-catalog";
+import { getCachedLeagueProfile } from "@/lib/football/providers/api-football/league-cache";
 import { fetchLeagueProfile } from "@/lib/football/providers/api-football/fetch-league-profile";
 import {
   type ApiFootballPlayerProfile,
@@ -104,7 +105,8 @@ export async function findPlayerBySlug(
   const entry = getCatalogEntryById(leagueId);
   if (!entry) return null;
 
-  const league = await fetchLeagueProfile(apiKey, entry);
+  const league =
+    getCachedLeagueProfile(leagueId) ?? (await fetchLeagueProfile(apiKey, entry));
 
   for (const standing of league.standings) {
     const prefix = `${teamSlugFromName(standing.team)}-`;
@@ -196,31 +198,31 @@ export async function fetchPlayerProfile(
     (fixture) => fixture.fixture.status.short === "FT",
   );
 
-  const matchPerformances: PlayerMatchPerformance[] = await Promise.all(
-    finishedFixtures.slice(0, 8).map(async (fixture) => {
-      const isHome = fixture.teams.home.name === match.standing.team;
-      const fixtureStats = await fetchFixturePlayerStats(
-        apiKey,
-        fixture.fixture.id,
-        match.playerId,
-      );
+  const matchPerformances: PlayerMatchPerformance[] = [];
 
-      return {
-        id: String(fixture.fixture.id),
-        opponent: isHome ? fixture.teams.away.name : fixture.teams.home.name,
-        opponentLogo: isHome ? fixture.teams.away.logo : fixture.teams.home.logo,
-        isHome,
-        date: fixture.fixture.date ?? new Date().toISOString(),
-        rating: Number.parseFloat(fixtureStats?.games.rating ?? "0") || 6.5,
-        goals: fixtureStats?.goals.total ?? 0,
-        assists: fixtureStats?.goals.assists ?? 0,
-        minutes: fixtureStats?.games.minutes ?? 0,
-        matchday: fixture.league.round ?? "Fixture",
-        shots: fixtureStats?.shots.total ?? 0,
-        passes: fixtureStats?.passes.total ?? 0,
-      };
-    }),
-  );
+  for (const fixture of finishedFixtures.slice(0, 4)) {
+    const isHome = fixture.teams.home.name === match.standing.team;
+    const fixtureStats = await fetchFixturePlayerStats(
+      apiKey,
+      fixture.fixture.id,
+      match.playerId,
+    );
+
+    matchPerformances.push({
+      id: String(fixture.fixture.id),
+      opponent: isHome ? fixture.teams.away.name : fixture.teams.home.name,
+      opponentLogo: isHome ? fixture.teams.away.logo : fixture.teams.home.logo,
+      isHome,
+      date: fixture.fixture.date ?? new Date().toISOString(),
+      rating: Number.parseFloat(fixtureStats?.games.rating ?? "0") || 6.5,
+      goals: fixtureStats?.goals.total ?? 0,
+      assists: fixtureStats?.goals.assists ?? 0,
+      minutes: fixtureStats?.games.minutes ?? 0,
+      matchday: fixture.league.round ?? "Fixture",
+      shots: fixtureStats?.shots.total ?? 0,
+      passes: fixtureStats?.passes.total ?? 0,
+    });
+  }
 
   return {
     slug: playerSlugFromTeamAndName(match.standing.team, match.name),

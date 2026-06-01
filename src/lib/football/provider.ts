@@ -26,6 +26,8 @@ export type PlayerSlugMatch = {
 export interface FootballDataProvider {
   readonly id: string;
   getMapCountries(mode: MapMatchMode): Promise<LiveCountriesSnapshot>;
+  /** Static catalog shells — no upstream API calls. */
+  getLeagueCatalog(): Promise<LeagueProfile[]>;
   getLeagues(): Promise<LeagueProfile[]>;
   getLeagueById(id: string): Promise<LeagueProfile | null>;
   getTeamProfile(leagueId: string, teamSlug: string): Promise<TeamProfile | null>;

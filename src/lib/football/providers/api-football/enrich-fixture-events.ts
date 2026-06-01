@@ -1,13 +1,10 @@
 import type { LiveMatch } from "@/lib/data/live-match";
-import { apiRequest } from "@/lib/http/api-client";
 import { normalizeFixtureEvents } from "@/lib/football/providers/api-football/normalize-events";
-import type {
-  ApiFootballLiveFixture,
-  ApiFootballLiveResponse,
-} from "@/lib/football/providers/api-football/types";
+import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
+import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
-const API_BASE = "https://v3.football.api-sports.io";
 const IDS_CHUNK = 20;
+const MAX_EVENT_BATCHES = 2;
 
 function chunkFixtureIds(ids: number[]) {
   const chunks: number[][] = [];
@@ -17,24 +14,6 @@ function chunkFixtureIds(ids: number[]) {
   }
 
   return chunks;
-}
-
-async function fetchFixturesByIds(apiKey: string, ids: number[]) {
-  if (ids.length === 0) return [];
-
-  const { data } = await apiRequest<ApiFootballLiveResponse>({
-    scope: "server",
-    provider: "api-football",
-    method: "GET",
-    url: `${API_BASE}/fixtures`,
-    query: { ids: ids.join("-") },
-    headers: {
-      "x-apisports-key": apiKey,
-    },
-    next: { revalidate: 60 },
-  });
-
-  return data.response ?? [];
 }
 
 function eventsByFixtureId(fixtures: ApiFootballLiveFixture[]) {
@@ -66,11 +45,21 @@ export async function enrichMatchesWithEvents(
 
   if (ids.length === 0) return matchesByCountry;
 
-  const batches = await Promise.all(
-    chunkFixtureIds(ids).map((chunk) => fetchFixturesByIds(apiKey, chunk)),
-  );
-  const eventMap = eventsByFixtureId(batches.flat());
+  const batches = chunkFixtureIds(ids).slice(0, MAX_EVENT_BATCHES);
+  const fixtures: ApiFootballLiveFixture[] = [];
 
+  for (const chunk of batches) {
+    fixtures.push(
+      ...(await apiFootballGetSafe<ApiFootballLiveFixture>(
+        apiKey,
+        "/fixtures",
+        { ids: chunk.join("-") },
+        60,
+      )),
+    );
+  }
+
+  const eventMap = eventsByFixtureId(fixtures);
   const enriched: Record<string, LiveMatch[]> = {};
 
   for (const [code, matches] of Object.entries(matchesByCountry)) {

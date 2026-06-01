@@ -37,9 +37,13 @@ export function createMockProvider(): FootballDataProvider {
       return buildSnapshotFromMatches(matches, mode);
     },
 
-    async getLeagues() {
+    async getLeagueCatalog() {
       await delay(MOCK_LATENCY_MS);
       return getMockLeagues();
+    },
+
+    async getLeagues() {
+      return this.getLeagueCatalog();
     },
 
     async getLeagueById(id) {

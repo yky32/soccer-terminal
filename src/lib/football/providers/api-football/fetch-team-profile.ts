@@ -17,8 +17,9 @@ import {
   type ApiFootballSquad,
   type ApiFootballTeamInfo,
 } from "@/lib/football/providers/api-football/normalize-catalog";
-import { apiFootballGet } from "@/lib/football/providers/api-football/request";
+import { apiFootballGet, apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import { seasonYearForEntry, getCatalogEntryById } from "@/lib/football/league-catalog";
+import { getCachedLeagueProfile } from "@/lib/football/providers/api-football/league-cache";
 import { fetchLeagueProfile } from "@/lib/football/providers/api-football/fetch-league-profile";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
@@ -132,7 +133,8 @@ export async function fetchTeamProfile(
   const entry = getCatalogEntryById(leagueId);
   if (!entry) return null;
 
-  const league = await fetchLeagueProfile(apiKey, entry);
+  const league =
+    getCachedLeagueProfile(leagueId) ?? (await fetchLeagueProfile(apiKey, entry));
   const standing = findStandingBySlug(league, teamSlug);
   if (!standing?.teamId) return null;
 
@@ -145,9 +147,7 @@ export async function fetchTeamProfile(
       apiFootballGet<ApiFootballLiveFixture>(apiKey, "/fixtures", { team: teamId, last: 5, season }),
       apiFootballGet<ApiFootballLiveFixture>(apiKey, "/fixtures", { team: teamId, next: 5, season }),
       apiFootballGet<ApiFootballTeamInfo>(apiKey, "/teams", { id: teamId }),
-      apiFootballGet<ApiFootballCoach>(apiKey, "/coachs", { team: teamId }).catch(
-        () => [] as ApiFootballCoach[],
-      ),
+      apiFootballGetSafe<ApiFootballCoach>(apiKey, "/coachs", { team: teamId }),
     ]);
 
   const squadBlock = squadBlocks[0];

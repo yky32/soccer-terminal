@@ -83,15 +83,12 @@ export const LEAGUE_NEWS_LABELS: Record<string, string> = {
   "serie-a": "Serie A",
   bundesliga: "Bundesliga",
   "ligue-1": "Ligue 1",
+  "world-cup": "World Cup",
   ucl: "Champions League",
   uel: "Europa League",
   mls: "MLS",
   j1: "J1 League",
-  "k-league": "K League 1",
   "saudi-pro": "Pro League",
-  eredivisie: "Eredivisie",
-  "liga-portugal": "Liga Portugal",
-  "nsw-npl": "NSW NPL",
 };
 
 function hashString(value: string) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStickyChromeHide } from "@/components/use-sticky-chrome";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueDetailPanel } from "@/components/leagues/league-detail-panel";
@@ -20,16 +20,37 @@ import {
   LEAGUE_TIER_LABELS,
 } from "@/lib/data/league-profile";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
+import { FEATURED_LEAGUE_ID } from "@/lib/football/league-catalog";
+import {
+  readCachedLeagueProfile,
+  writeCachedLeagueProfile,
+} from "@/lib/football/local-league-cache";
+import { apiRequest } from "@/lib/http/api-client";
 import { cn } from "@/lib/utils";
 
 type LeaguesFeedProps = {
-  leagues: LeagueProfile[];
-  articles: NewsArticle[];
+  catalog: LeagueProfile[];
+  initialLeague: LeagueProfile | null;
 };
+
+type LeagueApiResponse = LeagueProfile & { error?: string };
+
+type NewsApiResponse = {
+  articles: NewsArticle[];
+  error?: string;
+};
+
+function isLeagueLoaded(league: LeagueProfile | undefined) {
+  return Boolean(league && league.standings.length > 0);
+}
+
+const LEAGUE_LOCAL_TTL_MS = 30 * 60_000;
 
 const REGIONS: (LeagueRegion | "all")[] = [
   "all",
   "europe",
+  "world",
   "americas",
   "asia",
   "middle-east",
@@ -39,6 +60,7 @@ const REGIONS: (LeagueRegion | "all")[] = [
 const REGION_SHORT: Record<LeagueRegion | "all", string> = {
   all: "All",
   europe: "Europe",
+  world: "World",
   americas: "Americas",
   asia: "Asia",
   "middle-east": "M.East",
@@ -54,14 +76,110 @@ const TIER_SHORT: Record<LeagueTier | "all", string> = {
   regional: "Regional",
 };
 
-export function LeaguesFeed({ leagues, articles }: LeaguesFeedProps) {
+export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
   const [region, setRegion] = useState<LeagueRegion | "all">("all");
   const [tier, setTier] = useState<LeagueTier | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(leagues[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState(
+    initialLeague?.id ?? catalog[0]?.id ?? FEATURED_LEAGUE_ID,
+  );
+  const [profiles, setProfiles] = useState<Record<string, LeagueProfile>>(() => {
+    if (!initialLeague) return {};
+    return { [initialLeague.id]: initialLeague };
+  });
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const loadedRef = useRef<Set<string>>(
+    new Set(initialLeague ? [initialLeague.id] : []),
+  );
   const { isStuck: isRailStuck, sentinelRef } = useStickyChromeHide();
+
+  const leagues = useMemo(
+    () => catalog.map((shell) => profiles[shell.id] ?? shell),
+    [catalog, profiles],
+  );
+
+  const loadLeague = useCallback(async (leagueId: string) => {
+    const cached = readCachedLeagueProfile(leagueId);
+    const cachedFresh = cached ? Date.now() - cached.cachedAt < LEAGUE_LOCAL_TTL_MS : false;
+
+    if (cached && isLeagueLoaded(cached.profile)) {
+      // Instant render from local cache.
+      setProfiles((current) => ({ ...current, [leagueId]: cached.profile }));
+      loadedRef.current.add(leagueId);
+
+      // If fresh, skip network; if stale, refresh silently in background.
+      if (cachedFresh) return;
+    } else if (loadedRef.current.has(leagueId)) {
+      return;
+    }
+
+    setLoadingId(leagueId);
+    try {
+      const { data } = await apiRequest<LeagueApiResponse>({
+        scope: "client",
+        provider: "internal",
+        method: "GET",
+        url: `/api/leagues/${leagueId}`,
+      });
+
+      if (data.error || !isLeagueLoaded(data)) return;
+
+      loadedRef.current.add(leagueId);
+      setProfiles((current) => ({ ...current, [leagueId]: data }));
+      writeCachedLeagueProfile(leagueId, data);
+    } finally {
+      setLoadingId((current) => (current === leagueId ? null : current));
+    }
+  }, []);
+
+  const handleSelectLeague = useCallback(
+    (leagueId: string) => {
+      setSelectedId(leagueId);
+      void loadLeague(leagueId);
+    },
+    [loadLeague],
+  );
+
+  useEffect(() => {
+    if (!selectedId) return;
+    void loadLeague(selectedId);
+  }, [selectedId, loadLeague]);
+
+  useEffect(() => {
+    if (initialLeague && isLeagueLoaded(initialLeague)) {
+      writeCachedLeagueProfile(initialLeague.id, initialLeague);
+    }
+  }, [initialLeague]);
+
+  useEffect(() => {
+    if (!ENABLE_NEWS) return;
+    let cancelled = false;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const { data } = await apiRequest<NewsApiResponse>({
+          scope: "client",
+          provider: "internal",
+          method: "GET",
+          url: "/api/news",
+        });
+
+        if (!cancelled && !data.error) {
+          setArticles(data.articles ?? []);
+        }
+      } catch {
+        // News is optional on leagues — fail silently
+      }
+    }, 2_000);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -126,7 +244,7 @@ export function LeaguesFeed({ leagues, articles }: LeaguesFeedProps) {
               onSearchQueryChange={setSearchQuery}
               onSearchOpenChange={setSearchOpen}
               onScopeOpenChange={setScopeOpen}
-              onSelectLeague={setSelectedId}
+              onSelectLeague={handleSelectLeague}
               onResetFilters={resetFilters}
             />
           </div>
@@ -153,7 +271,11 @@ export function LeaguesFeed({ leagues, articles }: LeaguesFeedProps) {
           {selected ? (
             <div className={cn(leaguesGlassEnter, "space-y-4")}>
               <LeagueHero league={selected} />
-              <LeagueDetailPanel league={selected} articles={articles} />
+              <LeagueDetailPanel
+                league={selected}
+                articles={articles}
+                loading={loadingId === selected.id && !isLeagueLoaded(selected)}
+              />
             </div>
           ) : null}
         </>

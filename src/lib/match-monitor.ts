@@ -17,10 +17,15 @@ export const MAX_WATCHLIST = 16;
 /** Top-tier leagues for one-tap bulk add. */
 export const FAMOUS_LEAGUES = [
   { name: "Premier League", shortLabel: "PL" },
+  { name: "World Cup", shortLabel: "WC" },
+  { name: "Champions League", shortLabel: "UCL" },
   { name: "La Liga", shortLabel: "La Liga" },
-  { name: "Serie A", shortLabel: "Serie A" },
   { name: "Bundesliga", shortLabel: "BL" },
+  { name: "Serie A", shortLabel: "Serie A" },
+  { name: "Ligue 1", shortLabel: "Ligue 1" },
   { name: "Major League Soccer", shortLabel: "MLS" },
+  { name: "Saudi Pro League", shortLabel: "SPL" },
+  { name: "J1 League", shortLabel: "J1" },
 ] as const;
 
 export type FamousLeague = (typeof FAMOUS_LEAGUES)[number];

@@ -14,12 +14,12 @@ import type {
 } from "@/lib/data/live-match-countries";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
+import { CLIENT_MAP_REFRESH_MS } from "@/lib/football/refresh-policy";
 import { apiRequest } from "@/lib/http/api-client";
 import { cn } from "@/lib/utils";
 
 const WORLD_VIEW = { center: [0, 22] as [number, number], zoom: 1.2 };
 const COUNTRY_FOCUS_ZOOM = 3.25;
-const REFRESH_MS = 120_000;
 const SPLIT_TRANSITION_MS = 700;
 const MAP_FLY_MS = 900;
 
@@ -54,41 +54,50 @@ export function WorldMapPreview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadMapCountries = useCallback(async (mode: MapMatchMode) => {
-    try {
-      setLoading(true);
-      const { data } = await apiRequest<LiveCountriesResponse>({
-        scope: "client",
-        provider: "internal",
-        method: "GET",
-        url: "/api/map/live-countries",
-        query: { mode },
-      });
+  const loadMapCountries = useCallback(
+    async (mode: MapMatchMode, options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      try {
+        if (!silent) setLoading(true);
+        const { data } = await apiRequest<LiveCountriesResponse>({
+          scope: "client",
+          provider: "internal",
+          method: "GET",
+          url: "/api/map/live-countries",
+          query: { mode },
+        });
 
-      if (data.error) {
-        throw new Error(data.error);
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        setStats(getLiveMatchStats(data.countries ?? []));
+        setMatchesByCountry(data.matchesByCountry ?? {});
+        setUpdatedAt(data.updatedAt ?? null);
+        setError(null);
+      } catch (err) {
+        if (!silent) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : mode === "live"
+                ? "Failed to load live matches"
+                : "Failed to load upcoming matches",
+          );
+        }
+      } finally {
+        if (!silent) setLoading(false);
       }
-
-      setStats(getLiveMatchStats(data.countries ?? []));
-      setMatchesByCountry(data.matchesByCountry ?? {});
-      setUpdatedAt(data.updatedAt ?? null);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : mode === "live"
-            ? "Failed to load live matches"
-            : "Failed to load upcoming matches",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    loadMapCountries(matchMode);
-    const interval = setInterval(() => loadMapCountries(matchMode), REFRESH_MS);
+    void loadMapCountries(matchMode);
+    const interval = setInterval(
+      () => void loadMapCountries(matchMode, { silent: true }),
+      CLIENT_MAP_REFRESH_MS,
+    );
     return () => clearInterval(interval);
   }, [loadMapCountries, matchMode]);
 

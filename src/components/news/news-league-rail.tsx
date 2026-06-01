@@ -16,12 +16,16 @@ type NewsLeagueRailProps = {
 function leagueShortName(name: string) {
   const map: Record<string, string> = {
     "Premier League": "EPL",
+    "World Cup": "WC",
+    "Champions League": "UCL",
+    "Europa League": "UEL",
     "La Liga": "La Liga",
     "Serie A": "Serie A",
     Bundesliga: "Bundesliga",
     "Ligue 1": "Ligue 1",
-    "Champions League": "UCL",
-    "Europa League": "UEL",
+    "Major League Soccer": "MLS",
+    "Saudi Pro League": "SPL",
+    "J1 League": "J1",
   };
 
   return map[name] ?? name.split(" ").slice(0, 2).join(" ");

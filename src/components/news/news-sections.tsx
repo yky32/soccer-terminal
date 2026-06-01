@@ -482,7 +482,7 @@ function TimelineTrack({
   showLeague?: boolean;
 }) {
   return (
-    <ol className="space-y-0 px-3 pb-3">
+    <ol className="space-y-2 px-3 pb-3">
       {articles.map((article, index) => {
         const isLast = index === articles.length - 1;
 
@@ -511,7 +511,7 @@ function TimelineTrack({
                 newsGlassHover,
                 newsFocus,
                 newsEnter,
-                "group mb-2.5 flex w-full gap-2.5 overflow-hidden rounded-xl p-2 text-left last:mb-0 sm:p-2.5",
+                "group flex w-full gap-2.5 overflow-hidden rounded-xl p-2 text-left sm:p-2.5",
               )}
             >
               <div className="min-w-0 flex-1">

@@ -1,5 +1,9 @@
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import type { LiveCountriesSnapshot } from "@/lib/football/provider";
+import {
+  SNAPSHOT_TTL_FUTURE_MS,
+  SNAPSHOT_TTL_LIVE_MS,
+} from "@/lib/football/refresh-policy";
 import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
 
 type CacheEntry = {
@@ -8,8 +12,8 @@ type CacheEntry = {
 };
 
 const CACHE_TTL_MS: Record<MapMatchMode, number> = {
-  live: 60_000,
-  future: 300_000,
+  live: SNAPSHOT_TTL_LIVE_MS,
+  future: SNAPSHOT_TTL_FUTURE_MS,
 };
 
 const store = new Map<MapMatchMode, CacheEntry>();

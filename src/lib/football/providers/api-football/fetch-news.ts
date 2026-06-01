@@ -6,7 +6,8 @@ import {
 import {
   type ApiFootballInjury,
 } from "@/lib/football/providers/api-football/normalize-catalog";
-import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
+import { apiFootballGetSafe, mapInBatches } from "@/lib/football/providers/api-football/request";
+import { ROUTE_REVALIDATE_NEWS_SEC } from "@/lib/football/refresh-policy";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
 const MATCH_REPORT_IMAGE =
@@ -14,7 +15,7 @@ const MATCH_REPORT_IMAGE =
 const INJURY_IMAGE =
   "https://images.unsplash.com/photo-1577213661175-754a792548d1?w=1200&h=675&auto=format&fit=crop&q=80";
 
-const NEWS_CACHE_MS = 300_000;
+const NEWS_CACHE_MS = ROUTE_REVALIDATE_NEWS_SEC * 1000;
 const MAX_INJURY_ARTICLES = 24;
 
 let newsCache: { articles: NewsArticle[]; cachedAt: number } | null = null;
@@ -39,19 +40,8 @@ function injuryArticleFromApi(injury: ApiFootballInjury): NewsArticle | null {
   const entry = getCatalogEntryByApiId(injury.league.id);
   if (entry) return injuryArticle(entry, injury);
 
-  const reason = injury.player.reason ?? injury.player.type ?? "Unavailable";
-  return {
-    id: `injury-${injury.player.id}-${injury.fixture.id}`,
-    headline: `${injury.player.name} sidelined for ${injury.team.name}`,
-    excerpt: `${injury.player.name} (${injury.team.name}) — ${reason}.`,
-    body: `${injury.player.name} is listed as unavailable for ${injury.team.name} in ${injury.league.name}. Reported status: ${reason}.`,
-    publishedAt: injury.fixture.date,
-    category: "injury",
-    league: injury.league.name,
-    leagueLogo: injury.league.logo,
-    imageUrl: injury.player.photo ?? INJURY_IMAGE,
-    imageAlt: `${injury.player.name} injury update`,
-  };
+  // App is intentionally limited to the league catalog.
+  return null;
 }
 
 function matchReportArticle(fixture: ApiFootballLiveFixture, entry: LeagueCatalogEntry | null): NewsArticle {
@@ -85,16 +75,34 @@ function recentDates(days: number) {
   return dates;
 }
 
+function recentDateRange(days: number) {
+  const to = new Date();
+  const from = new Date();
+  from.setUTCDate(from.getUTCDate() - (days - 1));
+
+  return {
+    from: from.toISOString().slice(0, 10),
+    to: to.toISOString().slice(0, 10),
+  };
+}
+
 async function fetchInjuryArticles(apiKey: string) {
+  const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
   const dates = recentDates(3);
-  const injuryBatches = await Promise.all(
-    dates.map((date) =>
-      apiFootballGetSafe<ApiFootballInjury>(
-        apiKey,
-        "/injuries",
-        { date },
-        { cache: "no-store" },
-      ),
+  const tasks = LEAGUE_CATALOG.flatMap((entry) =>
+    dates.map((date) => ({
+      entry,
+      date,
+      season: seasonYearForEntry(entry),
+    })),
+  );
+
+  const injuryBatches = await mapInBatches(tasks, 2, async (task) =>
+    apiFootballGetSafe<ApiFootballInjury>(
+      apiKey,
+      "/injuries",
+      { league: task.entry.apiId, season: task.season, date: task.date },
+      { cache: "no-store" },
     ),
   );
 
@@ -115,20 +123,24 @@ async function fetchInjuryArticles(apiKey: string) {
 }
 
 async function fetchNewsArticlesFresh(apiKey: string): Promise<NewsArticle[]> {
+  const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
   const articles: NewsArticle[] = [];
 
   articles.push(...(await fetchInjuryArticles(apiKey)));
 
-  const dates = recentDates(3);
-  const fixtureBatches = await Promise.all(
-    dates.map((date) =>
-      apiFootballGetSafe<ApiFootballLiveFixture>(apiKey, "/fixtures", { date }, 120),
-    ),
-  );
+  const range = recentDateRange(3);
+  const fixtureBatches = await mapInBatches(LEAGUE_CATALOG, 2, async (entry) => {
+    const season = seasonYearForEntry(entry);
+    return apiFootballGetSafe<ApiFootballLiveFixture>(
+      apiKey,
+      "/fixtures",
+      { league: entry.apiId, season, status: "FT", ...range },
+      120,
+    );
+  });
 
   const finished = fixtureBatches
     .flat()
-    .filter((fixture) => fixture.fixture.status.short === "FT")
     .slice(0, 24);
 
   for (const fixture of finished) {

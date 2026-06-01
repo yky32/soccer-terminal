@@ -1,6 +1,7 @@
 import type { LeagueProfile, LeagueRegion, LeagueTier } from "@/lib/data/league-profile";
 import type { NewsArticle } from "@/lib/data/news-article";
 import type { PlayerProfile } from "@/lib/data/player-profile";
+import { FEATURED_LEAGUE_ID } from "@/lib/football/league-catalog";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
 import type { PlayerSlugMatch } from "@/lib/football/provider";
 import {
@@ -10,8 +11,21 @@ import {
 } from "@/lib/football/providers/api-football/fetch-news";
 import type { TeamProfile } from "@/lib/data/team-profile";
 
+export { FEATURED_LEAGUE_ID };
+
+/** Static catalog for the league picker — 0 API calls. */
+export async function fetchLeagueCatalog() {
+  return getFootballDataProvider().getLeagueCatalog();
+}
+
+/** One featured league for first paint on /leagues (~2 API calls). */
+export async function fetchFeaturedLeague(id = FEATURED_LEAGUE_ID) {
+  return getFootballDataProvider().getLeagueById(id);
+}
+
+/** @deprecated Prefer fetchLeagueCatalog + lazy /api/leagues/[id] */
 export async function fetchLeagues() {
-  return getFootballDataProvider().getLeagues();
+  return fetchLeagueCatalog();
 }
 
 export async function fetchLeagueById(id: string) {

@@ -1,3 +1,5 @@
+import { ENABLE_AI, ENABLE_NEWS } from "@/lib/feature-flags";
+
 export type NavItem = {
   href: string;
   label: string;
@@ -5,7 +7,7 @@ export type NavItem = {
   description: string;
 };
 
-export const mainNav: NavItem[] = [
+const baseNav: NavItem[] = [
   {
     href: "/",
     label: "Global",
@@ -31,3 +33,9 @@ export const mainNav: NavItem[] = [
     description: "Briefings and conversational insights",
   },
 ];
+
+export const mainNav: NavItem[] = baseNav.filter((item) => {
+  if (!ENABLE_NEWS && item.href === "/news") return false;
+  if (!ENABLE_AI && item.href === "/assistant") return false;
+  return true;
+});

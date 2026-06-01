@@ -1,4 +1,4 @@
-export type LeagueRegion = "europe" | "americas" | "asia" | "oceania" | "middle-east";
+export type LeagueRegion = "europe" | "americas" | "asia" | "oceania" | "middle-east" | "world";
 
 export type LeagueTier = "top-flight" | "continental" | "regional";
 
@@ -99,6 +99,7 @@ export const LEAGUE_REGION_LABELS: Record<LeagueRegion | "all", string> = {
   asia: "Asia",
   "middle-east": "Middle East",
   oceania: "Oceania",
+  world: "World",
 };
 
 export const LEAGUE_TIER_LABELS: Record<LeagueTier | "all", string> = {
