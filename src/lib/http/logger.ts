@@ -6,8 +6,14 @@ import type {
 } from "@/lib/http/types";
 
 function loggingEnabled() {
-  if (process.env.API_HTTP_LOG === "false") return false;
-  return true;
+  // Production-safe defaults:
+  // - In production: log ONLY when explicitly enabled.
+  // - In dev/test: log unless explicitly disabled.
+  const env = process.env.NODE_ENV;
+  const flag = process.env.API_HTTP_LOG;
+
+  if (env === "production") return flag === "true";
+  return flag !== "false";
 }
 
 export function logApiRequest(dto: ApiRequestDto) {

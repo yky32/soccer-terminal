@@ -6,6 +6,7 @@ import {
   fetchNewsArticles,
   fetchRelatedNewsArticles,
 } from "@/lib/football/data";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,10 @@ export async function generateMetadata({ params }: NewsArticlePageProps) {
 }
 
 export default async function NewsArticlePage({ params }: NewsArticlePageProps) {
+  if (!ENABLE_NEWS) {
+    notFound();
+  }
+
   const { id } = await params;
   const article = await fetchNewsArticleById(id);
 

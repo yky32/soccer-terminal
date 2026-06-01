@@ -1,6 +1,7 @@
 import { buildAssistantBriefing } from "@/lib/assistant/build-briefing";
 import { generateAssistantReply } from "@/lib/assistant/generate-assistant";
 import { isLlmEnabled } from "@/lib/assistant/llm";
+import { ENABLE_AI } from "@/lib/feature-flags";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 
 export const dynamic = "force-dynamic";
@@ -31,9 +32,20 @@ function parseWatchlistIds(raw: unknown) {
 }
 
 export async function POST(request: Request) {
-  return withApiRouteHandler(
+  type ChatSuccess = {
+    reply: string;
+    mode: "llm" | "demo";
+    llmConfigured: boolean;
+  };
+  type ChatRouteBody = { error: string } | ChatSuccess;
+
+  return withApiRouteHandler<ChatRouteBody>(
     { route: "/api/assistant/chat", method: "POST", request },
     async () => {
+      if (!ENABLE_AI) {
+        return { status: 404, body: { error: "Not found" } };
+      }
+
       const body = (await request.json()) as ChatRequestBody;
       const question = body.question?.trim() ?? "";
       const promptId = body.promptId?.trim() || undefined;

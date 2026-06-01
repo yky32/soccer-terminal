@@ -1,6 +1,7 @@
 import { buildAssistantBriefing } from "@/lib/assistant/build-briefing";
 import { enrichAssistantBriefing } from "@/lib/assistant/generate-assistant";
 import { isLlmEnabled } from "@/lib/assistant/llm";
+import { ENABLE_AI } from "@/lib/feature-flags";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +20,18 @@ export async function GET(request: Request) {
       )
     : [];
 
-  return withApiRouteHandler(
+  type BriefingSuccess = Awaited<ReturnType<typeof enrichAssistantBriefing>> & {
+    llmConfigured: boolean;
+  };
+  type BriefingRouteBody = { error: string } | BriefingSuccess;
+
+  return withApiRouteHandler<BriefingRouteBody>(
     { route: "/api/assistant/briefing", method: "GET", request },
     async () => {
+      if (!ENABLE_AI) {
+        return { status: 404, body: { error: "Not found" } };
+      }
+
       const context = await buildAssistantBriefing();
       const briefing = await enrichAssistantBriefing(context, watchlistIds);
 
@@ -36,9 +46,18 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  return withApiRouteHandler(
+  type BriefingSuccess = Awaited<ReturnType<typeof enrichAssistantBriefing>> & {
+    llmConfigured: boolean;
+  };
+  type BriefingRouteBody = { error: string } | BriefingSuccess;
+
+  return withApiRouteHandler<BriefingRouteBody>(
     { route: "/api/assistant/briefing", method: "POST", request },
     async () => {
+      if (!ENABLE_AI) {
+        return { status: 404, body: { error: "Not found" } };
+      }
+
       const body = (await request.json()) as { watchlistIds?: unknown };
       const context = await buildAssistantBriefing();
       const briefing = await enrichAssistantBriefing(
