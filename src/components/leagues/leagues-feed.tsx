@@ -26,6 +26,7 @@ import {
   readCachedLeagueProfile,
   writeCachedLeagueProfile,
 } from "@/lib/football/local-league-cache";
+import { LEAGUE_LOCAL_TTL_MS } from "@/lib/football/refresh-policy";
 import { apiRequest } from "@/lib/http/api-client";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +45,6 @@ type NewsApiResponse = {
 function isLeagueLoaded(league: LeagueProfile | undefined) {
   return Boolean(league && league.standings.length > 0);
 }
-
-const LEAGUE_LOCAL_TTL_MS = 30 * 60_000;
 
 const REGIONS: (LeagueRegion | "all")[] = [
   "all",

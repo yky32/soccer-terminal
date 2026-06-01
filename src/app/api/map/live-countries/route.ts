@@ -8,7 +8,7 @@ import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 
 /** Keep in sync with ROUTE_REVALIDATE_MAP_SEC in refresh-policy.ts */
-export const revalidate = 300;
+export const revalidate = 600;
 
 function snapshotToResponse(snapshot: LiveCountriesSnapshot) {
   const stats = getLiveMatchStats(snapshot.countries);

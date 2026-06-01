@@ -1,7 +1,7 @@
 import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
 
-/** Minimum gap between API-Football requests (free tier ≈10/min; paid ≈100/min). */
-const MIN_GAP_MS = 650;
+/** Minimum gap between API-Football requests (PRO ≈300/min burst; stay conservative). */
+const MIN_GAP_MS = 300;
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 8_000;
 

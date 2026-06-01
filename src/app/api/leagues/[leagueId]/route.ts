@@ -3,7 +3,7 @@ import { getFootballDataProvider } from "@/lib/football/get-provider";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 
 /** Keep in sync with ROUTE_REVALIDATE_LEAGUE_SEC in refresh-policy.ts */
-export const revalidate = 600;
+export const revalidate = 1800;
 
 type RouteContext = {
   params: Promise<{ leagueId: string }>;

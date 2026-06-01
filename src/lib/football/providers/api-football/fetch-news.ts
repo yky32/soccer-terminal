@@ -7,7 +7,11 @@ import {
   type ApiFootballInjury,
 } from "@/lib/football/providers/api-football/normalize-catalog";
 import { apiFootballGetSafe, mapInBatches } from "@/lib/football/providers/api-football/request";
-import { ROUTE_REVALIDATE_NEWS_SEC } from "@/lib/football/refresh-policy";
+import {
+  API_REVALIDATE_DEFAULT_SEC,
+  CATALOG_FETCH_CONCURRENCY,
+  ROUTE_REVALIDATE_NEWS_SEC,
+} from "@/lib/football/refresh-policy";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 
 const MATCH_REPORT_IMAGE =
@@ -65,16 +69,6 @@ function matchReportArticle(fixture: ApiFootballLiveFixture, entry: LeagueCatalo
   };
 }
 
-function recentDates(days: number) {
-  const dates: string[] = [];
-  for (let offset = 0; offset < days; offset += 1) {
-    const date = new Date();
-    date.setUTCDate(date.getUTCDate() - offset);
-    dates.push(date.toISOString().slice(0, 10));
-  }
-  return dates;
-}
-
 function recentDateRange(days: number) {
   const to = new Date();
   const from = new Date();
@@ -88,22 +82,18 @@ function recentDateRange(days: number) {
 
 async function fetchInjuryArticles(apiKey: string) {
   const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
-  const dates = recentDates(3);
-  const tasks = LEAGUE_CATALOG.flatMap((entry) =>
-    dates.map((date) => ({
-      entry,
-      date,
-      season: seasonYearForEntry(entry),
-    })),
-  );
+  const today = new Date().toISOString().slice(0, 10);
 
-  const injuryBatches = await mapInBatches(tasks, 2, async (task) =>
-    apiFootballGetSafe<ApiFootballInjury>(
-      apiKey,
-      "/injuries",
-      { league: task.entry.apiId, season: task.season, date: task.date },
-      { cache: "no-store" },
-    ),
+  const injuryBatches = await mapInBatches(
+    LEAGUE_CATALOG,
+    CATALOG_FETCH_CONCURRENCY,
+    async (entry) =>
+      apiFootballGetSafe<ApiFootballInjury>(
+        apiKey,
+        "/injuries",
+        { league: entry.apiId, season: seasonYearForEntry(entry), date: today },
+        API_REVALIDATE_DEFAULT_SEC,
+      ),
   );
 
   const seen = new Set<string>();
@@ -128,16 +118,20 @@ async function fetchNewsArticlesFresh(apiKey: string): Promise<NewsArticle[]> {
 
   articles.push(...(await fetchInjuryArticles(apiKey)));
 
-  const range = recentDateRange(3);
-  const fixtureBatches = await mapInBatches(LEAGUE_CATALOG, 2, async (entry) => {
-    const season = seasonYearForEntry(entry);
-    return apiFootballGetSafe<ApiFootballLiveFixture>(
-      apiKey,
-      "/fixtures",
-      { league: entry.apiId, season, status: "FT", ...range },
-      120,
-    );
-  });
+  const range = recentDateRange(2);
+  const fixtureBatches = await mapInBatches(
+    LEAGUE_CATALOG,
+    CATALOG_FETCH_CONCURRENCY,
+    async (entry) => {
+      const season = seasonYearForEntry(entry);
+      return apiFootballGetSafe<ApiFootballLiveFixture>(
+        apiKey,
+        "/fixtures",
+        { league: entry.apiId, season, status: "FT", ...range },
+        API_REVALIDATE_DEFAULT_SEC,
+      );
+    },
+  );
 
   const finished = fixtureBatches
     .flat()

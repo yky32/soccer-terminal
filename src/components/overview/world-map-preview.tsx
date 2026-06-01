@@ -8,22 +8,18 @@ import { MatchMapLegend } from "@/components/overview/match-map-legend";
 import { MatchVenuePin } from "@/components/overview/match-venue-pin";
 import { Map, type MapRef } from "@/components/ui/map";
 import type { LiveMatch } from "@/lib/data/live-match";
-import type {
-  CountryMatchActivity,
-  LiveCountriesResponse,
-} from "@/lib/data/live-match-countries";
+import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
-import { CLIENT_MAP_REFRESH_MS } from "@/lib/football/refresh-policy";
-import { apiRequest } from "@/lib/http/api-client";
+import { useMapCountries } from "@/components/overview/map-countries-context";
 import { cn } from "@/lib/utils";
+
+const EMPTY_STATS = getLiveMatchStats([]);
 
 const WORLD_VIEW = { center: [0, 22] as [number, number], zoom: 1.2 };
 const COUNTRY_FOCUS_ZOOM = 3.25;
 const SPLIT_TRANSITION_MS = 700;
 const MAP_FLY_MS = 900;
-
-const EMPTY_STATS = getLiveMatchStats([]);
 const NO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };
 
 function mapFocusPadding(pane: HTMLElement | null, withLegend: boolean) {
@@ -41,65 +37,21 @@ function mapFocusPadding(pane: HTMLElement | null, withLegend: boolean) {
 export function WorldMapPreview() {
   const mapRef = useRef<MapRef>(null);
   const mapPaneRef = useRef<HTMLDivElement>(null);
+  const { data, loading, error: fetchError } = useMapCountries();
   const [matchMode, setMatchMode] = useState<MapMatchMode>("live");
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
     null,
   );
   const [splitOpen, setSplitOpen] = useState(false);
-  const [stats, setStats] = useState(EMPTY_STATS);
-  const [matchesByCountry, setMatchesByCountry] = useState<
-    Record<string, LiveMatch[]>
-  >({});
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const loadMapCountries = useCallback(
-    async (mode: MapMatchMode, options?: { silent?: boolean }) => {
-      const silent = options?.silent ?? false;
-      try {
-        if (!silent) setLoading(true);
-        const { data } = await apiRequest<LiveCountriesResponse>({
-          scope: "client",
-          provider: "internal",
-          method: "GET",
-          url: "/api/map/live-countries",
-          query: { mode },
-        });
-
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        setStats(getLiveMatchStats(data.countries ?? []));
-        setMatchesByCountry(data.matchesByCountry ?? {});
-        setUpdatedAt(data.updatedAt ?? null);
-        setError(null);
-      } catch (err) {
-        if (!silent) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : mode === "live"
-                ? "Failed to load live matches"
-                : "Failed to load upcoming matches",
-          );
-        }
-      } finally {
-        if (!silent) setLoading(false);
-      }
-    },
-    [],
+  const modeSnapshot = matchMode === "live" ? data?.live : data?.future;
+  const stats = useMemo(
+    () => getLiveMatchStats(modeSnapshot?.countries ?? []),
+    [modeSnapshot?.countries],
   );
-
-  useEffect(() => {
-    void loadMapCountries(matchMode);
-    const interval = setInterval(
-      () => void loadMapCountries(matchMode, { silent: true }),
-      CLIENT_MAP_REFRESH_MS,
-    );
-    return () => clearInterval(interval);
-  }, [loadMapCountries, matchMode]);
+  const matchesByCountry = modeSnapshot?.matchesByCountry ?? {};
+  const updatedAt = modeSnapshot?.updatedAt ?? null;
+  const error = fetchError;
 
   const { countryCount, totalMatches, maxMatches, countries } = stats;
 

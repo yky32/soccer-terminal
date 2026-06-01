@@ -2,7 +2,9 @@ import type { LeagueProfile } from "@/lib/data/league-profile";
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
 
-const CACHE_TTL_MS = 600_000;
+import { LEAGUE_SERVER_CACHE_MS } from "@/lib/football/refresh-policy";
+
+const CACHE_TTL_MS = LEAGUE_SERVER_CACHE_MS;
 
 type CacheEntry = {
   profile: LeagueProfile;

@@ -7,7 +7,6 @@ import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchHeatmapGrid } from "@/components/overview/match-heatmap-grid";
 import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
 import type { LiveMatch } from "@/lib/data/live-match";
-import type { LiveCountriesBothResponse } from "@/lib/data/live-match-countries";
 import {
   bulkAddToWatchlist,
   countAddableMatches,
@@ -26,8 +25,7 @@ import {
   writeWatchlistIds,
   type MonitoredMatch,
 } from "@/lib/match-monitor";
-import { apiRequest } from "@/lib/http/api-client";
-import { CLIENT_MAP_REFRESH_MS } from "@/lib/football/refresh-policy";
+import { useMapCountries } from "@/components/overview/map-countries-context";
 import { cn } from "@/lib/utils";
 
 function QuickAddButton({
@@ -164,55 +162,28 @@ function SearchResultRow({
 }
 
 export function MatchMonitorSection() {
-  const [catalog, setCatalog] = useState<MonitoredMatch[]>([]);
+  const { data, loading, error } = useMapCountries();
   const [watchlistIds, setWatchlistIds] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const loadCatalog = useCallback(async (options?: { silent?: boolean }) => {
-    const silent = options?.silent ?? false;
-    try {
-      if (!silent) setLoading(true);
-      const { data } = await apiRequest<LiveCountriesBothResponse>({
-        scope: "client",
-        provider: "internal",
-        method: "GET",
-        url: "/api/map/live-countries",
-        query: { mode: "both" },
-      });
+  const catalog = useMemo(
+    () =>
+      data
+        ? flattenMapMatches(
+            data.live.matchesByCountry ?? {},
+            data.future.matchesByCountry ?? {},
+          )
+        : [],
+    [data],
+  );
 
-      if (data.error) throw new Error(data.error);
-
-      setCatalog(
-        flattenMapMatches(
-          data.live.matchesByCountry ?? {},
-          data.future.matchesByCountry ?? {},
-        ),
-      );
-      setUpdatedAt(data.live.updatedAt ?? data.future.updatedAt ?? null);
-      setError(null);
-    } catch (err) {
-      if (!silent) {
-        setError(err instanceof Error ? err.message : "Failed to load matches");
-      }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, []);
+  const updatedAt = data?.live.updatedAt ?? data?.future.updatedAt ?? null;
 
   useEffect(() => {
     setWatchlistIds(readWatchlistIds());
-    void loadCatalog();
-    const interval = setInterval(
-      () => void loadCatalog({ silent: true }),
-      CLIENT_MAP_REFRESH_MS,
-    );
-    return () => clearInterval(interval);
-  }, [loadCatalog]);
+  }, []);
 
   useEffect(() => {
     writeWatchlistIds(watchlistIds);
