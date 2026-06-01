@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | Soccer World Monitor",
   },
   description:
-    "Professional soccer intelligence — global live map, news, leagues, and AI insights.",
+    "Professional soccer intelligence — global live map, leagues, and match insights.",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",

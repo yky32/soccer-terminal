@@ -1,16 +1,17 @@
 import type { LeagueLeaderBoards, LeagueProfile } from "@/lib/data/league-profile";
-import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
-import { seasonYearForEntry } from "@/lib/football/league-catalog";
+import { entryHasKnockoutStage, type LeagueCatalogEntry } from "@/lib/football/league-catalog";
+import { resolveSeasonYearForEntry } from "@/lib/football/providers/api-football/resolve-season";
 import { finalizeApiLeaderBoards } from "@/lib/data/league-stats";
 import {
   buildLeagueShell,
+  flattenStandingsGroups,
   normalizeFixture,
   normalizeLeaderBoards,
-  normalizeStandingRow,
   teamWinRatesFromStandings,
   type ApiFootballStandingsBlock,
   type ApiFootballTopPlayer,
 } from "@/lib/football/providers/api-football/normalize-catalog";
+import { fetchLeagueKnockoutBracket } from "@/lib/football/providers/api-football/fetch-league-knockout";
 import { fetchLeagueSeasonHistory } from "@/lib/football/providers/api-football/fetch-league-seasons";
 import { getLeagueProfileCached, primeLeagueCache } from "@/lib/football/providers/api-football/league-cache";
 import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
@@ -71,7 +72,7 @@ async function fetchLeagueProfileUncached(
   apiKey: string,
   entry: LeagueCatalogEntry,
 ): Promise<LeagueProfile> {
-  const season = seasonYearForEntry(entry);
+  const season = await resolveSeasonYearForEntry(apiKey, entry);
   const shell = buildLeagueShell(entry, season);
 
   const standingsBlocks = await apiFootballGetSafe<ApiFootballStandingsBlock>(
@@ -80,8 +81,27 @@ async function fetchLeagueProfileUncached(
     { league: entry.apiId, season },
   );
 
-  const table = standingsBlocks[0]?.league.standings[0] ?? [];
-  const standings = table.map(normalizeStandingRow);
+  const standingsLeague = standingsBlocks[0]?.league;
+  if (standingsLeague && standingsLeague.id !== entry.apiId) {
+    return {
+      ...shell,
+      apiLeagueId: standingsLeague.id,
+      apiSeason: season,
+      teams: 0,
+      matchday: 0,
+      liveMatches: 0,
+      standings: [],
+      fixtures: [],
+      leaderBoards: emptyLeaderBoards(),
+      seasonHistory: [],
+      knockoutBracket: entryHasKnockoutStage(entry)
+        ? { published: false, rounds: [] }
+        : undefined,
+    };
+  }
+
+  const groups = standingsLeague?.standings ?? [];
+  const standings = flattenStandingsGroups(groups);
 
   if (standings.length === 0) {
     return {
@@ -93,6 +113,9 @@ async function fetchLeagueProfileUncached(
       fixtures: [],
       leaderBoards: emptyLeaderBoards(),
       seasonHistory: [],
+      knockoutBracket: entryHasKnockoutStage(entry)
+        ? { published: false, rounds: [] }
+        : undefined,
     };
   }
 
@@ -129,8 +152,14 @@ async function fetchLeagueProfileUncached(
       : null,
   );
 
+  const knockoutBracket = entryHasKnockoutStage(entry)
+    ? await fetchLeagueKnockoutBracket(apiKey, entry, season)
+    : undefined;
+
   return {
     ...shell,
+    apiLeagueId: entry.apiId,
+    apiSeason: season,
     teams: standings.length,
     matchday: matchday || Math.max(1, Math.ceil(standings[0]?.played ?? 1)),
     liveMatches,
@@ -138,6 +167,7 @@ async function fetchLeagueProfileUncached(
     fixtures,
     leaderBoards,
     seasonHistory,
+    knockoutBracket,
   };
 }
 

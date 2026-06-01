@@ -104,7 +104,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
     const cached = readCachedLeagueProfile(leagueId);
     const cachedFresh = cached ? Date.now() - cached.cachedAt < LEAGUE_LOCAL_TTL_MS : false;
 
-    if (cached && isValidCachedLeagueProfile(cached.profile)) {
+    if (cached && isValidCachedLeagueProfile(cached.profile, leagueId)) {
       // Instant render from local cache.
       setProfiles((current) => ({ ...current, [leagueId]: cached.profile }));
       loadedRef.current.add(leagueId);
@@ -124,7 +124,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
         url: `/api/leagues/${leagueId}`,
       });
 
-      if (data.error || !isValidCachedLeagueProfile(data)) return;
+      if (data.error || !isValidCachedLeagueProfile(data, leagueId)) return;
 
       loadedRef.current.add(leagueId);
       setProfiles((current) => ({ ...current, [leagueId]: data }));
@@ -148,7 +148,7 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
   }, [selectedId, loadLeague]);
 
   useEffect(() => {
-    if (initialLeague && isValidCachedLeagueProfile(initialLeague)) {
+    if (initialLeague && isValidCachedLeagueProfile(initialLeague, initialLeague.id)) {
       writeCachedLeagueProfile(initialLeague.id, initialLeague);
     }
   }, [initialLeague]);
@@ -197,7 +197,10 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
   }, [leagues, region, tier, searchQuery]);
 
   const selected =
-    filtered.find((league) => league.id === selectedId) ?? filtered[0] ?? null;
+    leagues.find((league) => league.id === selectedId) ??
+    filtered.find((league) => league.id === selectedId) ??
+    filtered[0] ??
+    null;
 
   const hasActiveFilters = region !== "all" || tier !== "all" || searchQuery.trim().length > 0;
 

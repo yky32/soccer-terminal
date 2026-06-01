@@ -10,6 +10,9 @@ function envFlag(value: string | undefined, defaultValue: boolean) {
  * Feature flags.
  *
  * Client bundles may read ONLY `NEXT_PUBLIC_*` env vars.
+ *
+ * News is off by default — nav, league/team tabs, `/news`, and `/api/news` stay hidden
+ * until `NEXT_PUBLIC_ENABLE_NEWS=true`.
  */
 export const ENABLE_NEWS = envFlag(process.env.NEXT_PUBLIC_ENABLE_NEWS, false);
 

@@ -8,6 +8,7 @@ import { glassInset, glassStrong, glassSubtle } from "@/components/glass-surface
 import { PageBackdrop } from "@/components/page-backdrop";
 import { NewsTicker } from "@/components/news/news-ticker";
 import { NewsWireSlotProvider, useNewsWireSlot } from "@/components/news/news-wire-slot-context";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { mainNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -41,7 +42,7 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
   const { headerHidden } = useAppChrome();
   const { wireHeadlines } = useNewsWireSlot();
   const isNewsPage = pathname.startsWith("/news");
-  const showWire = isNewsPage && wireHeadlines && wireHeadlines.length > 0;
+  const showWire = ENABLE_NEWS && isNewsPage && wireHeadlines && wireHeadlines.length > 0;
 
   return (
     <div className="flex min-h-full flex-col">

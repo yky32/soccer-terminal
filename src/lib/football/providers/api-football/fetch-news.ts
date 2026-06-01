@@ -81,19 +81,24 @@ function recentDateRange(days: number) {
 }
 
 async function fetchInjuryArticles(apiKey: string) {
-  const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
+  const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+  const { resolveSeasonYearForEntry } = await import(
+    "@/lib/football/providers/api-football/resolve-season"
+  );
   const today = new Date().toISOString().slice(0, 10);
 
   const injuryBatches = await mapInBatches(
     LEAGUE_CATALOG,
     CATALOG_FETCH_CONCURRENCY,
-    async (entry) =>
-      apiFootballGetSafe<ApiFootballInjury>(
+    async (entry) => {
+      const season = await resolveSeasonYearForEntry(apiKey, entry);
+      return apiFootballGetSafe<ApiFootballInjury>(
         apiKey,
         "/injuries",
-        { league: entry.apiId, season: seasonYearForEntry(entry), date: today },
+        { league: entry.apiId, season, date: today },
         API_REVALIDATE_DEFAULT_SEC,
-      ),
+      );
+    },
   );
 
   const seen = new Set<string>();
@@ -113,7 +118,10 @@ async function fetchInjuryArticles(apiKey: string) {
 }
 
 async function fetchNewsArticlesFresh(apiKey: string): Promise<NewsArticle[]> {
-  const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
+  const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+  const { resolveSeasonYearForEntry } = await import(
+    "@/lib/football/providers/api-football/resolve-season"
+  );
   const articles: NewsArticle[] = [];
 
   articles.push(...(await fetchInjuryArticles(apiKey)));
@@ -123,7 +131,7 @@ async function fetchNewsArticlesFresh(apiKey: string): Promise<NewsArticle[]> {
     LEAGUE_CATALOG,
     CATALOG_FETCH_CONCURRENCY,
     async (entry) => {
-      const season = seasonYearForEntry(entry);
+      const season = await resolveSeasonYearForEntry(apiKey, entry);
       return apiFootballGetSafe<ApiFootballLiveFixture>(
         apiKey,
         "/fixtures",

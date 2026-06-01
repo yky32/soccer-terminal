@@ -1,5 +1,6 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { AssistantContext } from "@/lib/assistant/build-briefing";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { teamAbbrev } from "@/lib/match-monitor";
 
 export type DemoPrompt = {
@@ -7,7 +8,7 @@ export type DemoPrompt = {
   label: string;
 };
 
-export const DEMO_PROMPTS: DemoPrompt[] = [
+const ALL_DEMO_PROMPTS: DemoPrompt[] = [
   { id: "live", label: "What's live?" },
   { id: "watchlist", label: "My watchlist" },
   { id: "news", label: "News pulse" },
@@ -16,8 +17,15 @@ export const DEMO_PROMPTS: DemoPrompt[] = [
   { id: "watch", label: "What should I watch?" },
 ];
 
+export function getDemoPrompts() {
+  return ALL_DEMO_PROMPTS.filter((prompt) => ENABLE_NEWS || prompt.id !== "news");
+}
+
+/** @deprecated Use getDemoPrompts() */
+export const DEMO_PROMPTS = ALL_DEMO_PROMPTS;
+
 export function promptLabelForId(promptId: string) {
-  return DEMO_PROMPTS.find((prompt) => prompt.id === promptId)?.label ?? "";
+  return ALL_DEMO_PROMPTS.find((prompt) => prompt.id === promptId)?.label ?? "";
 }
 
 function bulletLines(lines: string[]) {
@@ -59,6 +67,9 @@ export function answerDemoPrompt(
     }
 
     case "news":
+      if (!ENABLE_NEWS) {
+        return "News is not enabled in this build. Try live matches, your watchlist, or league standings.";
+      }
       return bulletLines([
         context.newsPulse,
         ...context.topHeadlines.map((headline) => `• ${headline}`),
@@ -98,7 +109,9 @@ export function answerDemoPrompt(
     }
 
     default:
-      return "Try a quick prompt above — answers are grounded in live map data, news wire, and league standings.";
+      return ENABLE_NEWS
+        ? "Try a quick prompt above — answers are grounded in live map data, news wire, and league standings."
+        : "Try a quick prompt above — answers are grounded in live map data and league standings.";
   }
 }
 
@@ -108,7 +121,11 @@ export function answerDemoQuestion(
   watchlistMatches: LiveMatch[] = [],
 ): string {
   const needle = question.trim().toLowerCase();
-  if (!needle) return "Ask about live matches, your watchlist, news, or the table.";
+  if (!needle) {
+    return ENABLE_NEWS
+      ? "Ask about live matches, your watchlist, news, or the table."
+      : "Ask about live matches, your watchlist, or the table.";
+  }
 
   if (needle.includes("watchlist") || needle.includes("monitor")) {
     return answerDemoPrompt("watchlist", context, watchlistMatches);
@@ -116,7 +133,10 @@ export function answerDemoQuestion(
   if (needle.includes("live") || needle.includes("now")) {
     return answerDemoPrompt("live", context, watchlistMatches);
   }
-  if (needle.includes("news") || needle.includes("headline") || needle.includes("transfer")) {
+  if (
+    ENABLE_NEWS &&
+    (needle.includes("news") || needle.includes("headline") || needle.includes("transfer"))
+  ) {
     return answerDemoPrompt("news", context, watchlistMatches);
   }
   if (needle.includes("table") || needle.includes("stand") || needle.includes("premier")) {

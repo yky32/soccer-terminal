@@ -9,6 +9,7 @@ import type {
 } from "@/lib/data/league-profile";
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import {
+  competitionFormatForEntry,
   seasonLabelForEntry,
   seasonYearForEntry,
 } from "@/lib/football/league-catalog";
@@ -144,11 +145,29 @@ export function parseForm(form: string | null | undefined): LeagueFormResult[] {
     .slice(-5);
 }
 
-export function normalizeStandingRow(row: ApiFootballStandingRow): LeagueStandingRow {
+function standingsGroupLabel(index: number) {
+  return `Group ${String.fromCharCode(65 + index)}`;
+}
+
+export function flattenStandingsGroups(groups: ApiFootballStandingRow[][]): LeagueStandingRow[] {
+  if (groups.length <= 1) {
+    return (groups[0] ?? []).map((row) => normalizeStandingRow(row));
+  }
+
+  return groups.flatMap((group, index) =>
+    group.map((row) => normalizeStandingRow(row, standingsGroupLabel(index))),
+  );
+}
+
+export function normalizeStandingRow(
+  row: ApiFootballStandingRow,
+  group?: string,
+): LeagueStandingRow {
   return {
     rank: row.rank,
     team: row.team.name,
     teamLogo: row.team.logo,
+    group,
     teamId: row.team.id,
     played: row.all.played,
     won: row.all.win,
@@ -186,6 +205,7 @@ export function buildLeagueShell(
     logo: entry.logo,
     region: entry.region,
     tier: entry.tier,
+    competitionFormat: competitionFormatForEntry(entry),
     season: seasonLabelForEntry(entry, seasonYear),
     teams: 0,
     matchday: 0,

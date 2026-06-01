@@ -7,7 +7,8 @@ import type {
 } from "@/lib/data/player-profile";
 import type { TeamPosition } from "@/lib/data/team-profile";
 import type { PlayerSlugMatch } from "@/lib/football/provider";
-import { getCatalogEntryById, seasonYearForEntry } from "@/lib/football/league-catalog";
+import { getCatalogEntryById } from "@/lib/football/league-catalog";
+import { resolveSeasonYearForEntry } from "@/lib/football/providers/api-football/resolve-season";
 import { getCachedLeagueProfile } from "@/lib/football/providers/api-football/league-cache";
 import { fetchLeagueProfile } from "@/lib/football/providers/api-football/fetch-league-profile";
 import {
@@ -144,7 +145,9 @@ export async function fetchPlayerProfile(
   match: PlayerSlugMatch,
 ): Promise<PlayerProfile> {
   const entry = getCatalogEntryById(match.league.id);
-  const season = entry ? seasonYearForEntry(entry) : new Date().getFullYear();
+  const season = entry
+    ? await resolveSeasonYearForEntry(apiKey, entry)
+    : new Date().getFullYear();
   const teamId = match.standing.teamId;
 
   const [profile, fixtures, squads] = await Promise.all([

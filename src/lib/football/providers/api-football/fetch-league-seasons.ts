@@ -96,7 +96,7 @@ export async function fetchLeagueSeasonHistory(
     ]);
 
     const table = standingsBlocks[0]?.league.standings[0] ?? [];
-    const rows = table.map(normalizeStandingRow);
+    const rows = table.map((row) => normalizeStandingRow(row));
     const champion = rows.find((row) => row.rank === 1) ?? rows[0];
     const top = scorers[0];
 

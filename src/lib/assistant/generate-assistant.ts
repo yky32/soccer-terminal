@@ -7,6 +7,7 @@ import {
 } from "@/lib/assistant/context-payload";
 import { answerDemoPrompt, answerDemoQuestion, promptLabelForId } from "@/lib/assistant/demo-responses";
 import { completeChat, extractJsonObject, isLlmEnabled } from "@/lib/assistant/llm";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 
 export type AssistantMode = "llm" | "demo";
 
@@ -68,7 +69,9 @@ export async function generateAssistantReply(input: {
 
   if (!question) {
     return {
-      reply: "Ask about live matches, your watchlist, news, or the table.",
+      reply: ENABLE_NEWS
+        ? "Ask about live matches, your watchlist, news, or the table."
+        : "Ask about live matches, your watchlist, or the table.",
       mode: "demo",
     };
   }

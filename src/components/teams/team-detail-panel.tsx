@@ -14,6 +14,7 @@ import { TeamResultsList } from "@/components/teams/team-results-list";
 import { TeamSquadList } from "@/components/teams/team-squad-list";
 import type { TeamProfile } from "@/lib/data/team-profile";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { cn } from "@/lib/utils";
 
 type TeamDetailTab =
@@ -32,7 +33,7 @@ type TeamDetailPanelProps = {
   teamNews: NewsArticle[];
 };
 
-const TABS: { id: TeamDetailTab; label: string }[] = [
+const ALL_TABS: { id: TeamDetailTab; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "table", label: "Table" },
   { id: "fixtures", label: "Fixtures" },
@@ -42,6 +43,8 @@ const TABS: { id: TeamDetailTab; label: string }[] = [
   { id: "history", label: "History" },
   { id: "news", label: "News" },
 ];
+
+const TABS = ALL_TABS.filter((tab) => ENABLE_NEWS || tab.id !== "news");
 
 export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelProps) {
   const [tab, setTab] = useState<TeamDetailTab>("overview");
@@ -188,7 +191,7 @@ export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelPro
         </section>
       ) : null}
 
-      {tab === "news" ? (
+      {ENABLE_NEWS && tab === "news" ? (
         <TeamNewsPanel team={team} articles={teamNews.length > 0 ? teamNews : articles.slice(0, 6)} />
       ) : null}
     </div>

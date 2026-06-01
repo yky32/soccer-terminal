@@ -15,11 +15,14 @@ export function LeagueStandingsTable({
   leagueId,
   highlightTeam,
 }: LeagueStandingsTableProps) {
+  const showGroup = standings.some((row) => row.group);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[36rem] text-left text-[0.8125rem]">
         <thead>
           <tr className="border-b border-black/[0.06] text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
+            {showGroup ? <th className="px-2 py-2.5">Grp</th> : null}
             <th className="px-3 py-2.5 sm:px-4">#</th>
             <th className="px-2 py-2.5">Team</th>
             <th className="px-2 py-2.5 text-center">P</th>
@@ -39,7 +42,7 @@ export function LeagueStandingsTable({
 
             return (
               <tr
-                key={`${row.rank}-${row.team}`}
+                key={`${row.group ?? ""}-${row.rank}-${row.team}`}
                 className={cn(
                   "border-b border-black/[0.04] transition-colors last:border-b-0",
                   isHighlighted && "bg-indigo-500/[0.08] ring-1 ring-inset ring-indigo-500/15",
@@ -47,6 +50,11 @@ export function LeagueStandingsTable({
                   !isHighlighted && "hover:bg-white/36",
                 )}
               >
+                {showGroup ? (
+                  <td className="px-2 py-2.5 text-[0.6875rem] font-semibold text-neutral-500">
+                    {row.group ?? "—"}
+                  </td>
+                ) : null}
                 <td className="px-3 py-2.5 font-semibold tabular-nums text-neutral-700 sm:px-4">
                   {row.rank}
                 </td>

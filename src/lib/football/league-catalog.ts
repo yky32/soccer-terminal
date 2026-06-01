@@ -1,7 +1,7 @@
 import type { LeagueProfile } from "@/lib/data/league-profile";
 import type { LeagueRegion, LeagueTier } from "@/lib/data/league-profile";
 
-export type LeagueSeasonKind = "split" | "calendar";
+export type LeagueSeasonKind = "split" | "calendar" | "tournament";
 
 export type LeagueCatalogEntry = {
   id: string;
@@ -15,7 +15,19 @@ export type LeagueCatalogEntry = {
   tier: LeagueTier;
   newsLabel: string;
   seasonKind: LeagueSeasonKind;
+  /** Shows knockout tab + fetches knockout rounds from API-Football */
+  hasKnockoutStage?: boolean;
 };
+
+export function competitionFormatForEntry(entry: LeagueCatalogEntry): LeagueProfile["competitionFormat"] {
+  if (entry.seasonKind === "tournament") return "tournament";
+  if (entry.hasKnockoutStage) return "knockout-cup";
+  return "league";
+}
+
+export function entryHasKnockoutStage(entry: LeagueCatalogEntry) {
+  return Boolean(entry.hasKnockoutStage ?? entry.seasonKind === "tournament");
+}
 
 const leagueLogo = (id: number) =>
   `https://media.api-sports.io/football/leagues/${id}.png`;
@@ -45,7 +57,8 @@ export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
     region: "world",
     tier: "continental",
     newsLabel: "World Cup",
-    seasonKind: "split",
+    seasonKind: "tournament",
+    hasKnockoutStage: true,
   },
   {
     id: "ucl",
@@ -59,6 +72,7 @@ export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
     tier: "continental",
     newsLabel: "Champions League",
     seasonKind: "split",
+    hasKnockoutStage: true,
   },
   {
     id: "uel",
@@ -72,6 +86,7 @@ export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
     tier: "continental",
     newsLabel: "Europa League",
     seasonKind: "split",
+    hasKnockoutStage: true,
   },
   {
     id: "la-liga",
@@ -178,7 +193,7 @@ export function seasonYearForEntry(entry: LeagueCatalogEntry, now = new Date()) 
   const year = now.getFullYear();
   const month = now.getMonth();
 
-  if (entry.seasonKind === "calendar") {
+  if (entry.seasonKind === "calendar" || entry.seasonKind === "tournament") {
     return year;
   }
 
@@ -186,7 +201,7 @@ export function seasonYearForEntry(entry: LeagueCatalogEntry, now = new Date()) 
 }
 
 export function seasonLabelForEntry(entry: LeagueCatalogEntry, seasonYear: number) {
-  if (entry.seasonKind === "calendar") {
+  if (entry.seasonKind === "calendar" || entry.seasonKind === "tournament") {
     return String(seasonYear);
   }
 
@@ -207,6 +222,7 @@ export function buildLeagueCatalogShell(entry: LeagueCatalogEntry): LeagueProfil
     logo: entry.logo,
     region: entry.region,
     tier: entry.tier,
+    competitionFormat: competitionFormatForEntry(entry),
     season: seasonLabelForEntry(entry, seasonYear),
     teams: 0,
     matchday: 0,

@@ -8,6 +8,8 @@ export type LeagueStandingRow = {
   rank: number;
   team: string;
   teamLogo: string | null;
+  /** Present when the competition has multiple groups (e.g. World Cup). */
+  group?: string;
   /** API-Football team id — used for squad/fixture lookups */
   teamId?: number;
   played: number;
@@ -28,6 +30,36 @@ export type LeagueFixture = {
   awayLogo: string | null;
   kickoffAt: string;
   matchday: string;
+};
+
+export type LeagueCompetitionFormat = "league" | "tournament" | "knockout-cup";
+
+export type LeagueKnockoutMatch = {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  homeGoals: number | null;
+  awayGoals: number | null;
+  /** From API when the leg is decided (incl. penalties). */
+  homeWinner?: boolean | null;
+  awayWinner?: boolean | null;
+  kickoffAt: string | null;
+  status: string;
+  round: string;
+};
+
+export type LeagueKnockoutRound = {
+  id: string;
+  label: string;
+  matches: LeagueKnockoutMatch[];
+};
+
+export type LeagueKnockoutBracket = {
+  /** True when API-Football returned at least one knockout round. */
+  published: boolean;
+  rounds: LeagueKnockoutRound[];
 };
 
 export type LeaguePlayerStatKind = "rating" | "goals" | "assists" | "fouls";
@@ -82,7 +114,12 @@ export type LeagueProfile = {
   logo: string | null;
   region: LeagueRegion;
   tier: LeagueTier;
+  /** Defaults to league when omitted (mock catalog). */
+  competitionFormat?: LeagueCompetitionFormat;
   season: string;
+  /** API-Football league + season used for standings (cache validation). */
+  apiLeagueId?: number;
+  apiSeason?: number;
   teams: number;
   matchday: number;
   liveMatches: number;
@@ -92,6 +129,8 @@ export type LeagueProfile = {
   leaderBoards?: LeagueLeaderBoards;
   /** Past seasons from API-Football league + standings history */
   seasonHistory?: LeagueSeasonRecord[];
+  /** Knockout rounds for tournaments (World Cup, etc.) */
+  knockoutBracket?: LeagueKnockoutBracket;
 };
 
 export const LEAGUE_REGION_LABELS: Record<LeagueRegion | "all", string> = {

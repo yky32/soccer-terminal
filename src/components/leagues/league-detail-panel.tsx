@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueFixturesList } from "@/components/leagues/league-fixtures-list";
 import { LeagueNewsPanel } from "@/components/leagues/league-news-panel";
+import { LeagueKnockoutPanel } from "@/components/leagues/league-knockout-panel";
 import { LeagueSeasonsPanel } from "@/components/leagues/league-seasons-panel";
 import { LeagueStandingsTable } from "@/components/leagues/league-standings-table";
 import { LeagueStatLeaderGrid } from "@/components/leagues/league-stat-leaders";
@@ -17,10 +18,11 @@ import {
 import type { LeagueProfile } from "@/lib/data/league-profile";
 import { getLeagueNewsLabel } from "@/lib/data/league-stats";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
-type LeagueDetailTab = "overview" | "teams" | "seasons" | "news";
+type LeagueDetailTab = "overview" | "teams" | "seasons" | "knockout" | "news";
 
 type LeagueDetailPanelProps = {
   league: LeagueProfile;
@@ -28,12 +30,14 @@ type LeagueDetailPanelProps = {
   loading?: boolean;
 };
 
-const TABS: { id: LeagueDetailTab; label: string }[] = [
+const ALL_BASE_TABS: { id: LeagueDetailTab; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "teams", label: "Teams" },
   { id: "seasons", label: "Seasons" },
   { id: "news", label: "News" },
 ];
+
+const BASE_TABS = ALL_BASE_TABS.filter((tab) => ENABLE_NEWS || tab.id !== "news");
 
 export function LeagueDetailPanel({ league, articles, loading = false }: LeagueDetailPanelProps) {
   const [tab, setTab] = useState<LeagueDetailTab>("overview");
@@ -47,11 +51,21 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
     teamWinRates: [],
   };
   const seasons = league.seasonHistory ?? [];
+  const hasKnockoutTab =
+    league.competitionFormat === "tournament" || league.competitionFormat === "knockout-cup";
+  const tabs = useMemo(() => {
+    if (!hasKnockoutTab) return BASE_TABS;
+
+    const withKnockout = [...BASE_TABS];
+    withKnockout.splice(3, 0, { id: "knockout", label: "Knockout" });
+    return withKnockout;
+  }, [hasKnockoutTab]);
+  const knockoutBracket = league.knockoutBracket ?? { published: false, rounds: [] };
   const newsLabel = getLeagueNewsLabel(league);
-  const leagueNews = useMemo(
-    () => articles.filter((article) => article.league === newsLabel).slice(0, 8),
-    [articles, newsLabel],
-  );
+  const leagueNews = useMemo(() => {
+    if (!ENABLE_NEWS) return [];
+    return articles.filter((article) => article.league === newsLabel).slice(0, 8);
+  }, [articles, newsLabel]);
 
   if (loading) {
     return <LeagueDetailSkeleton />;
@@ -67,7 +81,7 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
         role="tablist"
         aria-label={`${league.shortName} sections`}
       >
-        {TABS.map((item) => (
+        {tabs.map((item) => (
           <button
             key={item.id}
             type="button"
@@ -98,7 +112,16 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start">
             <section className={cn(leaguesGlass, "overflow-hidden")}>
-              <SectionHeader title="Standings" meta={`Matchday ${league.matchday}`} />
+              <SectionHeader
+                title={
+                  league.competitionFormat === "knockout-cup" ? "League phase" : "Standings"
+                }
+                meta={
+                  league.competitionFormat === "knockout-cup"
+                    ? `${league.standings.length} clubs`
+                    : `Matchday ${league.matchday}`
+                }
+              />
               <LeagueStandingsTable standings={league.standings} leagueId={league.id} />
             </section>
 
@@ -108,17 +131,19 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
             </section>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={cn("grid gap-3", ENABLE_NEWS ? "sm:grid-cols-2" : "")}>
             <QuickLink
               href="/"
               title="Open Global map"
               description={`See live fixtures for ${league.country}`}
             />
-            <QuickLink
-              href="/news"
-              title={`View ${league.shortName} headlines`}
-              description="Wire coverage from the news desk"
-            />
+            {ENABLE_NEWS ? (
+              <QuickLink
+                href="/news"
+                title={`View ${league.shortName} headlines`}
+                description="Wire coverage from the news desk"
+              />
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -149,7 +174,11 @@ export function LeagueDetailPanel({ league, articles, loading = false }: LeagueD
 
       {tab === "seasons" ? <LeagueSeasonsPanel league={league} seasons={seasons} /> : null}
 
-      {tab === "news" ? (
+      {tab === "knockout" && hasKnockoutTab ? (
+        <LeagueKnockoutPanel league={league} bracket={knockoutBracket} />
+      ) : null}
+
+      {ENABLE_NEWS && tab === "news" ? (
         <LeagueNewsPanel league={league} newsLabel={newsLabel} articles={leagueNews} />
       ) : null}
     </div>

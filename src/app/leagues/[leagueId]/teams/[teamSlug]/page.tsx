@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { TeamDetailPanel } from "@/components/teams/team-detail-panel";
 import { getTeamNewsArticles } from "@/lib/data/team-news";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import {
   fetchNewsArticles,
   fetchTeamProfile,
@@ -22,22 +23,20 @@ export async function generateMetadata({ params }: TeamPageProps) {
 
   return {
     title: `${team.name} · ${team.league.shortName}`,
-    description: `${team.name} overview, table, fixtures, squad, and news in ${team.league.name}.`,
+    description: `${team.name} overview, table, fixtures, and squad in ${team.league.name}.`,
   };
 }
 
 export default async function TeamPage({ params }: TeamPageProps) {
   const { leagueId, teamSlug } = await params;
-  const [team, articles] = await Promise.all([
-    fetchTeamProfile(leagueId, teamSlug),
-    fetchNewsArticles(),
-  ]);
+  const team = await fetchTeamProfile(leagueId, teamSlug);
 
   if (!team) {
     notFound();
   }
 
-  const teamNews = getTeamNewsArticles(articles, team.name);
+  const articles = ENABLE_NEWS ? await fetchNewsArticles() : [];
+  const teamNews = ENABLE_NEWS ? getTeamNewsArticles(articles, team.name) : [];
 
   return (
     <div className="page-container pb-14 pt-6 sm:pb-16 sm:pt-8">

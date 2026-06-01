@@ -33,13 +33,16 @@ function isUpcomingFixture(fixture: ApiFootballLiveFixture) {
 }
 
 async function fetchUpcomingFixtures(apiKey: string): Promise<ApiFootballLiveFixture[]> {
-  const { LEAGUE_CATALOG, seasonYearForEntry } = await import("@/lib/football/league-catalog");
+  const { LEAGUE_CATALOG } = await import("@/lib/football/league-catalog");
+  const { resolveSeasonYearForEntry } = await import(
+    "@/lib/football/providers/api-football/resolve-season"
+  );
 
   const batches = await mapInBatches(
     LEAGUE_CATALOG,
     CATALOG_FETCH_CONCURRENCY,
     async (entry) => {
-      const season = seasonYearForEntry(entry);
+      const season = await resolveSeasonYearForEntry(apiKey, entry);
       const data = await apiFootballFetch<ApiFootballLiveFixture[]>(
         apiKey,
         "/fixtures",

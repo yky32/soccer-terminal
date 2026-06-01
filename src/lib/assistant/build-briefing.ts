@@ -1,5 +1,6 @@
 import type { LiveMatch } from "@/lib/data/live-match";
 import { buildNewsInsights } from "@/lib/data/news-insights";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
 import {
   compareHeatmapOrder,
@@ -137,9 +138,9 @@ export async function buildAssistantBriefing(): Promise<AssistantContext> {
     });
   }
 
-  const newsPulse = await buildNewsPulse();
-  const topHeadlines = await buildTopHeadlines();
-  if (topHeadlines[0]) {
+  const newsPulse = ENABLE_NEWS ? await buildNewsPulse() : "";
+  const topHeadlines = ENABLE_NEWS ? await buildTopHeadlines() : [];
+  if (ENABLE_NEWS && topHeadlines[0]) {
     bullets.push({
       id: "news-top",
       signal: "news",

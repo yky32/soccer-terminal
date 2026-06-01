@@ -50,7 +50,7 @@ export function GlobalPageHeader() {
             Monitor football everywhere.
           </h1>
           <p className="text-body-large mt-7 max-w-3xl text-neutral-700 sm:mt-8">
-            Live and upcoming matches on a global map — with news, league coverage, and AI
+            Live and upcoming matches on a global map — with league coverage and match monitoring
             insights when you need them.
           </p>
         </div>

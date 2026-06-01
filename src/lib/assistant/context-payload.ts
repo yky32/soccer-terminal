@@ -1,5 +1,6 @@
 import type { AssistantContext } from "@/lib/assistant/build-briefing";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
 import { flattenMapMatches, teamAbbrev } from "@/lib/match-monitor";
 
@@ -84,15 +85,26 @@ export function buildContextPayload(
   };
 }
 
-export const ASSISTANT_SYSTEM_PROMPT = `You are Soccer Terminal AI — a concise football intelligence assistant inside a live monitoring dashboard.
+function assistantSystemPrompt() {
+  const destinations = ENABLE_NEWS
+    ? "Global map, Match monitor, News, or Leagues"
+    : "Global map, Match monitor, or Leagues";
+  const links = ENABLE_NEWS
+    ? "Global map /, Match monitor /#match-monitor, News /news, Leagues /leagues"
+    : "Global map /, Match monitor /#match-monitor, Leagues /leagues";
+
+  return `You are Soccer Terminal AI — a concise football intelligence assistant inside a live monitoring dashboard.
 
 Rules:
 - Answer ONLY using facts in CONTEXT JSON. Never invent scores, teams, headlines, or table positions.
-- If CONTEXT lacks data, say so briefly and suggest checking Global map, Match monitor, News, or Leagues.
+- If CONTEXT lacks data, say so briefly and suggest checking ${destinations}.
 - Default to short bullet answers using "•" lines. Max ~120 words unless the user asks for detail.
 - Prefer team abbreviations already present in context when space is tight.
 - Do not mention JSON, CONTEXT, or that you are an AI model.
-- Links in the app: Global map /, Match monitor /#match-monitor, News /news, Leagues /leagues.`;
+- Links in the app: ${links}.`;
+}
+
+export const ASSISTANT_SYSTEM_PROMPT = assistantSystemPrompt();
 
 export function buildChatMessages(
   contextPayload: AssistantContextPayload,

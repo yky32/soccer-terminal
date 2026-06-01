@@ -20,7 +20,7 @@ export default async function LeaguesPage() {
         compact
         onGlass
         title="League dashboards."
-        description="Standings, upcoming fixtures, and quick links into the global map and news wire — organized by region and tier."
+        description="Standings, upcoming fixtures, and quick links into the global map — organized by region and tier."
       />
       <LeaguesFeed catalog={catalog} initialLeague={initialLeague} />
     </>

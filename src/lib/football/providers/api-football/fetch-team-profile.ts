@@ -18,7 +18,8 @@ import {
   type ApiFootballTeamInfo,
 } from "@/lib/football/providers/api-football/normalize-catalog";
 import { apiFootballGet, apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
-import { seasonYearForEntry, getCatalogEntryById } from "@/lib/football/league-catalog";
+import { getCatalogEntryById } from "@/lib/football/league-catalog";
+import { resolveSeasonYearForEntry } from "@/lib/football/providers/api-football/resolve-season";
 import { getCachedLeagueProfile } from "@/lib/football/providers/api-football/league-cache";
 import { fetchLeagueProfile } from "@/lib/football/providers/api-football/fetch-league-profile";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
@@ -138,7 +139,7 @@ export async function fetchTeamProfile(
   const standing = findStandingBySlug(league, teamSlug);
   if (!standing?.teamId) return null;
 
-  const season = seasonYearForEntry(entry);
+  const season = await resolveSeasonYearForEntry(apiKey, entry);
   const teamId = standing.teamId;
 
   const [squadBlocks, lastFixtures, nextFixtures, teamInfoBlocks, coachBlocks] =

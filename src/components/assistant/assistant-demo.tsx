@@ -4,7 +4,8 @@ import { ArrowUp, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatBriefingTime } from "@/lib/assistant/build-briefing";
-import { DEMO_PROMPTS } from "@/lib/assistant/demo-responses";
+import { getDemoPrompts } from "@/lib/assistant/demo-responses";
+import { ENABLE_NEWS } from "@/lib/feature-flags";
 import type { AssistantBriefing } from "@/lib/assistant/generate-assistant";
 import { readWatchlistIds } from "@/lib/match-monitor";
 import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
@@ -61,18 +62,21 @@ function BriefingBulletRow({ bullet }: { bullet: AssistantBriefing["bullets"][nu
 }
 
 function welcomeMessage(llmConfigured: boolean, mode: AssistantBriefing["mode"]) {
+  const contextHint = ENABLE_NEWS ? "live map, news, and standings" : "live map and standings";
+
   if (mode === "llm") {
-    return "Briefing and chat are powered by AI using live map, news, and standings context. Ask anything or tap a quick prompt.";
+    return `Briefing and chat are powered by AI using ${contextHint} context. Ask anything or tap a quick prompt.`;
   }
 
   if (llmConfigured) {
     return "LLM is configured but this session is using grounded demo answers. Refresh the briefing or retry chat in a moment.";
   }
 
-  return "Grounded demo mode — answers use map, news, and standings data. Set OPENAI_API_KEY in .env.local for AI summaries and chat.";
+  return `Grounded demo mode — answers use ${contextHint} data. Set OPENAI_API_KEY in .env.local for AI summaries and chat.`;
 }
 
 export function AssistantDemo({ briefing: initialBriefing, llmConfigured }: AssistantDemoProps) {
+  const demoPrompts = useMemo(() => getDemoPrompts(), []);
   const [briefing, setBriefing] = useState(initialBriefing);
   const [mode, setMode] = useState(initialBriefing.mode);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -230,7 +234,7 @@ export function AssistantDemo({ briefing: initialBriefing, llmConfigured }: Assi
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {DEMO_PROMPTS.map((prompt) => (
+        {demoPrompts.map((prompt) => (
           <button
             key={prompt.id}
             type="button"

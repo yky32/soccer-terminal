@@ -15,6 +15,10 @@ type NewsArticlePageProps = {
 };
 
 export async function generateMetadata({ params }: NewsArticlePageProps) {
+  if (!ENABLE_NEWS) {
+    return { title: "Not found" };
+  }
+
   const { id } = await params;
   const article = await fetchNewsArticleById(id);
 
