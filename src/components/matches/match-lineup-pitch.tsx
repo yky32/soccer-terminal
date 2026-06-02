@@ -1,6 +1,11 @@
 "use client";
 
 import { FootballPitchSurface } from "@/components/matches/football-pitch-surface";
+import {
+  LineupPitchStatOverlay,
+  LineupPitchSubOutIndicator,
+  lineupRatingClass,
+} from "@/components/matches/lineup-player-indicators";
 import { PlayerAvatar } from "@/components/players/player-avatar";
 import { leaguesGlassInset } from "@/components/leagues/leagues-glass";
 import type { MatchDetailPlayer } from "@/lib/data/match-detail";
@@ -8,12 +13,18 @@ import {
   layoutLineupOnPitch,
   shortPlayerName,
 } from "@/lib/football/lineup-pitch-layout";
+import {
+  lineupPlayerTooltip,
+  resolvePlayerHighlight,
+  type LineupTeamHighlights,
+} from "@/lib/football/lineup-player-highlights";
 import { cn } from "@/lib/utils";
 
 type MatchLineupPitchProps = {
   players: MatchDetailPlayer[];
   side: "home" | "away";
   formation?: string | null;
+  highlights: LineupTeamHighlights;
   className?: string;
 };
 
@@ -21,28 +32,49 @@ function PitchPlayerPin({
   player,
   coords,
   side,
+  highlights,
 }: {
   player: MatchDetailPlayer;
   coords: { x: number; y: number };
   side: "home" | "away";
+  highlights: LineupTeamHighlights;
 }) {
   const label = shortPlayerName(player.name);
+  const highlight = resolvePlayerHighlight(player, highlights);
+
   return (
     <div
-      className="absolute z-[1] flex w-[18cqw] min-w-[2.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+      className={cn(
+        "absolute z-[1] flex w-[18cqw] min-w-[2.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity",
+        highlight.subbedOut && "opacity-60",
+      )}
       style={{ left: `${coords.x}%`, top: `${coords.y}%` }}
-      title={`${player.name}${player.number ? ` · #${player.number}` : ""}${
-        player.position ? ` · ${player.position}` : ""
-      }${player.rating ? ` · ${player.rating}` : ""}`}
+      title={lineupPlayerTooltip(player, highlight)}
     >
       <div className="relative">
+        {highlight.subbedOut ? (
+          <div className="absolute -top-[0.35cqw] left-1/2 z-[3] -translate-x-1/2 -translate-y-full">
+            <LineupPitchSubOutIndicator minute={highlight.subOutMinute} />
+          </div>
+        ) : null}
+        <LineupPitchStatOverlay player={player} />
         <PlayerAvatar
           src={player.photo}
           name={player.name}
-          className="!size-[10.5cqw] !min-h-7 !min-w-7 ring-2 ring-white shadow-sm"
+          className={cn(
+            "!size-[10.5cqw] !min-h-7 !min-w-7 shadow-sm",
+            lineupRatingClass(highlight, true),
+          )}
         />
         {player.rating ? (
-          <span className="absolute -bottom-0.5 -right-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full bg-white/95 px-[0.35cqw] py-px text-[clamp(0.5rem,2.25cqw,0.6875rem)] font-bold tabular-nums text-neutral-800 shadow-sm ring-1 ring-black/[0.08]">
+          <span
+            className={cn(
+              "absolute -bottom-0.5 -right-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full px-[0.35cqw] py-px text-[clamp(0.5rem,2.25cqw,0.6875rem)] font-bold tabular-nums shadow-sm ring-1",
+              highlight.topRating
+                ? "bg-amber-100 text-amber-950 ring-amber-400/50"
+                : "bg-white/95 text-neutral-800 ring-black/[0.08]",
+            )}
+          >
             {player.rating}
           </span>
         ) : null}
@@ -68,6 +100,7 @@ export function MatchLineupPitch({
   players,
   side,
   formation,
+  highlights,
   className,
 }: MatchLineupPitchProps) {
   const placed = layoutLineupOnPitch(players, side, formation);
@@ -94,6 +127,7 @@ export function MatchLineupPitch({
           player={player}
           coords={coords}
           side={side}
+          highlights={highlights}
         />
       ))}
     </FootballPitchSurface>

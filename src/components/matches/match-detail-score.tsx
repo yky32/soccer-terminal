@@ -51,9 +51,7 @@ export function MatchDetailScoreBlock({
         <p className="text-[1.75rem] font-bold tracking-tight text-sky-800">vs</p>
       ) : displayScore ? (
         <p className="text-[clamp(2rem,5vw,2.75rem)] font-bold tabular-nums tracking-tight text-neutral-950">
-          {displayScore.home}
-          <span className="text-neutral-300">–</span>
-          {displayScore.away}
+          <span>{displayScore.home}</span><span className="text-neutral-300">–</span><span>{displayScore.away}</span>
         </p>
       ) : (
         <p className="text-[1.75rem] font-bold tracking-tight text-neutral-400">vs</p>
@@ -61,9 +59,7 @@ export function MatchDetailScoreBlock({
 
       {detail.score.penalty ? (
         <p className="mt-1 text-[0.875rem] font-semibold tabular-nums text-neutral-700">
-          Pens {detail.score.penalty.home}
-          <span className="text-neutral-300">–</span>
-          {detail.score.penalty.away}
+          {`Pens ${detail.score.penalty.home}–${detail.score.penalty.away}`}
         </p>
       ) : null}
 

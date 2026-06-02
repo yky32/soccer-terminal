@@ -97,6 +97,8 @@ export type MatchDetailPlayer = {
   minutes: number | null;
   goals: number | null;
   assists: number | null;
+  yellowCards: number | null;
+  redCards: number | null;
 };
 
 export type MatchDetailPlayerPerformance = {

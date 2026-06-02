@@ -41,6 +41,8 @@ type PlayerPerformanceIndex = Map<
     minutes: number | null;
     goals: number | null;
     assists: number | null;
+    yellowCards: number | null;
+    redCards: number | null;
     number: string | null;
     position: string | null;
   }
@@ -61,6 +63,8 @@ function buildPlayerPerformanceIndex(
         minutes: stats?.games.minutes ?? null,
         goals: stats?.goals?.total ?? null,
         assists: stats?.goals?.assists ?? null,
+        yellowCards: stats?.cards?.yellow ?? null,
+        redCards: stats?.cards?.red ?? null,
         number:
           stats?.games.number !== null && stats?.games.number !== undefined
             ? String(stats.games.number)
@@ -99,6 +103,8 @@ function lineupPlayer(
     minutes: perf?.minutes ?? null,
     goals: perf?.goals ?? null,
     assists: perf?.assists ?? null,
+    yellowCards: perf?.yellowCards ?? null,
+    redCards: perf?.redCards ?? null,
   };
 }
 

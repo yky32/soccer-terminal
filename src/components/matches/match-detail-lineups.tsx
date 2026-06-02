@@ -1,13 +1,26 @@
-import { ArrowUp } from "lucide-react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { MatchLineupPitch } from "@/components/matches/match-lineup-pitch";
 import {
   groupByLineupPosition,
   LineupPositionRowHeader,
 } from "@/components/matches/lineup-position-style";
+import {
+  LineupBenchStatRow,
+  LineupSubInIndicator,
+} from "@/components/matches/lineup-player-indicators";
 import { PlayerAvatar } from "@/components/players/player-avatar";
 import { leaguesGlass, leaguesGlassInset } from "@/components/leagues/leagues-glass";
-import type { MatchDetailLineupSide, MatchDetailPlayer } from "@/lib/data/match-detail";
+import type {
+  MatchDetailLineupSide,
+  MatchDetailPlayer,
+  MatchDetailTimelineView,
+} from "@/lib/data/match-detail";
+import {
+  buildLineupTeamHighlights,
+  lineupPlayerTooltip,
+  resolvePlayerHighlight,
+  type LineupTeamHighlights,
+} from "@/lib/football/lineup-player-highlights";
 import { shortPlayerName } from "@/lib/football/lineup-pitch-layout";
 import { cn } from "@/lib/utils";
 
@@ -24,20 +37,15 @@ function substitutePlayed(player: MatchDetailPlayer) {
   return Boolean(player.rating?.trim());
 }
 
-function SubInIndicator({ minutes }: { minutes: number | null }) {
-  return (
-    <span className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[0.625rem] font-semibold leading-none text-emerald-700 ring-1 ring-emerald-500/20">
-      <ArrowUp className="h-2.5 w-2.5" strokeWidth={2.5} aria-hidden />
-      Sub in
-      {minutes != null && minutes > 0 ? (
-        <span className="font-medium text-emerald-600/90">{minutes}&apos;</span>
-      ) : null}
-    </span>
-  );
-}
-
-function SubstituteChip({ player }: { player: MatchDetailPlayer }) {
+function SubstituteChip({
+  player,
+  highlights,
+}: {
+  player: MatchDetailPlayer;
+  highlights: LineupTeamHighlights;
+}) {
   const played = substitutePlayed(player);
+  const highlight = resolvePlayerHighlight(player, highlights);
 
   return (
     <div
@@ -45,16 +53,16 @@ function SubstituteChip({ player }: { player: MatchDetailPlayer }) {
         leaguesGlassInset,
         "flex items-start gap-2.5 rounded-xl px-2.5 py-2 transition-colors",
         played && "bg-black/[0.05] ring-1 ring-emerald-500/15",
+        highlight.topRating && played && "ring-amber-400/40",
       )}
-      title={
-        played
-          ? `${player.name} · Subbed on${player.minutes ? ` · ${player.minutes} min` : ""}${
-              player.rating ? ` · ${player.rating}` : ""
-            }`
-          : player.name
-      }
+      title={lineupPlayerTooltip(player, highlight)}
     >
-      <PlayerAvatar src={player.photo} name={player.name} size="sm" className="!h-8 !w-8" />
+      <PlayerAvatar
+        src={player.photo}
+        name={player.name}
+        size="sm"
+        className={cn("!h-8 !w-8", highlight.topRating && "ring-2 ring-amber-400/80")}
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
@@ -62,7 +70,14 @@ function SubstituteChip({ player }: { player: MatchDetailPlayer }) {
             {shortPlayerName(player.name)}
           </p>
           {player.rating ? (
-            <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[0.6875rem] font-bold tabular-nums text-neutral-800">
+            <span
+              className={cn(
+                "shrink-0 rounded px-1.5 py-0.5 text-[0.6875rem] font-bold tabular-nums",
+                highlight.topRating
+                  ? "bg-amber-100 text-amber-950 ring-1 ring-amber-400/40"
+                  : "bg-neutral-100 text-neutral-800",
+              )}
+            >
               {player.rating}
             </span>
           ) : null}
@@ -74,14 +89,21 @@ function SubstituteChip({ player }: { player: MatchDetailPlayer }) {
               #{player.number}
             </span>
           ) : null}
-          {played ? <SubInIndicator minutes={player.minutes} /> : null}
+          <LineupBenchStatRow player={player} />
+          {played ? <LineupSubInIndicator minutes={player.minutes} /> : null}
         </div>
       </div>
     </div>
   );
 }
 
-function SubstitutesBench({ players }: { players: MatchDetailPlayer[] }) {
+function SubstitutesBench({
+  players,
+  highlights,
+}: {
+  players: MatchDetailPlayer[];
+  highlights: LineupTeamHighlights;
+}) {
   if (players.length === 0) return null;
 
   const groups = groupByLineupPosition(players);
@@ -100,6 +122,7 @@ function SubstitutesBench({ players }: { players: MatchDetailPlayer[] }) {
                 <SubstituteChip
                   key={`${group.kind}-${player.id ?? player.name}-${player.number ?? index}`}
                   player={player}
+                  highlights={highlights}
                 />
               ))}
             </div>
@@ -113,10 +136,15 @@ function SubstitutesBench({ players }: { players: MatchDetailPlayer[] }) {
 function TeamFormationColumn({
   lineup,
   side,
+  timeline,
 }: {
   lineup: MatchDetailLineupSide;
   side: "home" | "away";
+  timeline: MatchDetailTimelineView;
 }) {
+  const squad = [...lineup.starting, ...lineup.substitutes];
+  const highlights = buildLineupTeamHighlights(squad, timeline, side);
+
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-2">
@@ -137,22 +165,25 @@ function TeamFormationColumn({
           players={lineup.starting}
           side={side}
           formation={lineup.formation}
+          highlights={highlights}
           className="w-full"
         />
       </div>
 
-      <SubstitutesBench players={lineup.substitutes} />
+      <SubstitutesBench players={lineup.substitutes} highlights={highlights} />
     </div>
   );
 }
 
 export function MatchDetailLineups({
   lineups,
+  timeline,
 }: {
   lineups: {
     home: MatchDetailLineupSide | null;
     away: MatchDetailLineupSide | null;
   };
+  timeline: MatchDetailTimelineView;
 }) {
   return (
     <section className={cn(leaguesGlass, "overflow-hidden")} aria-label="Formation">
@@ -172,13 +203,13 @@ export function MatchDetailLineups({
                   lineups.away && "lg:pr-5 lg:border-r lg:border-black/[0.06]",
                 )}
               >
-                <TeamFormationColumn lineup={lineups.home} side="home" />
+                <TeamFormationColumn lineup={lineups.home} side="home" timeline={timeline} />
               </div>
             ) : null}
 
             {lineups.away ? (
               <div className={cn("min-w-0", lineups.home && "lg:pl-5")}>
-                <TeamFormationColumn lineup={lineups.away} side="away" />
+                <TeamFormationColumn lineup={lineups.away} side="away" timeline={timeline} />
               </div>
             ) : null}
           </div>

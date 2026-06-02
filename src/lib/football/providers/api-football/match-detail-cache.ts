@@ -71,7 +71,7 @@ export function setCachedMatchDetail(detail: MatchDetail) {
 function cacheFinishedAcrossRequests(fixtureId: number, detail: MatchDetail) {
   return unstable_cache(
     async () => detail,
-    ["match-detail-v6", String(fixtureId)],
+    ["match-detail-v7", String(fixtureId)],
     { revalidate: API_REVALIDATE_MATCH_FINISHED_SEC },
   )();
 }

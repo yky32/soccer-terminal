@@ -40,7 +40,7 @@ export function MatchDetailHero({ match, detail }: MatchDetailHeroProps) {
           <p className="mt-2 text-center text-[0.75rem] text-neutral-500 sm:text-left">{kickoff}</p>
         ) : null}
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+        <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-4 sm:gap-x-6">
           <div className="flex items-center gap-3 sm:justify-end sm:text-right">
             <div className="min-w-0 sm:order-2">
               <p className="truncate text-[clamp(1rem,2.5vw,1.25rem)] font-semibold text-neutral-950">

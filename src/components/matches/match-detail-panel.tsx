@@ -78,7 +78,7 @@ export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail })
 
         {tab === "lineup" ? (
           <div className="space-y-6">
-            <MatchDetailLineups lineups={detail.lineups} />
+            <MatchDetailLineups lineups={detail.lineups} timeline={detail.timeline} />
             <MatchDetailPlayerStats
               homeTeam={match.homeTeam}
               homeLogo={match.homeLogo}
