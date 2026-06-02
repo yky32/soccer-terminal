@@ -1,11 +1,12 @@
-import type {
-  LeagueFixture,
-  LeagueFormResult,
-  LeagueLeaderBoards,
-  LeaguePlayerStat,
-  LeagueProfile,
-  LeagueStandingRow,
-  LeagueTeamStat,
+import {
+  LEAGUE_LEADER_LIMIT,
+  type LeagueFixture,
+  type LeagueFormResult,
+  type LeagueLeaderBoards,
+  type LeaguePlayerStat,
+  type LeagueProfile,
+  type LeagueStandingRow,
+  type LeagueTeamStat,
 } from "@/lib/data/league-profile";
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import {
@@ -244,7 +245,7 @@ export function normalizeLeaderBoards(
   topscorers: ApiFootballTopPlayer[],
   topassists: ApiFootballTopPlayer[],
 ): LeagueLeaderBoards {
-  const goals = topscorers.slice(0, 8).map((item, index) =>
+  const goals = topscorers.slice(0, LEAGUE_LEADER_LIMIT).map((item, index) =>
     topPlayerStat(
       item,
       index + 1,
@@ -253,7 +254,7 @@ export function normalizeLeaderBoards(
     ),
   );
 
-  const assists = topassists.slice(0, 8).map((item, index) =>
+  const assists = topassists.slice(0, LEAGUE_LEADER_LIMIT).map((item, index) =>
     topPlayerStat(
       item,
       index + 1,
@@ -268,7 +269,7 @@ export function normalizeLeaderBoards(
       const right = Number.parseFloat(b.statistics[0]?.games.rating ?? "0");
       return right - left;
     })
-    .slice(0, 8)
+    .slice(0, LEAGUE_LEADER_LIMIT)
     .map((item, index) =>
       topPlayerStat(
         item,
@@ -284,7 +285,7 @@ export function normalizeLeaderBoards(
       const right = b.statistics[0]?.fouls.committed ?? 0;
       return right - left;
     })
-    .slice(0, 8)
+    .slice(0, LEAGUE_LEADER_LIMIT)
     .map((item, index) =>
       topPlayerStat(
         item,
@@ -312,7 +313,7 @@ export function teamWinRatesFromStandings(standings: LeagueStandingRow[]): Leagu
       won: row.won,
     }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 8)
+    .slice(0, LEAGUE_LEADER_LIMIT)
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 

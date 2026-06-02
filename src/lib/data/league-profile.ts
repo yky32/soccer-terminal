@@ -89,6 +89,9 @@ export type LeagueTeamStat = {
   won: number;
 };
 
+/** Rows shown per column on league leader boards (goals, rating, win rate, etc.). */
+export const LEAGUE_LEADER_LIMIT = 10;
+
 export type LeagueLeaderBoards = {
   players: Record<LeaguePlayerStatKind, LeaguePlayerStat[]>;
   teamWinRates: LeagueTeamStat[];

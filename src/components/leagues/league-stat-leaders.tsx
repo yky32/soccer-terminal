@@ -21,6 +21,25 @@ import { cn } from "@/lib/utils";
 
 const PLAYER_STAT_ORDER: LeaguePlayerStatKind[] = ["rating", "goals", "assists", "fouls"];
 
+/** Grey row tint by rank (1 = strongest), through top 10. */
+const LEADER_RANK_HIGHLIGHT: readonly string[] = [
+  "bg-neutral-200/90",
+  "bg-neutral-200/80",
+  "bg-neutral-200/70",
+  "bg-neutral-200/60",
+  "bg-neutral-200/[0.55]",
+  "bg-neutral-200/50",
+  "bg-neutral-200/[0.45]",
+  "bg-neutral-200/40",
+  "bg-neutral-200/[0.35]",
+  "bg-neutral-200/30",
+];
+
+const podiumHighlight = (rank: number) =>
+  rank >= 1 && rank <= LEADER_RANK_HIGHLIGHT.length
+    ? LEADER_RANK_HIGHLIGHT[rank - 1]
+    : "";
+
 type LeagueStatLeaderGridProps = {
   title: string;
   subtitle?: string;
@@ -100,6 +119,7 @@ function PlayerStatRow({
   kind: LeaguePlayerStatKind;
   leagueId?: string;
 }) {
+  const podium = podiumHighlight(row.rank);
   const content = (
     <>
       <span className="w-4 shrink-0 text-[0.75rem] font-bold tabular-nums text-neutral-400">
@@ -129,13 +149,20 @@ function PlayerStatRow({
   );
 
   if (!leagueId) {
-    return <div className="flex items-center gap-2">{content}</div>;
+    return (
+      <div className={cn("flex items-center gap-2 rounded-md px-1 py-1", podium)}>
+        {content}
+      </div>
+    );
   }
 
   return (
     <Link
       href={playerHref(leagueId, row.playerSlug)}
-      className="flex items-center gap-2 rounded-md transition-colors hover:bg-white/30"
+      className={cn(
+        "flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-white/30",
+        podium,
+      )}
     >
       {content}
     </Link>
@@ -159,42 +186,44 @@ function TeamWinRateColumn({
           <li className="py-2 text-[0.75rem] text-neutral-500">No API data for this stat.</li>
         ) : (
           rows.map((row) => {
-          const isFocused = focusTeam === row.team;
+            const isFocused = focusTeam === row.team;
+            const podium = podiumHighlight(row.rank);
 
-          return (
-            <li key={`win-rate-${row.rank}-${row.team}`}>
-              <div
-                className={cn(
-                  "flex items-center gap-2 rounded-lg px-1 py-1 transition-colors",
-                  isFocused && "bg-indigo-500/10 ring-1 ring-indigo-500/20",
-                )}
-              >
-                <span className="w-4 shrink-0 text-[0.75rem] font-bold tabular-nums text-neutral-400">
-                  {row.rank}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <FootballLogo src={row.teamLogo} label={row.team} size="xs" />
-                    <p className="truncate text-[0.8125rem] font-semibold text-neutral-950">
-                      {row.team}
-                    </p>
-                  </div>
-                  <p className="mt-0.5 text-[0.6875rem] text-neutral-500">
-                    {formatTeamWinRateMeta(row.won, row.played)}
-                  </p>
-                </div>
-                <span
+            return (
+              <li key={`win-rate-${row.rank}-${row.team}`}>
+                <div
                   className={cn(
-                    leaguesGlassInset,
-                    "shrink-0 rounded-md px-1.5 py-0.5 text-[0.75rem] font-bold tabular-nums text-indigo-900",
+                    "flex items-center gap-2 rounded-lg px-1 py-1 transition-colors",
+                    isFocused && "bg-indigo-500/10 ring-1 ring-indigo-500/20",
+                    !isFocused && podium,
                   )}
                 >
-                  {formatTeamWinRate(row.value)}
-                </span>
-              </div>
-            </li>
-          );
-        })
+                  <span className="w-4 shrink-0 text-[0.75rem] font-bold tabular-nums text-neutral-400">
+                    {row.rank}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <FootballLogo src={row.teamLogo} label={row.team} size="xs" />
+                      <p className="truncate text-[0.8125rem] font-semibold text-neutral-950">
+                        {row.team}
+                      </p>
+                    </div>
+                    <p className="mt-0.5 text-[0.6875rem] text-neutral-500">
+                      {formatTeamWinRateMeta(row.won, row.played)}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      leaguesGlassInset,
+                      "shrink-0 rounded-md px-1.5 py-0.5 text-[0.75rem] font-bold tabular-nums text-indigo-900",
+                    )}
+                  >
+                    {formatTeamWinRate(row.value)}
+                  </span>
+                </div>
+              </li>
+            );
+          })
         )}
       </ol>
     </div>

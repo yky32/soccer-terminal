@@ -1,11 +1,12 @@
-import type {
-  LeagueLeaderBoards,
-  LeaguePlayerStat,
-  LeaguePlayerStatKind,
-  LeagueProfile,
-  LeagueSeasonRecord,
-  LeagueStandingRow,
-  LeagueTeamStat,
+import {
+  LEAGUE_LEADER_LIMIT,
+  type LeagueLeaderBoards,
+  type LeaguePlayerStat,
+  type LeaguePlayerStatKind,
+  type LeagueProfile,
+  type LeagueSeasonRecord,
+  type LeagueStandingRow,
+  type LeagueTeamStat,
 } from "@/lib/data/league-profile";
 import { teamSlugFromName } from "@/lib/team-paths";
 
@@ -199,7 +200,7 @@ function buildLeaderBoards(
 
   const players = PLAYER_STAT_KINDS.reduce(
     (acc, kind) => {
-      acc[kind] = buildPlayerLeaderRows(league, teams, kind, 5, teamFilter);
+      acc[kind] = buildPlayerLeaderRows(league, teams, kind, LEAGUE_LEADER_LIMIT, teamFilter);
       return acc;
     },
     {} as Record<LeaguePlayerStatKind, LeaguePlayerStat[]>,
@@ -207,7 +208,7 @@ function buildLeaderBoards(
 
   return {
     players,
-    teamWinRates: buildTeamWinRates(league.standings, 5),
+    teamWinRates: buildTeamWinRates(league.standings, LEAGUE_LEADER_LIMIT),
   };
 }
 
@@ -231,7 +232,7 @@ export function finalizeApiLeaderBoards(
     teamWinRates:
       boards.teamWinRates.length > 0
         ? boards.teamWinRates
-        : buildTeamWinRates(league.standings, 8),
+        : buildTeamWinRates(league.standings, LEAGUE_LEADER_LIMIT),
   };
 }
 
