@@ -180,48 +180,22 @@ function KnockoutTieCard({
   }
 
   if (!expanded) {
-    const primaryLeg = legs[0];
-    const detailHref = fixtureDetailHref(primaryLeg);
-
     return (
-      <div
-        className={cn(shellClass, "flex w-full items-stretch gap-0.5 p-1")}
-        aria-expanded={false}
-      >
-        {detailHref ? (
-          <Link
-            href={detailHref}
-            className="min-w-0 flex-1 cursor-pointer rounded-md transition-opacity hover:opacity-95"
-            aria-label={`Open ${primaryLeg.homeTeam} vs ${primaryLeg.awayTeam} match details`}
-          >
-            <KnockoutTieSummaryCard
-              summary={summary}
-              align={align}
-              shortTeamNames={shortTeamNames}
-              stage={stage}
-              wide={wide}
-              expanded={false}
-            />
-          </Link>
-        ) : (
-          <div className="min-w-0 flex-1">
-            <KnockoutTieSummaryCard
-              summary={summary}
-              align={align}
-              shortTeamNames={shortTeamNames}
-              stage={stage}
-              wide={wide}
-              expanded={false}
-            />
-          </div>
-        )}
+      <div className={cn(shellClass, "p-1")} aria-expanded={false}>
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="flex shrink-0 items-center justify-center self-stretch rounded-md px-1 transition-colors hover:bg-black/[0.04]"
-          aria-label="Show leg-by-leg scores"
+          className="flex w-full cursor-pointer rounded-md text-left transition-colors hover:bg-black/[0.04]"
+          aria-label="Show all legs for this tie"
         >
-          <ChevronDown className="h-3 w-3 text-neutral-400" aria-hidden />
+          <KnockoutTieSummaryCard
+            summary={summary}
+            align={align}
+            shortTeamNames={shortTeamNames}
+            stage={stage}
+            wide={wide}
+            expanded={false}
+          />
         </button>
       </div>
     );
