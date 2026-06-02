@@ -10,12 +10,17 @@ export type MatchLiveEvent = {
 
 export type LiveMatch = {
   id: number;
+  homeTeamId: number;
+  awayTeamId: number;
+  leagueId: number;
   homeTeam: string;
   awayTeam: string;
   homeGoals: number;
   awayGoals: number;
   homeLogo: string | null;
   awayLogo: string | null;
+  homeWinner: boolean | null;
+  awayWinner: boolean | null;
   kickoffAt: string | null;
   statusShort: string;
   statusLong: string;

@@ -68,29 +68,47 @@ export function buildLiveFixturesSnapshot(
   };
 }
 
-function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
+function resolveCountryCode(fixture: ApiFootballLiveFixture) {
   const catalogEntry = getCatalogEntryForApiLeague(
     fixture.league.id,
     fixture.league.name,
   );
-  const countryCode =
+
+  return (
     countryCodeFromLeagueFlag(fixture.league.flag) ??
     countryCodeFromLeagueCountry(fixture.league.country) ??
-    countryCodeFromLeagueFlag(catalogEntry?.countryFlag);
-  if (!countryCode) return null;
+    countryCodeFromLeagueFlag(catalogEntry?.countryFlag) ??
+    `L${fixture.league.id}`
+  );
+}
 
+function buildLiveMatch(fixture: ApiFootballLiveFixture, countryCode: string): LiveMatch {
+  const catalogEntry = getCatalogEntryForApiLeague(
+    fixture.league.id,
+    fixture.league.name,
+  );
   const halftime = fixture.score?.halftime;
   const homeTeam = fixture.teams.home.name;
   const awayTeam = fixture.teams.away.name;
+  /** Regulation/full-time goals; `goals` on PEN fixtures stays 1–1, not shootout tally. */
+  const homeGoals =
+    fixture.score?.fulltime?.home ?? fixture.score?.extratime?.home ?? fixture.goals.home ?? 0;
+  const awayGoals =
+    fixture.score?.fulltime?.away ?? fixture.score?.extratime?.away ?? fixture.goals.away ?? 0;
 
   return {
     id: fixture.fixture.id,
+    homeTeamId: fixture.teams.home.id,
+    awayTeamId: fixture.teams.away.id,
+    leagueId: fixture.league.id,
     homeTeam,
     awayTeam,
-    homeGoals: fixture.goals.home ?? 0,
-    awayGoals: fixture.goals.away ?? 0,
+    homeGoals,
+    awayGoals,
     homeLogo: fixture.teams.home.logo ?? null,
     awayLogo: fixture.teams.away.logo ?? null,
+    homeWinner: fixture.teams.home.winner ?? null,
+    awayWinner: fixture.teams.away.winner ?? null,
     kickoffAt: fixture.fixture.date ?? null,
     statusShort: fixture.fixture.status.short,
     statusLong: fixture.fixture.status.long,
@@ -117,6 +135,26 @@ function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
     halftimeAway: halftime?.away ?? null,
     events: normalizeFixtureEvents({ homeTeam, awayTeam }, fixture.events),
   };
+}
+
+/** Map/catalog snapshot — skips fixtures outside the catalog when no country code is known. */
+export function normalizeFixture(fixture: ApiFootballLiveFixture): LiveMatch | null {
+  const catalogEntry = getCatalogEntryForApiLeague(
+    fixture.league.id,
+    fixture.league.name,
+  );
+  const countryCode =
+    countryCodeFromLeagueFlag(fixture.league.flag) ??
+    countryCodeFromLeagueCountry(fixture.league.country) ??
+    countryCodeFromLeagueFlag(catalogEntry?.countryFlag);
+  if (!countryCode) return null;
+
+  return buildLiveMatch(fixture, countryCode);
+}
+
+/** Match detail pages — always resolves; not limited to catalog leagues. */
+export function normalizeFixtureForMatchDetail(fixture: ApiFootballLiveFixture): LiveMatch {
+  return buildLiveMatch(fixture, resolveCountryCode(fixture));
 }
 
 function formatVenue(name?: string | null, city?: string | null) {

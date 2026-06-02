@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueFixture } from "@/lib/data/league-profile";
+import { fixtureDetailHref } from "@/lib/match-paths";
 import { cn } from "@/lib/utils";
 
 type LeagueFixturesListProps = {
@@ -30,9 +32,10 @@ export function LeagueFixturesList({ fixtures }: LeagueFixturesListProps) {
 function FixtureRow({ fixture }: { fixture: LeagueFixture }) {
   const kickoff = new Date(fixture.kickoffAt);
   const isSoon = kickoff.getTime() - Date.now() < 24 * 3_600_000;
+  const detailHref = fixtureDetailHref(fixture);
 
-  return (
-    <div className="px-4 py-3.5 sm:px-5">
+  const content = (
+    <>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
           {fixture.matchday}
@@ -72,6 +75,19 @@ function FixtureRow({ fixture }: { fixture: LeagueFixture }) {
           <FootballLogo src={fixture.awayLogo} label={fixture.awayTeam} size="sm" />
         </div>
       </div>
-    </div>
+    </>
+  );
+
+  if (!detailHref) {
+    return <div className="px-4 py-3.5 sm:px-5">{content}</div>;
+  }
+
+  return (
+    <Link
+      href={detailHref}
+      className="block cursor-pointer px-4 py-3.5 transition-colors hover:bg-black/[0.03] sm:px-5"
+    >
+      {content}
+    </Link>
   );
 }

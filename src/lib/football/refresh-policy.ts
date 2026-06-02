@@ -18,6 +18,14 @@ export const ROUTE_REVALIDATE_NEWS_SEC = 1800;
 /** Upstream API-Football fetch cache (seconds). */
 export const API_REVALIDATE_LIVE_SEC = 600;
 export const API_REVALIDATE_DEFAULT_SEC = 1800;
+/** Finished fixtures — immutable after full time. */
+export const API_REVALIDATE_MATCH_FINISHED_SEC = 60 * 60 * 24 * 7;
+/** Not started / postponed — lineups and kickoff may still change. */
+export const API_REVALIDATE_MATCH_UPCOMING_SEC = 1800;
+
+/** Server in-memory match detail cache for live / upcoming. */
+export const MATCH_DETAIL_VOLATILE_CACHE_MS = 60_000;
+export const MATCH_DETAIL_UPCOMING_CACHE_MS = 15 * 60_000;
 
 /** Client localStorage TTL for league profiles on /leagues. */
 export const LEAGUE_LOCAL_TTL_MS = 2 * 60 * 60_000;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import {
@@ -20,7 +21,33 @@ import {
   type KnockoutWinKind,
 } from "@/lib/football/knockout-match-result";
 import { knockoutTeamShortName } from "@/lib/football/knockout-team-name";
+import { fixtureDetailHref } from "@/lib/match-paths";
 import { cn } from "@/lib/utils";
+
+function KnockoutMatchDetailLink({
+  match,
+  className,
+  children,
+}: {
+  match: LeagueKnockoutMatch;
+  className?: string;
+  children: ReactNode;
+}) {
+  const href = fixtureDetailHref(match);
+
+  if (!href) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <Link
+      href={href}
+      className={cn("block cursor-pointer transition-opacity hover:opacity-95", className)}
+    >
+      {children}
+    </Link>
+  );
+}
 
 const WINNER_NAME_CLASS: Record<KnockoutWinKind, string> = {
   regulation: "font-semibold text-emerald-950",
@@ -153,23 +180,50 @@ function KnockoutTieCard({
   }
 
   if (!expanded) {
+    const primaryLeg = legs[0];
+    const detailHref = fixtureDetailHref(primaryLeg);
+
     return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        className={cn(shellClass, "w-full p-1 text-left transition-colors hover:bg-white/50")}
+      <div
+        className={cn(shellClass, "flex w-full items-stretch gap-0.5 p-1")}
         aria-expanded={false}
-        aria-label="Show leg-by-leg scores"
       >
-        <KnockoutTieSummaryCard
-          summary={summary}
-          align={align}
-          shortTeamNames={shortTeamNames}
-          stage={stage}
-          wide={wide}
-          expanded={false}
-        />
-      </button>
+        {detailHref ? (
+          <Link
+            href={detailHref}
+            className="min-w-0 flex-1 cursor-pointer rounded-md transition-opacity hover:opacity-95"
+            aria-label={`Open ${primaryLeg.homeTeam} vs ${primaryLeg.awayTeam} match details`}
+          >
+            <KnockoutTieSummaryCard
+              summary={summary}
+              align={align}
+              shortTeamNames={shortTeamNames}
+              stage={stage}
+              wide={wide}
+              expanded={false}
+            />
+          </Link>
+        ) : (
+          <div className="min-w-0 flex-1">
+            <KnockoutTieSummaryCard
+              summary={summary}
+              align={align}
+              shortTeamNames={shortTeamNames}
+              stage={stage}
+              wide={wide}
+              expanded={false}
+            />
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex shrink-0 items-center justify-center self-stretch rounded-md px-1 transition-colors hover:bg-black/[0.04]"
+          aria-label="Show leg-by-leg scores"
+        >
+          <ChevronDown className="h-3 w-3 text-neutral-400" aria-hidden />
+        </button>
+      </div>
     );
   }
 
@@ -313,7 +367,8 @@ export function KnockoutMatchCard({
   const cardWinKind = tieAggregateWinner ? tieAggregateWinKind : legWinKind;
 
   return (
-    <div
+    <KnockoutMatchDetailLink
+      match={match}
       className={cn(
         leaguesGlassInset,
         knockoutMatchCardClass(stage, wide ? "w-full" : undefined),
@@ -393,7 +448,7 @@ export function KnockoutMatchCard({
             ? kickoff.toLocaleDateString([], { month: "short", day: "numeric" })
             : "TBD"}
       </p>
-    </div>
+    </KnockoutMatchDetailLink>
   );
 }
 

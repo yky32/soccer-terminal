@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { TeamMatchResult } from "@/lib/data/team-profile";
+import { fixtureDetailHref } from "@/lib/match-paths";
 import { cn } from "@/lib/utils";
 
 type TeamResultsListProps = {
@@ -35,8 +37,10 @@ function ResultRow({ result, teamName }: { result: TeamMatchResult; teamName: st
     (!result.isHome && result.awayScore > result.homeScore);
   const teamDraw = result.homeScore === result.awayScore;
 
-  return (
-    <div className="px-4 py-3.5 sm:px-5">
+  const detailHref = fixtureDetailHref(result);
+
+  const content = (
+    <>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
           {result.matchday}
@@ -86,6 +90,19 @@ function ResultRow({ result, teamName }: { result: TeamMatchResult; teamName: st
           <FootballLogo src={result.awayLogo} label={result.awayTeam} size="sm" />
         </div>
       </div>
-    </div>
+    </>
+  );
+
+  if (!detailHref) {
+    return <div className="px-4 py-3.5 sm:px-5">{content}</div>;
+  }
+
+  return (
+    <Link
+      href={detailHref}
+      className="block cursor-pointer px-4 py-3.5 transition-colors hover:bg-black/[0.03] sm:px-5"
+    >
+      {content}
+    </Link>
   );
 }

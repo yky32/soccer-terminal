@@ -143,8 +143,9 @@ function row(
   };
 }
 
+let mockLeagueFixtureId = 910_000;
+
 function fixture(
-  id: string,
   homeTeam: string,
   awayTeam: string,
   homeLogo: string | null,
@@ -152,8 +153,10 @@ function fixture(
   hours: number,
   matchday: string,
 ): LeagueFixture {
+  mockLeagueFixtureId += 1;
+
   return {
-    id,
+    id: String(mockLeagueFixtureId),
     homeTeam,
     awayTeam,
     homeLogo,
@@ -188,9 +191,9 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(8, "Chelsea", LOGO.chelsea, 33, 14, 8, 11, 55, 51, ["L", "W", "D", "W", "L"], "Promotion - Conference League (Group Stage)"),
     ],
     fixtures: [
-      fixture("epl-1", "Arsenal", "Chelsea", LOGO.arsenal, LOGO.chelsea, 28, "MD 34"),
-      fixture("epl-2", "Liverpool", "Tottenham", LOGO.liverpool, LOGO.tottenham, 52, "MD 34"),
-      fixture("epl-3", "Man City", "Newcastle", LOGO.manCity, LOGO.newcastle, 76, "MD 34"),
+      fixture("Arsenal", "Chelsea", LOGO.arsenal, LOGO.chelsea, 28, "MD 34"),
+      fixture("Liverpool", "Tottenham", LOGO.liverpool, LOGO.tottenham, 52, "MD 34"),
+      fixture("Man City", "Newcastle", LOGO.manCity, LOGO.newcastle, 76, "MD 34"),
     ],
   },
   {
@@ -213,8 +216,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Atlético Madrid", LOGO.atletico, 32, 18, 8, 6, 52, 33, ["D", "W", "W", "D", "L"]),
     ],
     fixtures: [
-      fixture("laliga-1", "Barcelona", "Real Madrid", LOGO.barcelona, LOGO.realMadrid, 36, "MD 32"),
-      fixture("laliga-2", "Girona", "Atlético Madrid", LOGO.girona, LOGO.atletico, 60, "MD 32"),
+      fixture("Barcelona", "Real Madrid", LOGO.barcelona, LOGO.realMadrid, 36, "MD 32"),
+      fixture("Girona", "Atlético Madrid", LOGO.girona, LOGO.atletico, 60, "MD 32"),
     ],
   },
   {
@@ -237,8 +240,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Napoli", LOGO.napoli, 33, 17, 8, 8, 55, 40, ["L", "W", "D", "W", "D"]),
     ],
     fixtures: [
-      fixture("seriea-1", "Inter", "Juventus", LOGO.inter, LOGO.juventus, 44, "MD 33"),
-      fixture("seriea-2", "Milan", "Napoli", LOGO.milan, LOGO.napoli, 68, "MD 33"),
+      fixture("Inter", "Juventus", LOGO.inter, LOGO.juventus, 44, "MD 33"),
+      fixture("Milan", "Napoli", LOGO.milan, LOGO.napoli, 68, "MD 33"),
     ],
   },
   {
@@ -261,8 +264,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Dortmund", LOGO.dortmund, 30, 17, 6, 7, 58, 39, ["W", "D", "L", "W", "W"]),
     ],
     fixtures: [
-      fixture("bund-1", "Bayern Munich", "Dortmund", LOGO.bayern, LOGO.dortmund, 32, "MD 30"),
-      fixture("bund-2", "Leverkusen", "Stuttgart", LOGO.leverkusen, LOGO.stuttgart, 56, "MD 30"),
+      fixture("Bayern Munich", "Dortmund", LOGO.bayern, LOGO.dortmund, 32, "MD 30"),
+      fixture("Leverkusen", "Stuttgart", LOGO.leverkusen, LOGO.stuttgart, 56, "MD 30"),
     ],
   },
   {
@@ -284,7 +287,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(3, "Lille", LOGO.lille, 29, 15, 8, 6, 45, 30, ["W", "D", "D", "W", "L"]),
     ],
     fixtures: [
-      fixture("ligue1-1", "PSG", "Monaco", LOGO.psg, LOGO.monaco, 40, "MD 29"),
+      fixture("PSG", "Monaco", LOGO.psg, LOGO.monaco, 40, "MD 29"),
     ],
   },
   {
@@ -313,11 +316,11 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(10, "Leverkusen", LOGO.leverkusen, 8, 3, 3, 2, 11, 10, ["D", "W", "L", "D", "W"]),
     ],
     fixtures: [
-      fixture("ucl-1", "Arsenal", "Bayern Munich", LOGO.arsenal, LOGO.bayern, 18, "QF 1st leg"),
-      fixture("ucl-2", "Barcelona", "Inter", LOGO.barcelona, LOGO.inter, 42, "QF 1st leg"),
-      fixture("ucl-3", "Real Madrid", "Man City", LOGO.realMadrid, LOGO.manCity, 66, "QF 1st leg"),
-      fixture("ucl-4", "PSG", "Liverpool", LOGO.psg, LOGO.liverpool, 90, "QF 1st leg"),
-      fixture("ucl-5", "Bayern Munich", "Arsenal", LOGO.bayern, LOGO.arsenal, 162, "QF 2nd leg"),
+      fixture("Arsenal", "Bayern Munich", LOGO.arsenal, LOGO.bayern, 18, "QF 1st leg"),
+      fixture("Barcelona", "Inter", LOGO.barcelona, LOGO.inter, 42, "QF 1st leg"),
+      fixture("Real Madrid", "Man City", LOGO.realMadrid, LOGO.manCity, 66, "QF 1st leg"),
+      fixture("PSG", "Liverpool", LOGO.psg, LOGO.liverpool, 90, "QF 1st leg"),
+      fixture("Bayern Munich", "Arsenal", LOGO.bayern, LOGO.arsenal, 162, "QF 2nd leg"),
     ],
   },
   {
@@ -342,9 +345,9 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(6, "Ajax", LOGO.ajax, 8, 3, 3, 2, 10, 9, ["D", "W", "L", "D", "W"]),
     ],
     fixtures: [
-      fixture("uel-1", "Atalanta", "Roma", LOGO.atalanta, LOGO.roma, 24, "R16 1st leg"),
-      fixture("uel-2", "Sevilla", "West Ham", LOGO.sevilla, LOGO.westHam, 48, "R16 1st leg"),
-      fixture("uel-3", "Marseille", "Ajax", LOGO.marseille, LOGO.ajax, 72, "R16 1st leg"),
+      fixture("Atalanta", "Roma", LOGO.atalanta, LOGO.roma, 24, "R16 1st leg"),
+      fixture("Sevilla", "West Ham", LOGO.sevilla, LOGO.westHam, 48, "R16 1st leg"),
+      fixture("Marseille", "Ajax", LOGO.marseille, LOGO.ajax, 72, "R16 1st leg"),
     ],
   },
   {
@@ -367,8 +370,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Villarreal", LOGO.villarreal, 6, 3, 2, 1, 9, 6, ["D", "W", "W", "L", "D"]),
     ],
     fixtures: [
-      fixture("uecl-1", "Chelsea", "Lazio", LOGO.chelsea, LOGO.lazio, 20, "QF 1st leg"),
-      fixture("uecl-2", "Villarreal", "Fiorentina", LOGO.villarreal, null, 44, "QF 1st leg"),
+      fixture("Chelsea", "Lazio", LOGO.chelsea, LOGO.lazio, 20, "QF 1st leg"),
+      fixture("Villarreal", "Fiorentina", LOGO.villarreal, null, 44, "QF 1st leg"),
     ],
   },
   {
@@ -391,8 +394,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "West Brom", null, 41, 22, 11, 8, 58, 41, ["D", "W", "D", "W", "L"]),
     ],
     fixtures: [
-      fixture("champ-1", "Leeds United", "Burnley", null, null, 30, "MD 42"),
-      fixture("champ-2", "Sheffield Utd", "West Brom", null, null, 54, "MD 42"),
+      fixture("Leeds United", "Burnley", null, null, 30, "MD 42"),
+      fixture("Sheffield Utd", "West Brom", null, null, 54, "MD 42"),
     ],
   },
   {
@@ -413,7 +416,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(2, "LA Galaxy", LOGO.laGalaxy, 11, 7, 2, 2, 21, 14, ["W", "L", "W", "D", "W"]),
     ],
     fixtures: [
-      fixture("mls-1", "LAFC", "LA Galaxy", LOGO.lafc, LOGO.laGalaxy, 22, "Week 12"),
+      fixture("LAFC", "LA Galaxy", LOGO.lafc, LOGO.laGalaxy, 22, "Week 12"),
     ],
   },
   {
@@ -434,7 +437,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(2, "Yokohama F. Marinos", LOGO.marinos, 13, 8, 3, 2, 24, 14, ["D", "W", "W", "W", "D"]),
     ],
     fixtures: [
-      fixture("j1-1", "Urawa Red Diamonds", "Yokohama F. Marinos", LOGO.urawa, LOGO.marinos, 30, "MD 14"),
+      fixture("Urawa Red Diamonds", "Yokohama F. Marinos", LOGO.urawa, LOGO.marinos, 30, "MD 14"),
     ],
   },
   {
@@ -454,7 +457,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(1, "Ulsan HD", LOGO.ulsan, 10, 7, 2, 1, 19, 8, ["W", "D", "W", "W", "W"]),
     ],
     fixtures: [
-      fixture("kleague-1", "Ulsan HD", "FC Seoul", LOGO.ulsan, LOGO.fcSeoul, 48, "MD 11"),
+      fixture("Ulsan HD", "FC Seoul", LOGO.ulsan, LOGO.fcSeoul, 48, "MD 11"),
     ],
   },
   {
@@ -474,7 +477,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(1, "Al Nassr", LOGO.alNassr, 27, 20, 4, 3, 62, 22, ["W", "W", "W", "D", "W"]),
     ],
     fixtures: [
-      fixture("spl-1", "Al Nassr", "Al Hilal", LOGO.alNassr, LOGO.alHilal, 26, "MD 28"),
+      fixture("Al Nassr", "Al Hilal", LOGO.alNassr, LOGO.alHilal, 26, "MD 28"),
     ],
   },
   {
@@ -495,7 +498,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(2, "Ajax", LOGO.ajax, 30, 21, 4, 5, 72, 32, ["W", "L", "W", "W", "W"]),
     ],
     fixtures: [
-      fixture("ere-1", "Ajax", "PSV", LOGO.ajax, LOGO.psv, 34, "MD 31"),
+      fixture("Ajax", "PSV", LOGO.ajax, LOGO.psv, 34, "MD 31"),
     ],
   },
   {
@@ -516,7 +519,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(2, "Porto", LOGO.porto, 29, 21, 5, 3, 58, 21, ["W", "D", "W", "W", "L"]),
     ],
     fixtures: [
-      fixture("por-1", "Benfica", "Porto", LOGO.benfica, LOGO.porto, 38, "MD 30"),
+      fixture("Benfica", "Porto", LOGO.benfica, LOGO.porto, 38, "MD 30"),
     ],
   },
   {
@@ -536,7 +539,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(1, "Sydney FC U23", LOGO.sydney, 8, 6, 1, 1, 19, 8, ["W", "W", "D", "W", "L"]),
     ],
     fixtures: [
-      fixture("nsw-1", "Sydney FC U23", "APIA Leichhardt", LOGO.sydney, null, 8, "MD 9"),
+      fixture("Sydney FC U23", "APIA Leichhardt", LOGO.sydney, null, 8, "MD 9"),
     ],
   },
   {
@@ -559,8 +562,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "São Paulo", null, 9, 5, 2, 2, 14, 11, ["L", "W", "D", "W", "W"]),
     ],
     fixtures: [
-      fixture("bra-1", "Flamengo", "Palmeiras", LOGO.flamengo, LOGO.palmeiras, 16, "MD 10"),
-      fixture("bra-2", "Botafogo", "São Paulo", null, null, 40, "MD 10"),
+      fixture("Flamengo", "Palmeiras", LOGO.flamengo, LOGO.palmeiras, 16, "MD 10"),
+      fixture("Botafogo", "São Paulo", null, null, 40, "MD 10"),
     ],
   },
   {
@@ -583,8 +586,8 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Guadalajara", null, 14, 7, 5, 2, 20, 12, ["W", "D", "D", "W", "W"]),
     ],
     fixtures: [
-      fixture("mx-1", "Club América", "Guadalajara", LOGO.america, null, 20, "MD 15"),
-      fixture("mx-2", "Monterrey", "Tigres", null, null, 44, "MD 15"),
+      fixture("Club América", "Guadalajara", LOGO.america, null, 20, "MD 15"),
+      fixture("Monterrey", "Tigres", null, null, 44, "MD 15"),
     ],
   },
   {
@@ -607,7 +610,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Trabzonspor", null, 31, 16, 8, 7, 48, 38, ["W", "L", "D", "W", "D"]),
     ],
     fixtures: [
-      fixture("tur-1", "Galatasaray", "Fenerbahçe", LOGO.galatasaray, LOGO.fenerbahce, 28, "MD 32"),
+      fixture("Galatasaray", "Fenerbahçe", LOGO.galatasaray, LOGO.fenerbahce, 28, "MD 32"),
     ],
   },
   {
@@ -630,7 +633,7 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
       row(4, "Aberdeen", null, 32, 15, 7, 10, 45, 42, ["D", "W", "L", "W", "D"]),
     ],
     fixtures: [
-      fixture("sco-1", "Celtic", "Rangers", LOGO.celtic, LOGO.rangers, 22, "MD 33"),
+      fixture("Celtic", "Rangers", LOGO.celtic, LOGO.rangers, 22, "MD 33"),
     ],
   },
 ];

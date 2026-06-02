@@ -9,7 +9,9 @@ import {
   getNewsLeaguesFromArticles,
   getRelatedNewsArticles,
 } from "@/lib/football/providers/api-football/fetch-news";
+import type { MatchDetail } from "@/lib/data/match-detail";
 import type { TeamProfile } from "@/lib/data/team-profile";
+import { fetchMatchDetail as loadMatchDetail } from "@/lib/football/fetch-match-detail";
 
 export { FEATURED_LEAGUE_ID };
 
@@ -34,6 +36,10 @@ export async function fetchLeagueById(id: string) {
 
 export async function fetchTeamProfile(leagueId: string, teamSlug: string) {
   return getFootballDataProvider().getTeamProfile(leagueId, teamSlug);
+}
+
+export async function fetchMatchDetail(fixtureId: number): Promise<MatchDetail | null> {
+  return loadMatchDetail(fixtureId);
 }
 
 export async function findPlayerBySlug(leagueId: string, playerSlug: string) {

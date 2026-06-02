@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Clock, TrendingUp, Trophy } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp, Trophy } from "lucide-react";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import { CountryFlag } from "@/components/players/country-flag";
 import {
@@ -16,7 +17,11 @@ import { DisciplineCards } from "@/components/players/discipline-cards";
 import { PlayerHero } from "@/components/players/player-hero";
 import { MatchRow, SpecBlock, SpecRow } from "@/components/players/player-data-display";
 import { metricLabel, StatValue } from "@/components/players/player-metric";
-import { leaguesGlass, leaguesGlassInset } from "@/components/leagues/leagues-glass";
+import {
+  leaguesGlass,
+  leaguesGlassFocus,
+  leaguesGlassInset,
+} from "@/components/leagues/leagues-glass";
 import type { PlayerProfile } from "@/lib/data/player-profile";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +39,7 @@ const TABS: { id: PlayerDetailTab; label: string }[] = [
 ];
 
 export function PlayerDetailPanel({ player }: PlayerDetailPanelProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<PlayerDetailTab>("overview");
 
   const lastFiveGoals = player.matchPerformances.reduce((sum, match) => sum + match.goals, 0);
@@ -58,6 +64,19 @@ export function PlayerDetailPanel({ player }: PlayerDetailPanelProps) {
 
   return (
     <div className="space-y-6">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className={cn(
+          leaguesGlassInset,
+          leaguesGlassFocus,
+          "inline-flex cursor-pointer items-center gap-2 rounded-full px-3.5 py-2 text-[0.8125rem] font-medium text-neutral-700 transition-colors hover:text-neutral-950",
+        )}
+      >
+        <ArrowLeft className="h-4 w-4" strokeWidth={2} aria-hidden />
+        Back
+      </button>
+
       <PlayerHero player={player} />
 
       <div

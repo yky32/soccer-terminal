@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { fixtureDetailHref } from "@/lib/match-paths";
 import { FootballLogo } from "@/components/overview/football-logo";
 import {
   leaguesGlassInset,
@@ -177,14 +178,10 @@ function UpcomingMatchCard({
   const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
   const opponentLogo = isHome ? fixture.awayLogo : fixture.homeLogo;
   const isSoon = kickoff.getTime() - Date.now() < 48 * 3_600_000;
+  const detailHref = fixtureDetailHref(fixture);
 
-  return (
-    <div
-      className={cn(
-        leaguesGlassInset,
-        "flex min-w-[5.75rem] shrink-0 flex-col items-center gap-1.5 rounded-xl px-2.5 py-2.5 text-center",
-      )}
-    >
+  const content = (
+    <>
       <FootballLogo src={opponentLogo} label={opponent} size="sm" />
       <p className="w-full truncate text-[0.6875rem] font-medium text-neutral-700">
         {isHome ? "vs" : "@"} {opponent}
@@ -203,7 +200,32 @@ function UpcomingMatchCard({
       <p className="text-[0.6875rem] tabular-nums text-neutral-500">
         {kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </p>
-    </div>
+    </>
+  );
+
+  if (!detailHref) {
+    return (
+      <div
+        className={cn(
+          leaguesGlassInset,
+          "flex min-w-[5.75rem] shrink-0 flex-col items-center gap-1.5 rounded-xl px-2.5 py-2.5 text-center",
+        )}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={detailHref}
+      className={cn(
+        leaguesGlassInset,
+        "flex min-w-[5.75rem] shrink-0 cursor-pointer flex-col items-center gap-1.5 rounded-xl px-2.5 py-2.5 text-center transition-opacity hover:opacity-95",
+      )}
+    >
+      {content}
+    </Link>
   );
 }
 

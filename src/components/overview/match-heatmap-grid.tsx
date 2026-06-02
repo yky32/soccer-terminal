@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ElementType } from "react";
 import {
@@ -34,6 +35,7 @@ import {
   type HeatmapViewPrefs,
   type MonitoredMatch,
 } from "@/lib/match-monitor";
+import { matchHref } from "@/lib/match-paths";
 import type { LiveMatch } from "@/lib/data/live-match";
 import { cn } from "@/lib/utils";
 
@@ -577,16 +579,25 @@ function MatchHeatmapCell({
       ? mosaicCellPadding(rank.tier, density)
       : cellSizeClass(density, layout);
 
+  const cellClassName = cn(
+    "@container group relative flex flex-col overflow-hidden rounded-[4px] transition-[filter,transform] duration-200 hover:brightness-110",
+    cellPadding,
+    className,
+  );
+  const cellStyle = {
+    ...style,
+    backgroundColor: palette.background,
+    color: palette.foreground,
+  };
+  const cellTitle = `${match.homeTeam} ${match.homeGoals} – ${match.awayGoals} ${match.awayTeam}`;
+
   if (type.mosaicCompact) {
     return (
-      <div
-        className={cn(
-          "@container group relative flex flex-col overflow-hidden rounded-[4px] transition-[filter,transform] duration-200 hover:brightness-110",
-          cellPadding,
-          className,
-        )}
-        style={{ ...style, backgroundColor: palette.background, color: palette.foreground }}
-        title={`${match.homeTeam} ${match.homeGoals} – ${match.awayGoals} ${match.awayTeam}`}
+      <Link
+        href={matchHref(match.id)}
+        className={cn(cellClassName, "cursor-pointer")}
+        style={cellStyle}
+        title={cellTitle}
       >
         <MosaicCompactFace
           match={match}
@@ -598,25 +609,26 @@ function MatchHeatmapCell({
         />
         <button
           type="button"
-          onClick={() => onRemove(match.id)}
-          className="absolute bottom-1 right-1 rounded px-1 py-0.5 text-[0.625rem] leading-none text-white/70 opacity-0 transition-opacity hover:bg-white/15 hover:text-white group-hover:opacity-100"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onRemove(match.id);
+          }}
+          className="absolute bottom-1 right-1 z-10 rounded px-1 py-0.5 text-[0.625rem] leading-none text-white/70 opacity-0 transition-opacity hover:bg-white/15 hover:text-white group-hover:opacity-100"
           aria-label={`Remove ${match.homeTeam} vs ${match.awayTeam}`}
         >
           ×
         </button>
-      </div>
+      </Link>
     );
   }
 
   return (
-    <div
-      className={cn(
-        "@container group relative flex flex-col overflow-hidden rounded-[4px] transition-[filter,transform] duration-200 hover:brightness-110",
-        cellPadding,
-        className,
-      )}
-      style={{ ...style, backgroundColor: palette.background, color: palette.foreground }}
-      title={`${match.homeTeam} ${match.homeGoals} – ${match.awayGoals} ${match.awayTeam}`}
+    <Link
+      href={matchHref(match.id)}
+      className={cn(cellClassName, "cursor-pointer")}
+      style={cellStyle}
+      title={cellTitle}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-1.5 pt-0.5">
@@ -666,13 +678,17 @@ function MatchHeatmapCell({
 
       <button
         type="button"
-        onClick={() => onRemove(match.id)}
-        className="absolute bottom-1.5 right-1.5 rounded px-1 py-0.5 text-[0.625rem] leading-none text-white/70 opacity-0 transition-opacity hover:bg-white/15 hover:text-white group-hover:opacity-100"
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onRemove(match.id);
+        }}
+        className="absolute bottom-1.5 right-1.5 z-10 rounded px-1 py-0.5 text-[0.625rem] leading-none text-white/70 opacity-0 transition-opacity hover:bg-white/15 hover:text-white group-hover:opacity-100"
         aria-label={`Remove ${match.homeTeam} vs ${match.awayTeam}`}
       >
         ×
       </button>
-    </div>
+    </Link>
   );
 }
 

@@ -68,10 +68,29 @@ function hoursFromNow(hours: number) {
   return new Date(Date.now() + hours * 3_600_000).toISOString();
 }
 
+function pseudoId(seed: string, bucket: number) {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) | 0;
+  }
+  return bucket + (Math.abs(hash) % 900_000);
+}
+
 function liveMatch(
-  partial: Omit<LiveMatch, "events"> & { events?: MatchLiveEvent[] },
+  partial: Omit<LiveMatch, "events" | "homeTeamId" | "awayTeamId" | "leagueId" | "homeWinner" | "awayWinner"> &
+    Partial<Pick<LiveMatch, "homeTeamId" | "awayTeamId" | "leagueId" | "homeWinner" | "awayWinner">> & {
+      events?: MatchLiveEvent[];
+    },
 ): LiveMatch {
-  return { events: [], ...partial };
+  return {
+    events: [],
+    homeTeamId: partial.homeTeamId ?? pseudoId(partial.homeTeam, 10_000),
+    awayTeamId: partial.awayTeamId ?? pseudoId(partial.awayTeam, 20_000),
+    leagueId: partial.leagueId ?? pseudoId(partial.league, 100),
+    ...partial,
+    homeWinner: partial.homeWinner ?? null,
+    awayWinner: partial.awayWinner ?? null,
+  };
 }
 
 /** Static mock live fixtures for offline / API-free development */

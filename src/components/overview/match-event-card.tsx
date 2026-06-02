@@ -1,8 +1,11 @@
+import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
+import { matchHref } from "@/lib/match-paths";
 import { glass, glassInset } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +14,7 @@ type MatchEventCardProps = {
   matchMode?: MapMatchMode;
   compact?: boolean;
   colorIndex?: number;
+  linkToDetail?: boolean;
 };
 
 function kickoffLabel(kickoffAt: string | null) {
@@ -140,11 +144,44 @@ function TeamRow({
   );
 }
 
+function MatchCardShell({
+  match,
+  linkToDetail,
+  className,
+  style,
+  children,
+}: {
+  match: LiveMatch;
+  linkToDetail: boolean;
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+}) {
+  if (!linkToDetail) {
+    return (
+      <article className={className} style={style}>
+        {children}
+      </article>
+    );
+  }
+
+  return (
+    <Link
+      href={matchHref(match.id)}
+      className={cn("block cursor-pointer transition-opacity hover:opacity-95", className)}
+      style={style}
+    >
+      <article>{children}</article>
+    </Link>
+  );
+}
+
 export function MatchEventCard({
   match,
   matchMode = "live",
   compact = false,
   colorIndex,
+  linkToDetail = true,
 }: MatchEventCardProps) {
   const isFuture = matchMode === "future";
   const sideState = isFuture
@@ -152,12 +189,15 @@ export function MatchEventCard({
     : matchSideState(match.homeGoals, match.awayGoals);
   const pinColor =
     colorIndex !== undefined ? getMatchPinColor(colorIndex).hex : undefined;
+  const pinStyle = pinColor ? { borderLeftWidth: 3, borderLeftColor: pinColor } : undefined;
 
   if (!compact) {
     return (
-      <article
+      <MatchCardShell
+        match={match}
+        linkToDetail={linkToDetail}
         className="border border-neutral-300/80 bg-white px-2.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
-        style={pinColor ? { borderLeftWidth: 3, borderLeftColor: pinColor } : undefined}
+        style={pinStyle}
       >
         <MatchCardHeader match={match} matchMode={matchMode} />
         {isFuture ? (
@@ -179,14 +219,16 @@ export function MatchEventCard({
           </div>
         )}
         <MatchCardFooter match={match} matchMode={matchMode} />
-      </article>
+      </MatchCardShell>
     );
   }
 
   return (
-    <article
+    <MatchCardShell
+      match={match}
+      linkToDetail={linkToDetail}
       className={cn(glass, "overflow-hidden")}
-      style={pinColor ? { borderLeftWidth: 3, borderLeftColor: pinColor } : undefined}
+      style={pinStyle}
     >
       <MatchCardHeader match={match} matchMode={matchMode} compact />
       {isFuture ? (
@@ -195,7 +237,7 @@ export function MatchEventCard({
         <CompactMatchupRow match={match} sideState={sideState} />
       )}
       <MatchCardFooter match={match} matchMode={matchMode} compact />
-    </article>
+    </MatchCardShell>
   );
 }
 
