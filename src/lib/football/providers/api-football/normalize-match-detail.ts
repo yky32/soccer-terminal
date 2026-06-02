@@ -13,14 +13,17 @@ import {
   normalizeMatchStatistics,
   buildMatchTimelineView,
   buildPlayerPhotoIndex,
+  enrichPlayerPhotoIndexFromSquads,
   mergeFixtureEvents,
   normalizePenaltyShootout,
   normalizeScoreBreakdown,
   normalizeTeamForm,
+  type PlayerPhotoIndex,
 } from "@/lib/football/providers/api-football/normalize-match-detail-helpers";
 import {
   normalizeFixtureForMatchDetail,
 } from "@/lib/football/providers/api-football/normalize-fixtures";
+import type { ApiFootballSquad } from "@/lib/football/providers/api-football/normalize-catalog";
 import type {
   ApiFootballFixtureEvent,
   ApiFootballFixtureInjury,
@@ -73,11 +76,14 @@ function buildPlayerPerformanceIndex(
 function lineupPlayer(
   player: ApiFootballLineupPlayer,
   performance: PlayerPerformanceIndex,
+  photos: PlayerPhotoIndex,
 ): MatchDetailPlayer | null {
   const name = player.name?.trim();
   if (!name) return null;
 
   const perf = player.id ? performance.get(player.id) : undefined;
+  const photo =
+    player.photo ?? (player.id ? (photos.get(player.id) ?? null) : null);
 
   return {
     id: player.id,
@@ -87,6 +93,8 @@ function lineupPlayer(
         ? (perf?.number ?? null)
         : String(player.number),
     position: player.pos?.trim() || perf?.position || null,
+    grid: player.grid?.trim() || null,
+    photo,
     rating: perf?.rating ?? null,
     minutes: perf?.minutes ?? null,
     goals: perf?.goals ?? null,
@@ -97,12 +105,13 @@ function lineupPlayer(
 function normalizeLineupSide(
   lineup: ApiFootballLineup,
   performance: PlayerPerformanceIndex,
+  photos: PlayerPhotoIndex,
 ): MatchDetailLineupSide {
   const starting = lineup.startXI
-    .map((entry) => lineupPlayer(entry.player, performance))
+    .map((entry) => lineupPlayer(entry.player, performance, photos))
     .filter((player): player is MatchDetailPlayer => player !== null);
   const substitutes = lineup.substitutes
-    .map((entry) => lineupPlayer(entry.player, performance))
+    .map((entry) => lineupPlayer(entry.player, performance, photos))
     .filter((player): player is MatchDetailPlayer => player !== null);
 
   return {
@@ -135,6 +144,7 @@ function normalizePlayerPerformances(
         id: entry.player.id,
         name: entry.player.name,
         photo: entry.player.photo,
+        position: stats.games.position?.trim() || null,
         rating: stats.games.rating,
         minutes: stats.games.minutes,
         goals: stats.goals?.total ?? null,
@@ -199,6 +209,7 @@ export function buildMatchDetailFromApi(
   injuries: ApiFootballFixtureInjury[],
   homeFormFixtures: ApiFootballLiveFixture[],
   awayFormFixtures: ApiFootballLiveFixture[],
+  squads: ApiFootballSquad[] = [],
 ): MatchDetail {
   const match = normalizeFixtureForMatchDetail(fixture);
   const performance = buildPlayerPerformanceIndex(playerStats);
@@ -207,7 +218,10 @@ export function buildMatchDetailFromApi(
   const awayLineup = lineups.find((lineup) => lineup.team.id === match.awayTeamId) ?? null;
 
   const eventList = mergeFixtureEvents(events, fixture.events);
-  const playerPhotos = buildPlayerPhotoIndex(lineups, playerStats);
+  const playerPhotos = enrichPlayerPhotoIndexFromSquads(
+    buildPlayerPhotoIndex(lineups, playerStats),
+    squads,
+  );
   const score = normalizeScoreBreakdown(fixture, match);
   const h2hSeen = new Set<number>();
   const h2hRows = headToHead
@@ -233,8 +247,8 @@ export function buildMatchDetailFromApi(
     penaltyShootout: normalizePenaltyShootout(match, eventList, playerPhotos),
     injuries: normalizeInjuries(injuries),
     lineups: {
-      home: homeLineup ? normalizeLineupSide(homeLineup, performance) : null,
-      away: awayLineup ? normalizeLineupSide(awayLineup, performance) : null,
+      home: homeLineup ? normalizeLineupSide(homeLineup, performance, playerPhotos) : null,
+      away: awayLineup ? normalizeLineupSide(awayLineup, performance, playerPhotos) : null,
     },
     playerPerformances: normalizePlayerPerformances(match, playerStats),
     headToHead: h2hRows,

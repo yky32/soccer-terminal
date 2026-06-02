@@ -76,48 +76,48 @@ export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail })
           ))}
         </div>
 
-        <section className={cn(leaguesGlass, "overflow-hidden")}>
-          <div className="space-y-6 p-5 sm:p-6">
-            {tab === "overview" ? (
-              <>
-                <MatchDetailTimeline
-                  timeline={detail.timeline}
-                  homeTeam={match.homeTeam}
-                  awayTeam={match.awayTeam}
-                  homeLogo={match.homeLogo}
-                  awayLogo={match.awayLogo}
-                />
-                <MatchDetailStats stats={detail.statistics} />
-                <MatchDetailInjuries injuries={detail.injuries} />
-                {detail.statistics.length === 0 &&
-                detail.injuries.length === 0 &&
-                detail.timeline.segments.length === 0 &&
-                !detail.timeline.showKickoff ? (
-                  <div className={cn(leaguesGlassInset, "rounded-xl px-4 py-10 text-center")}>
-                    <p className="text-[0.875rem] text-neutral-500">
-                      Match overview will populate when the fixture kicks off.
-                    </p>
-                  </div>
-                ) : null}
-              </>
-            ) : null}
-
-            {tab === "lineup" ? (
-              <div className="space-y-6">
-                <MatchDetailLineups lineups={detail.lineups} />
-                <MatchDetailPlayerStats
-                  homeTeam={match.homeTeam}
-                  homeLogo={match.homeLogo}
-                  awayTeam={match.awayTeam}
-                  awayLogo={match.awayLogo}
-                  performances={detail.playerPerformances}
-                />
-              </div>
-            ) : null}
-
-            {tab === "h2h" ? <MatchDetailH2H detail={detail} /> : null}
+        {tab === "lineup" ? (
+          <div className="space-y-6">
+            <MatchDetailLineups lineups={detail.lineups} />
+            <MatchDetailPlayerStats
+              homeTeam={match.homeTeam}
+              homeLogo={match.homeLogo}
+              awayTeam={match.awayTeam}
+              awayLogo={match.awayLogo}
+              performances={detail.playerPerformances}
+            />
           </div>
-        </section>
+        ) : (
+          <section className={cn(leaguesGlass, "overflow-hidden")}>
+            <div className="space-y-6 p-5 sm:p-6">
+              {tab === "overview" ? (
+                <>
+                  <MatchDetailTimeline
+                    timeline={detail.timeline}
+                    homeTeam={match.homeTeam}
+                    awayTeam={match.awayTeam}
+                    homeLogo={match.homeLogo}
+                    awayLogo={match.awayLogo}
+                  />
+                  <MatchDetailStats stats={detail.statistics} />
+                  <MatchDetailInjuries injuries={detail.injuries} />
+                  {detail.statistics.length === 0 &&
+                  detail.injuries.length === 0 &&
+                  detail.timeline.segments.length === 0 &&
+                  !detail.timeline.showKickoff ? (
+                    <div className={cn(leaguesGlassInset, "rounded-xl px-4 py-10 text-center")}>
+                      <p className="text-[0.875rem] text-neutral-500">
+                        Match overview will populate when the fixture kicks off.
+                      </p>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+
+              {tab === "h2h" ? <MatchDetailH2H detail={detail} /> : null}
+            </div>
+          </section>
+        )}
       </div>
 
       <p className="mt-6 text-center text-[0.75rem] text-neutral-400">

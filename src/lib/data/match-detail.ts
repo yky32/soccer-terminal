@@ -90,6 +90,9 @@ export type MatchDetailPlayer = {
   name: string;
   number: string | null;
   position: string | null;
+  /** API pitch grid e.g. "2:3" (row:column, row 1 = goalkeeper line). */
+  grid: string | null;
+  photo: string | null;
   rating: string | null;
   minutes: number | null;
   goals: number | null;
@@ -100,6 +103,7 @@ export type MatchDetailPlayerPerformance = {
   id: number;
   name: string;
   photo: string | null;
+  position: string | null;
   rating: string | null;
   minutes: number | null;
   goals: number | null;

@@ -226,6 +226,12 @@ function runningScore(
 
 export type PlayerPhotoIndex = Map<number, string | null>;
 
+function setPhoto(index: PlayerPhotoIndex, playerId: number, photo: string | null | undefined) {
+  if (!photo?.trim()) return;
+  const existing = index.get(playerId);
+  if (!existing) index.set(playerId, photo);
+}
+
 export function buildPlayerPhotoIndex(
   lineups: ApiFootballLineup[],
   playerStats: ApiFootballFixturePlayers[],
@@ -236,18 +242,29 @@ export function buildPlayerPhotoIndex(
     for (const entry of [...lineup.startXI, ...lineup.substitutes]) {
       const player = entry.player;
       if (!player.id) continue;
-      const existing = index.get(player.id);
-      index.set(player.id, player.photo ?? existing ?? null);
+      setPhoto(index, player.id, player.photo);
     }
   }
 
   for (const block of playerStats) {
     for (const entry of block.players) {
-      const existing = index.get(entry.player.id);
-      index.set(entry.player.id, entry.player.photo ?? existing ?? null);
+      setPhoto(index, entry.player.id, entry.player.photo);
     }
   }
 
+  return index;
+}
+
+/** Lineups often omit photos; league/team pages use `/players/squads` instead. */
+export function enrichPlayerPhotoIndexFromSquads(
+  index: PlayerPhotoIndex,
+  squads: Array<{ players: Array<{ id: number; photo: string | null }> }>,
+): PlayerPhotoIndex {
+  for (const squad of squads) {
+    for (const player of squad.players) {
+      setPhoto(index, player.id, player.photo);
+    }
+  }
   return index;
 }
 

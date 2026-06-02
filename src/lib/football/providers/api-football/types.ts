@@ -99,6 +99,7 @@ export type ApiFootballLineupPlayer = {
   name: string | null;
   number: number | null;
   pos: string | null;
+  grid?: string | null;
   photo?: string | null;
 };
 
