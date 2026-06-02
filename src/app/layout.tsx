@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
+import { ThemeInitScript } from "@/components/theme-init-script";
 import "./globals.css";
 
 const inter = Inter({
@@ -28,8 +29,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html lang="en" className={`${inter.variable} h-full`} suppressHydrationWarning>
+      <body className="flex min-h-full flex-col bg-background text-foreground">
+        <ThemeInitScript />
         <AppShell>{children}</AppShell>
       </body>
     </html>

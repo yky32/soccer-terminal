@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BarChart3 } from "lucide-react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { PlayerAvatar } from "@/components/players/player-avatar";
 import {
@@ -39,6 +40,25 @@ const podiumHighlight = (rank: number) =>
   rank >= 1 && rank <= LEADER_RANK_HIGHLIGHT.length
     ? LEADER_RANK_HIGHLIGHT[rank - 1]
     : "";
+
+function LeaderStatEmptyState() {
+  return (
+    <li className="py-3">
+      <div
+        className="flex flex-col items-center gap-2 rounded-lg px-2 py-4 text-center"
+        role="status"
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/[0.04] text-neutral-400">
+          <BarChart3 className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+        </span>
+        <p className="text-[0.75rem] font-medium text-neutral-600">No rankings yet</p>
+        <p className="max-w-[11rem] text-[0.6875rem] leading-snug text-neutral-500">
+          Leaderboards update as matches are played this season.
+        </p>
+      </div>
+    </li>
+  );
+}
 
 type LeagueStatLeaderGridProps = {
   title: string;
@@ -97,7 +117,7 @@ function PlayerStatColumn({
       </h3>
       <ol className="mt-2 space-y-1.5">
         {rows.length === 0 ? (
-          <li className="py-2 text-[0.75rem] text-neutral-500">No API data for this stat.</li>
+          <LeaderStatEmptyState />
         ) : (
           rows.map((row) => (
             <li key={`${kind}-${row.rank}-${row.playerName}`}>
@@ -183,7 +203,7 @@ function TeamWinRateColumn({
       </h3>
       <ol className="mt-2 space-y-1.5">
         {rows.length === 0 ? (
-          <li className="py-2 text-[0.75rem] text-neutral-500">No API data for this stat.</li>
+          <LeaderStatEmptyState />
         ) : (
           rows.map((row) => {
             const isFocused = focusTeam === row.team;

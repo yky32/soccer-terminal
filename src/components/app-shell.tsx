@@ -5,7 +5,10 @@ import { usePathname } from "next/navigation";
 import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
 import { MobileHeaderNav } from "@/components/mobile-header-nav";
-import { glassInset, glassStrong, glassSubtle } from "@/components/glass-surface";
+import { SiteFooter } from "@/components/site-footer";
+import { UserMenu } from "@/components/user-menu";
+import { UserPreferencesProvider } from "@/components/user-preferences-provider";
+import { glassInset, glassStrong } from "@/components/glass-surface";
 import { PageBackdrop } from "@/components/page-backdrop";
 import { NewsTicker } from "@/components/news/news-ticker";
 import { NewsWireSlotProvider, useNewsWireSlot } from "@/components/news/news-wire-slot-context";
@@ -31,9 +34,11 @@ function ChevronRight() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <AppChromeProvider>
-      <NewsWireSlotProvider>
-        <AppShellFrame>{children}</AppShellFrame>
-      </NewsWireSlotProvider>
+      <UserPreferencesProvider>
+        <NewsWireSlotProvider>
+          <AppShellFrame>{children}</AppShellFrame>
+        </NewsWireSlotProvider>
+      </UserPreferencesProvider>
     </AppChromeProvider>
   );
 }
@@ -49,6 +54,7 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-full flex-col">
       {!headerHidden ? (
         <header
+          id="app-site-header"
           className={`sticky top-0 z-50 ${glassStrong} rounded-none border-x-0 border-t-0 border-b border-black/[0.08]`}
         >
         <div className="page-container flex h-[4.25rem] items-center justify-between gap-3">
@@ -90,6 +96,8 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
             </nav>
 
             <MobileHeaderNav pathname={pathname} className="md:hidden" />
+
+            <UserMenu />
           </div>
         </div>
 
@@ -108,14 +116,7 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
         <div className="relative z-[1] flex flex-1 flex-col">{children}</div>
       </main>
 
-      <footer className={`${glassSubtle} rounded-none border-x-0 border-b-0 border-t border-black/[0.08]`}>
-        <div className="page-container flex flex-col gap-4 py-9 sm:flex-row sm:items-center sm:justify-between">
-          <Logo />
-          <p className="text-body text-muted">
-            Professional football intelligence
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
