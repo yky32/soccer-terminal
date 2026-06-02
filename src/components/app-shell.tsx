@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
+import { MobileHeaderNav } from "@/components/mobile-header-nav";
 import { glassInset, glassStrong, glassSubtle } from "@/components/glass-surface";
 import { PageBackdrop } from "@/components/page-backdrop";
 import { NewsTicker } from "@/components/news/news-ticker";
@@ -50,43 +51,46 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
         <header
           className={`sticky top-0 z-50 ${glassStrong} rounded-none border-x-0 border-t-0 border-b border-black/[0.08]`}
         >
-        <div
-          className={`page-container flex h-[4.25rem] items-center gap-4 ${
-            showWire ? "md:gap-5" : "justify-between gap-6"
-          }`}
-        >
+        <div className="page-container flex h-[4.25rem] items-center justify-between gap-3">
           <Logo />
 
-          {showWire ? (
-            <div className="hidden min-w-0 flex-1 md:block">
-              <NewsTicker embedded headlines={wireHeadlines} />
-            </div>
-          ) : null}
-
-          <nav
-            className={`hidden items-center gap-1 md:flex ${showWire ? "shrink-0" : ""}`}
+          <div
+            className={cn(
+              "flex shrink-0 items-center gap-3",
+              showWire && "md:min-w-0 md:flex-1 md:justify-end md:gap-5",
+            )}
           >
-            {mainNav.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
+            {showWire ? (
+              <div className="hidden min-w-0 flex-1 md:block">
+                <NewsTicker embedded headlines={wireHeadlines} />
+              </div>
+            ) : null}
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                className={`text-label rounded-full px-4 py-2.5 font-medium transition-colors ${
-                  isActive
-                    ? "bg-foreground text-background"
-                    : cn(glassInset, "text-muted hover:text-foreground")
-                }`}
-                >
-                  {item.shortLabel}
-                </Link>
-              );
-            })}
-          </nav>
+            <nav className="hidden items-center gap-1 md:flex">
+              {mainNav.map((item) => {
+                const isActive =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`text-label rounded-full px-4 py-2.5 font-medium transition-colors ${
+                      isActive
+                        ? "bg-foreground text-background"
+                        : cn(glassInset, "text-muted hover:text-foreground")
+                    }`}
+                  >
+                    {item.shortLabel}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <MobileHeaderNav pathname={pathname} className="md:hidden" />
+          </div>
         </div>
 
         {showWire ? (
@@ -96,29 +100,6 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         ) : null}
-
-        <nav className="flex gap-2 overflow-x-auto border-t border-black/[0.06] px-5 py-3.5 md:hidden">
-          {mainNav.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`text-label shrink-0 rounded-full px-4 py-2.5 font-medium transition-colors ${
-                  isActive
-                    ? "bg-foreground text-background"
-                    : cn(glassInset, "text-muted")
-                }`}
-              >
-                {item.shortLabel}
-              </Link>
-            );
-          })}
-        </nav>
         </header>
       ) : null}
 

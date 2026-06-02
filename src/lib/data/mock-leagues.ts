@@ -6,6 +6,7 @@ import type {
   LeagueStandingRow,
   LeagueTier,
 } from "@/lib/data/league-profile";
+import { resolveStandingQualification } from "@/lib/football/standing-qualification";
 
 const LOGO = {
   arsenal: "https://media.api-sports.io/football/teams/42.png",
@@ -121,7 +122,10 @@ function row(
   goalsFor: number,
   goalsAgainst: number,
   form: LeagueFormResult[],
+  qualificationDescription?: string | null,
 ): LeagueStandingRow {
+  const qualification = resolveStandingQualification(qualificationDescription);
+
   return {
     rank,
     team,
@@ -134,6 +138,8 @@ function row(
     goalsAgainst,
     points: won * 3 + drawn,
     form,
+    qualificationLabel: qualification?.label ?? null,
+    qualificationZone: qualification?.zone ?? null,
   };
 }
 
@@ -172,14 +178,14 @@ export const MOCK_LEAGUES: LeagueProfile[] = [
     matchday: 34,
     liveMatches: 2,
     standings: [
-      row(1, "Arsenal", LOGO.arsenal, 33, 23, 7, 3, 74, 28, ["W", "W", "D", "W", "W"]),
-      row(2, "Liverpool", LOGO.liverpool, 33, 22, 6, 5, 78, 35, ["W", "D", "W", "W", "L"]),
-      row(3, "Man City", LOGO.manCity, 33, 21, 8, 4, 71, 32, ["W", "W", "D", "W", "D"]),
-      row(4, "Aston Villa", LOGO.astonVilla, 33, 19, 6, 8, 63, 48, ["L", "W", "W", "D", "W"]),
-      row(5, "Tottenham", LOGO.tottenham, 33, 18, 5, 10, 65, 52, ["W", "L", "W", "W", "D"]),
-      row(6, "Man Utd", LOGO.manUtd, 33, 16, 7, 10, 54, 47, ["D", "W", "L", "W", "W"]),
-      row(7, "Newcastle", LOGO.newcastle, 33, 15, 9, 9, 58, 49, ["D", "D", "W", "L", "W"]),
-      row(8, "Chelsea", LOGO.chelsea, 33, 14, 8, 11, 55, 51, ["L", "W", "D", "W", "L"]),
+      row(1, "Arsenal", LOGO.arsenal, 33, 23, 7, 3, 74, 28, ["W", "W", "D", "W", "W"], "Promotion - Champions League (Group Stage)"),
+      row(2, "Liverpool", LOGO.liverpool, 33, 22, 6, 5, 78, 35, ["W", "D", "W", "W", "L"], "Promotion - Champions League (Group Stage)"),
+      row(3, "Man City", LOGO.manCity, 33, 21, 8, 4, 71, 32, ["W", "W", "D", "W", "D"], "Promotion - Champions League (Group Stage)"),
+      row(4, "Aston Villa", LOGO.astonVilla, 33, 19, 6, 8, 63, 48, ["L", "W", "W", "D", "W"], "Promotion - Champions League (Group Stage)"),
+      row(5, "Tottenham", LOGO.tottenham, 33, 18, 5, 10, 65, 52, ["W", "L", "W", "W", "D"], "Promotion - Champions League (Group Stage)"),
+      row(6, "Man Utd", LOGO.manUtd, 33, 16, 7, 10, 54, 47, ["D", "W", "L", "W", "W"], "Promotion - Europa League (Group Stage)"),
+      row(7, "Newcastle", LOGO.newcastle, 33, 15, 9, 9, 58, 49, ["D", "D", "W", "L", "W"], "Promotion - Europa League (Group Stage)"),
+      row(8, "Chelsea", LOGO.chelsea, 33, 14, 8, 11, 55, 51, ["L", "W", "D", "W", "L"], "Promotion - Conference League (Group Stage)"),
     ],
     fixtures: [
       fixture("epl-1", "Arsenal", "Chelsea", LOGO.arsenal, LOGO.chelsea, 28, "MD 34"),

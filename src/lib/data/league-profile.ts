@@ -2,6 +2,8 @@ export type LeagueRegion = "europe" | "americas" | "asia" | "oceania" | "middle-
 
 export type LeagueTier = "top-flight" | "continental" | "regional";
 
+import type { StandingQualificationZone } from "@/lib/football/standing-qualification";
+
 export type LeagueFormResult = "W" | "D" | "L";
 
 export type LeagueStandingRow = {
@@ -20,6 +22,9 @@ export type LeagueStandingRow = {
   goalsAgainst: number;
   points: number;
   form: LeagueFormResult[];
+  /** Raw API-Football standings `description` (qualification zone text). */
+  qualificationLabel?: string | null;
+  qualificationZone?: StandingQualificationZone | null;
 };
 
 export type LeagueFixture = {

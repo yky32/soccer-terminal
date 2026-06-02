@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { useMemo } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import type { LeagueFormResult, LeagueStandingRow } from "@/lib/data/league-profile";
+import {
+  standingQualificationLegend,
+  standingQualificationStyles,
+} from "@/lib/football/standing-qualification";
 import { teamHrefFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
@@ -16,75 +21,100 @@ export function LeagueStandingsTable({
   highlightTeam,
 }: LeagueStandingsTableProps) {
   const showGroup = standings.some((row) => row.group);
+  const legend = useMemo(() => standingQualificationLegend(standings), [standings]);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[36rem] text-left text-[0.8125rem]">
-        <thead>
-          <tr className="border-b border-black/[0.06] text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
-            {showGroup ? <th className="px-2 py-2.5">Grp</th> : null}
-            <th className="px-3 py-2.5 sm:px-4">#</th>
-            <th className="px-2 py-2.5">Team</th>
-            <th className="px-2 py-2.5 text-center">P</th>
-            <th className="hidden px-2 py-2.5 text-center sm:table-cell">W</th>
-            <th className="hidden px-2 py-2.5 text-center sm:table-cell">D</th>
-            <th className="hidden px-2 py-2.5 text-center sm:table-cell">L</th>
-            <th className="px-2 py-2.5 text-center">GD</th>
-            <th className="px-2 py-2.5 text-center font-bold">Pts</th>
-            <th className="hidden px-3 py-2.5 sm:px-4 md:table-cell">Form</th>
-          </tr>
-        </thead>
-        <tbody>
-          {standings.map((row) => {
-            const gd = row.goalsFor - row.goalsAgainst;
-            const isTopFour = row.rank <= 4;
-            const isHighlighted = highlightTeam === row.team;
+    <div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[36rem] text-left text-[0.8125rem]">
+          <thead>
+            <tr className="border-b border-black/[0.06] text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
+              {showGroup ? <th className="px-2 py-2.5">Grp</th> : null}
+              <th className="px-3 py-2.5 sm:px-4">#</th>
+              <th className="px-2 py-2.5">Team</th>
+              <th className="px-2 py-2.5 text-center">P</th>
+              <th className="hidden px-2 py-2.5 text-center sm:table-cell">W</th>
+              <th className="hidden px-2 py-2.5 text-center sm:table-cell">D</th>
+              <th className="hidden px-2 py-2.5 text-center sm:table-cell">L</th>
+              <th className="px-2 py-2.5 text-center">GD</th>
+              <th className="px-2 py-2.5 text-center font-bold">Pts</th>
+              <th className="hidden px-3 py-2.5 sm:px-4 md:table-cell">Form</th>
+            </tr>
+          </thead>
+          <tbody>
+            {standings.map((row) => {
+              const gd = row.goalsFor - row.goalsAgainst;
+              const isHighlighted = highlightTeam === row.team;
+              const zoneStyles = standingQualificationStyles(row.qualificationZone);
 
-            return (
-              <tr
-                key={`${row.group ?? ""}-${row.rank}-${row.team}`}
-                className={cn(
-                  "border-b border-black/[0.04] transition-colors last:border-b-0",
-                  isHighlighted && "bg-indigo-500/[0.08] ring-1 ring-inset ring-indigo-500/15",
-                  !isHighlighted && isTopFour && "bg-emerald-500/[0.05]",
-                  !isHighlighted && "hover:bg-white/36",
-                )}
-              >
-                {showGroup ? (
-                  <td className="px-2 py-2.5 text-[0.6875rem] font-semibold text-neutral-500">
-                    {row.group ?? "—"}
+              return (
+                <tr
+                  key={`${row.group ?? ""}-${row.rank}-${row.team}`}
+                  title={row.qualificationLabel ?? undefined}
+                  className={cn(
+                    "border-b border-black/[0.04] border-l-[3px] transition-colors last:border-b-0",
+                    zoneStyles?.borderClass ?? "border-l-transparent",
+                    isHighlighted && "bg-indigo-500/[0.08] ring-1 ring-inset ring-indigo-500/15",
+                    !isHighlighted && zoneStyles?.rowClass,
+                    !isHighlighted && !zoneStyles && "hover:bg-white/36",
+                    !isHighlighted && zoneStyles && "hover:brightness-[0.99]",
+                  )}
+                >
+                  {showGroup ? (
+                    <td className="px-2 py-2.5 text-[0.6875rem] font-semibold text-neutral-500">
+                      {row.group ?? "—"}
+                    </td>
+                  ) : null}
+                  <td className="px-3 py-2.5 font-semibold tabular-nums text-neutral-700 sm:px-4">
+                    {row.rank}
                   </td>
-                ) : null}
-                <td className="px-3 py-2.5 font-semibold tabular-nums text-neutral-700 sm:px-4">
-                  {row.rank}
-                </td>
-                <td className="px-2 py-2.5">
-                  <TeamCell row={row} leagueId={leagueId} />
-                </td>
-                <td className="px-2 py-2.5 text-center tabular-nums text-neutral-600">{row.played}</td>
-                <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
-                  {row.won}
-                </td>
-                <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
-                  {row.drawn}
-                </td>
-                <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
-                  {row.lost}
-                </td>
-                <td className="px-2 py-2.5 text-center tabular-nums font-medium text-neutral-800">
-                  {gd > 0 ? `+${gd}` : gd}
-                </td>
-                <td className="px-2 py-2.5 text-center tabular-nums text-[0.875rem] font-bold text-neutral-950">
-                  {row.points}
-                </td>
-                <td className="hidden px-3 py-2.5 sm:px-4 md:table-cell">
-                  <FormStrip form={row.form} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <td className="px-2 py-2.5">
+                    <TeamCell row={row} leagueId={leagueId} />
+                  </td>
+                  <td className="px-2 py-2.5 text-center tabular-nums text-neutral-600">
+                    {row.played}
+                  </td>
+                  <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
+                    {row.won}
+                  </td>
+                  <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
+                    {row.drawn}
+                  </td>
+                  <td className="hidden px-2 py-2.5 text-center tabular-nums text-neutral-600 sm:table-cell">
+                    {row.lost}
+                  </td>
+                  <td className="px-2 py-2.5 text-center tabular-nums font-medium text-neutral-800">
+                    {gd > 0 ? `+${gd}` : gd}
+                  </td>
+                  <td className="px-2 py-2.5 text-center tabular-nums text-[0.875rem] font-bold text-neutral-950">
+                    {row.points}
+                  </td>
+                  <td className="hidden px-3 py-2.5 sm:px-4 md:table-cell">
+                    <FormStrip form={row.form} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {legend.length > 0 ? (
+        <div className="flex flex-wrap gap-x-4 gap-y-2 border-t border-black/[0.06] px-3 py-2.5 sm:px-4">
+          {legend.map((item) => (
+            <span
+              key={item.zone}
+              className="inline-flex items-center gap-1.5 text-[0.6875rem] font-medium text-neutral-600"
+            >
+              <span
+                className={cn("h-2 w-2 shrink-0 rounded-full", item.dotClass)}
+                aria-hidden
+              />
+              {item.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

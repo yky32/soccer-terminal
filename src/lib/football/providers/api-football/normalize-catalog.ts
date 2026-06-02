@@ -14,6 +14,7 @@ import {
   seasonYearForEntry,
 } from "@/lib/football/league-catalog";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
+import { resolveStandingQualification } from "@/lib/football/standing-qualification";
 import { playerSlugFromTeamAndName } from "@/lib/player-paths";
 
 export type ApiFootballStandingRow = {
@@ -22,6 +23,7 @@ export type ApiFootballStandingRow = {
   points: number;
   goalsDiff: number;
   form: string | null;
+  description: string | null;
   all: {
     played: number;
     win: number;
@@ -163,6 +165,8 @@ export function normalizeStandingRow(
   row: ApiFootballStandingRow,
   group?: string,
 ): LeagueStandingRow {
+  const qualification = resolveStandingQualification(row.description);
+
   return {
     rank: row.rank,
     team: row.team.name,
@@ -177,6 +181,8 @@ export function normalizeStandingRow(
     goalsAgainst: row.all.goals.against,
     points: row.points,
     form: parseForm(row.form),
+    qualificationLabel: qualification?.label ?? null,
+    qualificationZone: qualification?.zone ?? null,
   };
 }
 
