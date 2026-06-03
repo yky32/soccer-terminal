@@ -1,4 +1,5 @@
 import { getFootballDataProvider } from "@/lib/football/get-provider";
+import { ROUTE_REVALIDATE_NEWS_SEC } from "@/lib/football/refresh-policy";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 import type { NewsArticle } from "@/lib/data/news-article";
@@ -10,7 +11,12 @@ export async function GET(request: Request) {
   type NewsRouteBody = { error: string } | { articles: NewsArticle[] };
 
   return withApiRouteHandler<NewsRouteBody>(
-    { route: "/api/news", method: "GET", request },
+    {
+      route: "/api/news",
+      method: "GET",
+      request,
+      cache: { sMaxAge: ROUTE_REVALIDATE_NEWS_SEC },
+    },
     async () => {
       if (!ENABLE_NEWS) {
         return { status: 404, body: { error: "Not found" } };

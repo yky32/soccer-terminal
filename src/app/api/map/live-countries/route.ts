@@ -5,6 +5,7 @@ import { isMapMatchMode } from "@/lib/data/map-match-mode";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
 import type { LiveCountriesSnapshot } from "@/lib/football/provider";
 import { isRateLimitError } from "@/lib/football/providers/api-football/errors";
+import { ROUTE_REVALIDATE_MAP_SEC } from "@/lib/football/refresh-policy";
 import { withApiRouteHandler } from "@/lib/http/route-handler";
 
 /** Keep in sync with ROUTE_REVALIDATE_MAP_SEC in refresh-policy.ts */
@@ -42,7 +43,12 @@ export async function GET(request: Request) {
 
   if (modeParam === "both") {
     return withApiRouteHandler<LiveCountriesBothResponse>(
-      { route: "/api/map/live-countries", method: "GET", request },
+      {
+        route: "/api/map/live-countries",
+        method: "GET",
+        request,
+        cache: { sMaxAge: ROUTE_REVALIDATE_MAP_SEC },
+      },
       async () => {
         const provider = getFootballDataProvider();
 
@@ -76,7 +82,12 @@ export async function GET(request: Request) {
   const mode = isMapMatchMode(modeParam) ? modeParam : "live";
 
   return withApiRouteHandler(
-    { route: "/api/map/live-countries", method: "GET", request },
+    {
+      route: "/api/map/live-countries",
+      method: "GET",
+      request,
+      cache: { sMaxAge: ROUTE_REVALIDATE_MAP_SEC },
+    },
     async () => {
       const provider = getFootballDataProvider();
 

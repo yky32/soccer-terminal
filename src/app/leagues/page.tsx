@@ -1,6 +1,7 @@
-import { LeaguesFeed } from "@/components/leagues/leagues-feed";
-import { PageHeader } from "@/components/page-header";
+import { LeaguesPageShell } from "@/components/leagues/leagues-page-shell";
 import { fetchFeaturedLeague, fetchLeagueCatalog } from "@/lib/football/data";
+import { getCatalogEntryById } from "@/lib/football/league-catalog";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -8,21 +9,27 @@ export const metadata = {
   title: "Leagues",
 };
 
-export default async function LeaguesPage() {
+type LeaguesPageProps = {
+  searchParams: Promise<{ league?: string }>;
+};
+
+export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
+  const { league: legacyLeagueId } = await searchParams;
+
+  if (legacyLeagueId && getCatalogEntryById(legacyLeagueId)) {
+    redirect(`/leagues/${legacyLeagueId}`);
+  }
+
   const [catalog, initialLeague] = await Promise.all([
     fetchLeagueCatalog(),
     fetchFeaturedLeague(),
   ]);
 
   return (
-    <>
-      <PageHeader
-        compact
-        onGlass
-        title="League dashboards."
-        description="Standings, upcoming fixtures, and quick links into the global map — organized by region and tier."
-      />
-      <LeaguesFeed catalog={catalog} initialLeague={initialLeague} />
-    </>
+    <LeaguesPageShell
+      catalog={catalog}
+      initialLeague={initialLeague}
+      selectedLeagueId={initialLeague?.id ?? null}
+    />
   );
 }

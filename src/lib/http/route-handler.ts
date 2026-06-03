@@ -5,12 +5,15 @@ import {
   logRouteResponse,
 } from "@/lib/http/logger";
 import { sanitizeBody } from "@/lib/http/sanitize";
+import type { RouteCachePolicy } from "@/lib/http/cache-control";
+import { cacheControlHeader } from "@/lib/http/cache-control";
 import type { ApiRouteRequestDto, ApiRouteResponseDto } from "@/lib/http/types";
 
 type RouteHandlerOptions = {
   route: string;
   method: string;
   request?: Request;
+  cache?: RouteCachePolicy;
 };
 
 type RouteHandlerResult<T> = {
@@ -64,7 +67,11 @@ export async function withApiRouteHandler<T>(
 
     logRouteResponse(responseDto);
 
-    return NextResponse.json(result.body, { status });
+    const headers = options.cache
+      ? { "Cache-Control": cacheControlHeader(options.cache) }
+      : undefined;
+
+    return NextResponse.json(result.body, { status, headers });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Internal server error";

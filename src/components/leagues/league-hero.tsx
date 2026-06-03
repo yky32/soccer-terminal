@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { FootballLogo } from "@/components/overview/football-logo";
-import { LeagueMapZone } from "@/components/leagues/league-map-zone";
 import { CountryFlag } from "@/components/players/country-flag";
+import { MapSectionSkeleton } from "@/components/loading/route-skeletons";
 import { leaguesGlassInset, leaguesGlassStrong } from "@/components/leagues/leagues-glass";
-import { Map, type MapRef } from "@/components/ui/map";
 import type { LeagueProfile } from "@/lib/data/league-profile";
 import {
   LEAGUE_REGION_LABELS,
@@ -16,7 +15,16 @@ import { getLeagueMapLocation } from "@/lib/football/league-country-map";
 import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
-const MAP_FLY_MS = 1100;
+const LeagueMapPane = dynamic(
+  () =>
+    import("@/components/leagues/league-map-pane").then((module) => ({
+      default: module.LeagueMapPane,
+    })),
+  {
+    ssr: false,
+    loading: () => <MapSectionSkeleton variant="compact" className="absolute inset-0 rounded-none" />,
+  },
+);
 
 type LeagueHeroProps = {
   league: LeagueProfile;
@@ -124,56 +132,6 @@ export function LeagueHero({ league }: LeagueHeroProps) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function LeagueMapPane({
-  league,
-  location,
-}: {
-  league: LeagueProfile;
-  location: ReturnType<typeof getLeagueMapLocation>;
-}) {
-  const mapRef = useRef<MapRef>(null);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    const timer = window.setTimeout(() => {
-      map.resize();
-      map.flyTo({
-        center: [location.longitude, location.latitude],
-        zoom: location.zoom,
-        duration: MAP_FLY_MS,
-        essential: true,
-      });
-    }, 80);
-
-    return () => window.clearTimeout(timer);
-  }, [league.id, location.latitude, location.longitude, location.zoom]);
-
-  return (
-    <div className="absolute inset-0">
-      <Map
-        ref={mapRef}
-        theme="light"
-        center={[location.longitude, location.latitude]}
-        zoom={location.zoom}
-        minZoom={1}
-        maxZoom={10}
-        attributionControl={false}
-        dragPan={false}
-        scrollZoom={false}
-        doubleClickZoom={false}
-        touchZoomRotate={false}
-        keyboard={false}
-        boxZoom={false}
-        className="h-full w-full saturate-[0.85] contrast-[0.98]"
-      >
-        <LeagueMapZone location={location} country={league.country} live={league.liveMatches > 0} />
-      </Map>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStickyChromeHide } from "@/components/use-sticky-chrome";
 import { FootballLogo } from "@/components/overview/football-logo";
@@ -37,6 +38,7 @@ import { cn } from "@/lib/utils";
 type LeaguesFeedProps = {
   catalog: LeagueProfile[];
   initialLeague: LeagueProfile | null;
+  selectedLeagueId?: string | null;
 };
 
 type LeagueApiResponse = LeagueProfile & { error?: string };
@@ -75,15 +77,24 @@ const TIER_SHORT: Record<LeagueTier | "all", string> = {
   regional: "Regional",
 };
 
-export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
+export function LeaguesFeed({
+  catalog,
+  initialLeague,
+  selectedLeagueId = null,
+}: LeaguesFeedProps) {
+  const router = useRouter();
+  const resolvedSelectedId =
+    selectedLeagueId ??
+    initialLeague?.id ??
+    catalog[0]?.id ??
+    FEATURED_LEAGUE_ID;
+
   const [region, setRegion] = useState<LeagueRegion | "all">("all");
   const [tier, setTier] = useState<LeagueTier | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState(
-    initialLeague?.id ?? catalog[0]?.id ?? FEATURED_LEAGUE_ID,
-  );
+  const [selectedId, setSelectedId] = useState(resolvedSelectedId);
   const [profiles, setProfiles] = useState<Record<string, LeagueProfile>>(() => {
     if (!initialLeague) return {};
     return { [initialLeague.id]: initialLeague };
@@ -94,6 +105,10 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
     new Set(initialLeague ? [initialLeague.id] : []),
   );
   const { isStuck: isRailStuck, sentinelRef } = useStickyChromeHide();
+
+  useEffect(() => {
+    setSelectedId(resolvedSelectedId);
+  }, [resolvedSelectedId]);
 
   const leagues = useMemo(
     () => catalog.map((shell) => profiles[shell.id] ?? shell),
@@ -138,8 +153,9 @@ export function LeaguesFeed({ catalog, initialLeague }: LeaguesFeedProps) {
     (leagueId: string) => {
       setSelectedId(leagueId);
       void loadLeague(leagueId);
+      router.push(`/leagues/${leagueId}`, { scroll: false });
     },
-    [loadLeague],
+    [loadLeague, router],
   );
 
   useEffect(() => {
