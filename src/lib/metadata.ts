@@ -130,4 +130,7 @@ export const rootMetadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: "a_vlY6eLbppnrZvc2o3IHYmSK3DekIpEJ_erQ3tq00c",
+  },
 };
