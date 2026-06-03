@@ -7,6 +7,9 @@ export const TITLE_TEMPLATE = `%s - ${PRODUCT_NAME}`;
 export const SITE_DESCRIPTION =
   "Live and upcoming football worldwide — global match map, league dashboards, and match monitoring.";
 
+/** Public AdSense publisher ID (site verification + ad units). */
+export const ADSENSE_PUBLISHER_ID = "ca-pub-6625924027167786";
+
 const PRODUCTION_SITE_URL = "https://www.soccer-terminal.app";
 
 /** Resolve public site origin for canonical URLs, OG, and sitemap. */
@@ -132,5 +135,8 @@ export const rootMetadata: Metadata = {
   },
   verification: {
     google: "a_vlY6eLbppnrZvc2o3IHYmSK3DekIpEJ_erQ3tq00c",
+  },
+  other: {
+    "google-adsense-account": ADSENSE_PUBLISHER_ID,
   },
 };
