@@ -8,6 +8,7 @@ export const USER_PREFERENCES_STORAGE = {
   theme: "soccer-monitor-theme",
   locale: "soccer-monitor-locale",
   currency: "soccer-monitor-currency",
+  timezone: "soccer-monitor-timezone",
 } as const;
 
 export const DEFAULT_THEME: ThemePreference = "light";

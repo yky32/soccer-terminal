@@ -2,11 +2,8 @@
 
 import { ChevronRight } from "@/components/app-shell";
 import { FootballLogo } from "@/components/overview/football-logo";
-import {
-  formatNewsRelativeTime,
-  formatNewsTimestamp,
-} from "@/lib/data/format-news-date";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import {
   getCategoryAccent,
   NewsCategoryBadge,
@@ -67,6 +64,7 @@ function NewsFeaturedLead({
   article: NewsArticle;
   onSelect: (article: NewsArticle) => void;
 }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
   const accent = getCategoryAccent(article.category);
 
   return (
@@ -97,9 +95,9 @@ function NewsFeaturedLead({
             <time
               dateTime={article.publishedAt}
               className="text-[0.75rem] font-semibold tabular-nums text-white/80 sm:text-[0.8125rem]"
-              title={formatNewsTimestamp(article.publishedAt)}
+              title={formatDateTimeTooltip(article.publishedAt)}
             >
-              {formatNewsRelativeTime(article.publishedAt)}
+              {formatRelativeTime(article.publishedAt)}
             </time>
           </div>
           <h2 className="mt-1.5 line-clamp-3 text-[1rem] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[1.125rem]">
@@ -133,6 +131,8 @@ function NewsFeaturedCompactRow({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
+
   return (
     <button
       type="button"
@@ -163,9 +163,9 @@ function NewsFeaturedCompactRow({
           <time
             dateTime={article.publishedAt}
             className="text-[0.75rem] tabular-nums text-neutral-500"
-            title={formatNewsTimestamp(article.publishedAt)}
+            title={formatDateTimeTooltip(article.publishedAt)}
           >
-            {formatNewsRelativeTime(article.publishedAt)}
+            {formatRelativeTime(article.publishedAt)}
           </time>
         </div>
       </div>

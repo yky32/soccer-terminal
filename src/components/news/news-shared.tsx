@@ -1,11 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  formatNewsRelativeTime,
-  formatNewsTimestamp,
-} from "@/lib/data/format-news-date";
 import { NEWS_CATEGORY_META, type NewsArticle } from "@/lib/data/news-article";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 export {
   getCategoryAccent,
   getCategoryAccentBar,
@@ -104,6 +101,7 @@ export function NewsMetaLine({
   article: NewsArticle;
   className?: string;
 }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
   const meta = NEWS_CATEGORY_META[article.category];
 
   return (
@@ -112,8 +110,8 @@ export function NewsMetaLine({
       <span aria-hidden="true"> · </span>
       <span className="font-medium text-neutral-600">{meta.label}</span>
       <span aria-hidden="true"> · </span>
-      <time dateTime={article.publishedAt} title={formatNewsTimestamp(article.publishedAt)}>
-        {formatNewsRelativeTime(article.publishedAt)}
+      <time dateTime={article.publishedAt} title={formatDateTimeTooltip(article.publishedAt)}>
+        {formatRelativeTime(article.publishedAt)}
       </time>
     </p>
   );

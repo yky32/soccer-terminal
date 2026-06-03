@@ -36,6 +36,7 @@ import {
 } from "@/lib/match-monitor";
 import { matchHref } from "@/lib/match-paths";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { useUserPreferences } from "@/components/user-preferences-provider";
 import { cn } from "@/lib/utils";
 
 type MatchHeatmapGridProps = {
@@ -638,13 +639,14 @@ function MatchHeatmapCell({
   style,
 }: MatchHeatmapCellProps) {
   const { match } = item;
+  const { locale, timeZone } = useUserPreferences();
   const palette = matchHeatStyle(match);
   const type = heatmapType(density, layout, rank);
   const live = isMatchLive(match);
   const sideState = live
     ? matchSideState(match.homeGoals, match.awayGoals)
     : { home: "draw" as const, away: "draw" as const };
-  const minuteLabel = matchMinuteLabel(match);
+  const minuteLabel = matchMinuteLabel(match, { locale, timeZone });
 
   const cellPadding =
     layout === "mosaic" && rank?.tier

@@ -26,7 +26,9 @@ import {
   type MonitoredMatch,
 } from "@/lib/match-monitor";
 import { useMapCountries } from "@/components/overview/map-countries-context";
+import { useUserPreferences } from "@/components/user-preferences-provider";
 import { getCatalogEntryByDisplayName } from "@/lib/football/league-catalog";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 function QuickAddButton({
@@ -116,6 +118,7 @@ function SearchResultRow({
 }) {
   const { match, mode } = item;
   const live = isMatchLive(match);
+  const { locale, timeZone } = useUserPreferences();
 
   return (
     <button
@@ -145,7 +148,7 @@ function SearchResultRow({
       <div className="hidden shrink-0 text-right sm:block">
         <p className="text-[0.6875rem] font-medium text-neutral-500">{match.league}</p>
         <p className="text-[0.6875rem] tabular-nums text-neutral-400">
-          {live ? `${matchMinuteLabel(match)} · live` : matchMinuteLabel(match)}
+          {live ? `${matchMinuteLabel(match, { locale, timeZone })} · live` : matchMinuteLabel(match, { locale, timeZone })}
         </p>
       </div>
       <span
@@ -164,6 +167,7 @@ function SearchResultRow({
 
 export function MatchMonitorSection() {
   const { data, loading, error } = useMapCountries();
+  const { formatKickoffTime } = useFormatDateTime();
   const [watchlistIds, setWatchlistIds] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -287,10 +291,7 @@ export function MatchMonitorSection() {
           {updatedAt ? (
             <p className="text-[0.75rem] tabular-nums text-neutral-400">
               Updated{" "}
-              {new Date(updatedAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatKickoffTime(updatedAt)}
             </p>
           ) : null}
         </div>

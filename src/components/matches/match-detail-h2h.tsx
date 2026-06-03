@@ -12,16 +12,8 @@ import type {
 } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
 import { fixtureDetailHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
-
-function kickoffShort(date: string | null) {
-  if (!date) return "—";
-  return new Date(date).toLocaleDateString([], {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function h2hBarPercents(homeWins: number, draws: number, awayWins: number) {
   const total = homeWins + draws + awayWins;
@@ -162,6 +154,7 @@ function H2HSummaryBar({
 }
 
 function FormMatchChip({ row }: { row: MatchDetailFormMatch }) {
+  const { formatDateMedium } = useFormatDateTime();
   const resultClass: Record<MatchDetailFormMatch["result"], string> = {
     W: "bg-emerald-500/15 text-emerald-800 ring-emerald-500/20",
     D: "bg-neutral-500/10 text-neutral-600 ring-neutral-400/15",
@@ -170,7 +163,7 @@ function FormMatchChip({ row }: { row: MatchDetailFormMatch }) {
 
   return (
     <div
-      title={`${row.isHome ? "vs" : "@"} ${row.opponent} · ${row.goalsFor}–${row.goalsAgainst}${row.date ? ` · ${kickoffShort(row.date)}` : ""}`}
+      title={`${row.isHome ? "vs" : "@"} ${row.opponent} · ${row.goalsFor}–${row.goalsAgainst}${row.date ? ` · ${formatDateMedium(row.date)}` : ""}`}
       className={cn(
         leaguesGlassInset,
         "flex min-w-[4.75rem] shrink-0 flex-col items-center gap-1 rounded-xl px-2 py-2 text-center",
@@ -244,6 +237,7 @@ function h2hSideState(isWinner: boolean, isLoser: boolean): "leading" | "losing"
 }
 
 function H2HRow({ row, contextMatch }: { row: MatchDetailH2HMatch; contextMatch: LiveMatch }) {
+  const { formatDateMedium } = useFormatDateTime();
   const href = fixtureDetailHref({ id: String(row.id) });
   const winner = rowWinner(row);
   const homeWinner = winner === "home";
@@ -259,7 +253,7 @@ function H2HRow({ row, contextMatch }: { row: MatchDetailH2HMatch; contextMatch:
           <p className="truncate text-[0.6875rem] font-medium text-neutral-500">{row.league}</p>
         </div>
         <p className="shrink-0 text-[0.6875rem] tabular-nums text-neutral-400">
-          {kickoffShort(row.date)}
+          {row.date ? formatDateMedium(row.date) : "—"}
         </p>
       </div>
 

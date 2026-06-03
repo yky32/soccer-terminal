@@ -1,9 +1,6 @@
-export function formatBriefingTime(iso: string) {
-  return new Date(iso).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+import type { FormatDateTimeContext } from "@/lib/format-date-time";
+import { formatDateTime } from "@/lib/format-date-time";
+
+export function formatBriefingTime(iso: string, context?: FormatDateTimeContext) {
+  return formatDateTime(iso, "kickoff-full", context);
 }

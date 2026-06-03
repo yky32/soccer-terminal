@@ -7,21 +7,11 @@ import {
 } from "@/components/leagues/leagues-glass";
 import type { MatchDetail } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 function isUpcoming(match: LiveMatch) {
   return ["NS", "TBD"].includes(match.statusShort);
-}
-
-function kickoffHeader(kickoffAt: string | null) {
-  if (!kickoffAt) return null;
-  return new Date(kickoffAt).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 type MatchDetailHeroProps = {
@@ -30,7 +20,8 @@ type MatchDetailHeroProps = {
 };
 
 export function MatchDetailHero({ match, detail }: MatchDetailHeroProps) {
-  const kickoff = kickoffHeader(match.kickoffAt);
+  const { formatKickoffFull } = useFormatDateTime();
+  const kickoff = match.kickoffAt ? formatKickoffFull(match.kickoffAt) : null;
   const upcoming = isUpcoming(match);
 
   const metaItems = [

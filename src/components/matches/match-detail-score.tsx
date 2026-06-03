@@ -2,6 +2,7 @@ import type { MatchDetail } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
 import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import { isMatchLiveStatus } from "@/lib/football/match-status";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 export type TeamSideState = "leading" | "losing" | "draw" | "neutral";
@@ -25,17 +26,6 @@ export function teamSideState(match: LiveMatch, side: "home" | "away"): TeamSide
     : match.awayGoals > match.homeGoals
       ? "leading"
       : "losing";
-}
-
-function kickoffLabel(kickoffAt: string | null) {
-  if (!kickoffAt) return "Kickoff TBD";
-  return new Date(kickoffAt).toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 function statusBadges(match: LiveMatch, detail: MatchDetail) {
@@ -115,6 +105,7 @@ export function MatchDetailScoreBlock({
   const showFtSubline = Boolean(penScore && detail.score.extratime && detail.score.fulltime);
   const homeState = teamSideState(match, "home");
   const awayState = teamSideState(match, "away");
+  const { formatKickoffFull } = useFormatDateTime();
 
   return (
     <div className={cn("flex w-full flex-col", className)}>
@@ -164,7 +155,7 @@ export function MatchDetailScoreBlock({
           ))}
           {!live ? (
             <span className="text-[0.8125rem] font-medium text-neutral-500">
-              {upcoming ? kickoffLabel(match.kickoffAt) : match.statusLong}
+              {upcoming ? formatKickoffFull(match.kickoffAt) : match.statusLong}
             </span>
           ) : null}
         </div>

@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
-import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueFixture } from "@/lib/data/league-profile";
 import { fixtureDetailHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 type LeagueFixturesListProps = {
@@ -30,6 +32,7 @@ export function LeagueFixturesList({ fixtures }: LeagueFixturesListProps) {
 }
 
 function FixtureRow({ fixture }: { fixture: LeagueFixture }) {
+  const { formatKickoffFull, formatDateTimeTooltip } = useFormatDateTime();
   const kickoff = new Date(fixture.kickoffAt);
   const isSoon = kickoff.getTime() - Date.now() < 24 * 3_600_000;
   const detailHref = fixtureDetailHref(fixture);
@@ -46,15 +49,9 @@ function FixtureRow({ fixture }: { fixture: LeagueFixture }) {
             "text-[0.75rem] font-medium tabular-nums",
             isSoon ? "text-sky-800" : "text-neutral-600",
           )}
-          title={formatNewsTimestamp(fixture.kickoffAt)}
+          title={formatDateTimeTooltip(fixture.kickoffAt)}
         >
-          {kickoff.toLocaleString([], {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatKickoffFull(fixture.kickoffAt)}
         </time>
       </div>
 

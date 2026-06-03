@@ -2,6 +2,8 @@ import type { LiveMatch } from "@/lib/data/live-match";
 import { buildNewsInsights } from "@/lib/data/news-insights";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { getFootballDataProvider } from "@/lib/football/get-provider";
+import { formatDateTime } from "@/lib/format-date-time";
+import { getServerTimeZone } from "@/lib/get-server-timezone";
 import {
   compareHeatmapOrder,
   flattenMapMatches,
@@ -90,6 +92,7 @@ async function buildTopHeadlines(limit = 3) {
 }
 
 export async function buildAssistantBriefing(): Promise<AssistantContext> {
+  const timeZone = await getServerTimeZone();
   const provider = getFootballDataProvider();
   const [liveSnapshot, futureSnapshot] = await Promise.all([
     provider.getMapCountries("live"),
@@ -166,12 +169,7 @@ export async function buildAssistantBriefing(): Promise<AssistantContext> {
       .sort((a, b) => Date.parse(a.kickoffAt!) - Date.parse(b.kickoffAt!))[0];
 
     if (next?.kickoffAt) {
-      const kickoff = new Date(next.kickoffAt).toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      const kickoff = formatDateTime(next.kickoffAt, "kickoff-short", { timeZone });
       bullets.push({
         id: "upcoming-next",
         signal: "upcoming",

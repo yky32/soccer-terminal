@@ -22,6 +22,7 @@ import {
 } from "@/lib/football/knockout-match-result";
 import { knockoutTeamShortName } from "@/lib/football/knockout-team-name";
 import { fixtureDetailHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 function KnockoutMatchDetailLink({
@@ -339,6 +340,7 @@ export function KnockoutMatchCard({
   const tieAggregateWinner = aggregateWinnerTeam ?? roundAggregate?.winnerTeam ?? null;
   const tieAggregateWinKind = aggregateWinKind ?? roundAggregate?.winKind ?? null;
   const cardWinKind = tieAggregateWinner ? tieAggregateWinKind : legWinKind;
+  const { formatDateShort } = useFormatDateTime();
 
   return (
     <KnockoutMatchDetailLink
@@ -419,7 +421,7 @@ export function KnockoutMatchCard({
         {live
           ? "Live"
           : kickoff
-            ? kickoff.toLocaleDateString([], { month: "short", day: "numeric" })
+            ? formatDateShort(kickoff.toISOString())
             : "TBD"}
       </p>
     </KnockoutMatchDetailLink>

@@ -1,5 +1,7 @@
 import type { LiveMatch, MatchLiveEvent, MatchEventType } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
+import type { FormatDateTimeContext } from "@/lib/format-date-time";
+import { formatDateTime } from "@/lib/format-date-time";
 import {
   getCatalogEntryByDisplayName,
   getCatalogEntryByLeagueName,
@@ -333,7 +335,7 @@ export function matchHeatStyle(match: LiveMatch): HeatCellStyle {
   };
 }
 
-export function matchMinuteLabel(match: LiveMatch) {
+export function matchMinuteLabel(match: LiveMatch, context?: FormatDateTimeContext) {
   if (isMatchLive(match)) {
     if (match.elapsed !== null) return `${match.elapsed}'`;
     return match.statusShort;
@@ -341,13 +343,7 @@ export function matchMinuteLabel(match: LiveMatch) {
 
   if (!match.kickoffAt) return "TBD";
 
-  const date = new Date(match.kickoffAt);
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return formatDateTime(match.kickoffAt, "kickoff-short", context);
 }
 
 export type MatchMonitorInsight = {

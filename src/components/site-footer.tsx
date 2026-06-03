@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { mainNav } from "@/lib/navigation";
+import { PRODUCT_NAME } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
 
 function navActive(pathname: string, href: string) {
@@ -52,7 +53,7 @@ export function SiteFooter() {
             </nav>
 
             <p className="text-[0.6875rem] tabular-nums tracking-wide text-neutral-400">
-              © {year} Soccer Monitor
+              © {year} {PRODUCT_NAME}
             </p>
           </div>
         </div>

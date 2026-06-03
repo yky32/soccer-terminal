@@ -6,13 +6,13 @@ import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueMapZone } from "@/components/leagues/league-map-zone";
 import { leaguesGlassInset, leaguesGlassStrong } from "@/components/leagues/leagues-glass";
 import { Map, type MapRef } from "@/components/ui/map";
-import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueProfile } from "@/lib/data/league-profile";
 import {
   LEAGUE_REGION_LABELS,
   LEAGUE_TIER_LABELS,
 } from "@/lib/data/league-profile";
 import { getLeagueMapLocation } from "@/lib/football/league-country-map";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 const MAP_FLY_MS = 1100;
@@ -22,6 +22,7 @@ type LeagueHeroProps = {
 };
 
 export function LeagueHero({ league }: LeagueHeroProps) {
+  const { formatDateShort } = useFormatDateTime();
   const location = getLeagueMapLocation(league);
 
   return (
@@ -90,7 +91,7 @@ export function LeagueHero({ league }: LeagueHeroProps) {
             <HeroStat label="Matchday" value={String(league.matchday)} />
             <HeroStat
               label="Updated"
-              value={formatNewsTimestamp(new Date().toISOString()).split(",")[0] ?? "Today"}
+              value={formatDateShort(new Date().toISOString())}
             />
           </div>
         </div>

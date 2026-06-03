@@ -1,9 +1,7 @@
+"use client";
+
 import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
-import {
-  formatNewsRelativeTime,
-  formatNewsTimestamp,
-} from "@/lib/data/format-news-date";
 import {
   getArticleBody,
   getArticleReadingMinutes,
@@ -27,6 +25,7 @@ import {
   newsGlassSubtle,
 } from "@/components/news/news-glass";
 import { newsArticleHref } from "@/lib/news-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 type NewsArticleDetailProps = {
@@ -35,6 +34,7 @@ type NewsArticleDetailProps = {
 };
 
 export function NewsArticleDetail({ article, related }: NewsArticleDetailProps) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
   const accent = getCategoryAccent(article.category);
   const accentBar = getCategoryAccentBar(article.category);
   const categoryMeta = NEWS_CATEGORY_META[article.category];
@@ -72,8 +72,8 @@ export function NewsArticleDetail({ article, related }: NewsArticleDetailProps) 
 
         <div className={cn("border-l-[4px] px-5 py-7 sm:px-8 sm:py-9", accent)}>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.8125rem] text-muted">
-            <time dateTime={article.publishedAt} title={formatNewsTimestamp(article.publishedAt)}>
-              {formatNewsRelativeTime(article.publishedAt)}
+            <time dateTime={article.publishedAt} title={formatDateTimeTooltip(article.publishedAt)}>
+              {formatRelativeTime(article.publishedAt)}
             </time>
             <span aria-hidden>·</span>
             <span>{readingMinutes} min read</span>
@@ -136,34 +136,7 @@ export function NewsArticleDetail({ article, related }: NewsArticleDetailProps) 
             <ul className="mt-3 space-y-2">
               {related.map((item) => (
                 <li key={item.id}>
-                  <Link
-                    href={newsArticleHref(item.id)}
-                    className={cn(
-                      newsGlassSubtle,
-                      newsGlassHover,
-                      newsFocus,
-                      "group flex gap-3 rounded-xl p-2.5 transition-colors",
-                    )}
-                  >
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-black/[0.06]">
-                      <NewsThumbnail
-                        article={item}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-3 text-[0.8125rem] font-semibold leading-snug tracking-[-0.01em] text-neutral-950">
-                        {item.headline}
-                      </p>
-                      <time
-                        dateTime={item.publishedAt}
-                        className="mt-1 block text-[0.75rem] tabular-nums text-neutral-500"
-                        title={formatNewsTimestamp(item.publishedAt)}
-                      >
-                        {formatNewsRelativeTime(item.publishedAt)}
-                      </time>
-                    </div>
-                  </Link>
+                  <RelatedArticleLink item={item} />
                 </li>
               ))}
             </ul>
@@ -184,16 +157,44 @@ export function NewsArticleDetail({ article, related }: NewsArticleDetailProps) 
   );
 }
 
+function RelatedArticleLink({ item }: { item: NewsArticle }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
+
+  return (
+    <Link
+      href={newsArticleHref(item.id)}
+      className={cn(
+        newsGlassSubtle,
+        newsGlassHover,
+        newsFocus,
+        "group flex gap-3 rounded-xl p-2.5 transition-colors",
+      )}
+    >
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-black/[0.06]">
+        <NewsThumbnail
+          article={item}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-3 text-[0.8125rem] font-semibold leading-snug tracking-[-0.01em] text-neutral-950">
+          {item.headline}
+        </p>
+        <time
+          dateTime={item.publishedAt}
+          className="mt-1 block text-[0.75rem] tabular-nums text-neutral-500"
+          title={formatDateTimeTooltip(item.publishedAt)}
+        >
+          {formatRelativeTime(item.publishedAt)}
+        </time>
+      </div>
+    </Link>
+  );
+}
+
 function BackIcon() {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
+    <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );

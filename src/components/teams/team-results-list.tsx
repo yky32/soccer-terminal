@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
-import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { TeamMatchResult } from "@/lib/data/team-profile";
 import { fixtureDetailHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 type TeamResultsListProps = {
@@ -31,7 +33,7 @@ export function TeamResultsList({ results, teamName }: TeamResultsListProps) {
 }
 
 function ResultRow({ result, teamName }: { result: TeamMatchResult; teamName: string }) {
-  const kickoff = new Date(result.kickoffAt);
+  const { formatDateShort, formatDateTimeTooltip } = useFormatDateTime();
   const teamWon =
     (result.isHome && result.homeScore > result.awayScore) ||
     (!result.isHome && result.awayScore > result.homeScore);
@@ -48,9 +50,9 @@ function ResultRow({ result, teamName }: { result: TeamMatchResult; teamName: st
         <time
           dateTime={result.kickoffAt}
           className="text-[0.75rem] font-medium tabular-nums text-neutral-600"
-          title={formatNewsTimestamp(result.kickoffAt)}
+          title={formatDateTimeTooltip(result.kickoffAt)}
         >
-          {kickoff.toLocaleDateString([], { month: "short", day: "numeric" })}
+          {formatDateShort(result.kickoffAt)}
         </time>
       </div>
 

@@ -3,6 +3,7 @@
 import {
   Banknote,
   CircleUser,
+  Clock,
   Globe,
   LogIn,
   Moon,
@@ -13,6 +14,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -27,6 +29,7 @@ import {
   type CurrencyCode,
   type ThemePreference,
 } from "@/lib/user-preferences";
+import { buildTimeZoneOptions } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
 const MENU_Z_BACKDROP = 200;
@@ -176,7 +179,8 @@ function UserMenuPanel({
   position: MenuPosition;
   onClose: () => void;
 }) {
-  const { locale, currency, setLocale, setCurrency } = useUserPreferences();
+  const { locale, currency, timeZone, setLocale, setCurrency, setTimeZone } = useUserPreferences();
+  const timeZoneOptions = useMemo(() => buildTimeZoneOptions(timeZone), [timeZone]);
 
   return (
     <>
@@ -231,6 +235,16 @@ function UserMenuPanel({
             options={LOCALE_OPTIONS}
             disabled={LOCALE_OPTIONS.length <= 1}
             icon={Globe}
+          />
+        </MenuSection>
+
+        <MenuSection label="Timezone" className="pt-0">
+          <PreferenceSelect
+            id={`${menuId}-timezone`}
+            value={timeZone}
+            onChange={setTimeZone}
+            options={timeZoneOptions}
+            icon={Clock}
           />
         </MenuSection>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { ThemeInitScript } from "@/components/theme-init-script";
+import { PRODUCT_NAME, TITLE_TEMPLATE } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,8 +13,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Soccer World Monitor",
-    template: "%s | Soccer World Monitor",
+    default: PRODUCT_NAME,
+    template: TITLE_TEMPLATE,
   },
   description:
     "Professional soccer intelligence — global live map, leagues, and match insights.",

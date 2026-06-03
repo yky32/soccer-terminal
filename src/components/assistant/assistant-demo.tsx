@@ -3,11 +3,11 @@
 import { ArrowUp, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatBriefingTime } from "@/lib/assistant/format-briefing-time";
 import { getDemoPrompts } from "@/lib/assistant/demo-responses";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import type { AssistantBriefing } from "@/lib/assistant/generate-assistant";
 import { readWatchlistIds } from "@/lib/match-monitor";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { glassFocus, glassInset, glassStrong } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
@@ -77,6 +77,7 @@ function welcomeMessage(llmConfigured: boolean, mode: AssistantBriefing["mode"])
 
 export function AssistantDemo({ briefing: initialBriefing, llmConfigured }: AssistantDemoProps) {
   const demoPrompts = useMemo(() => getDemoPrompts(), []);
+  const { formatKickoffFull } = useFormatDateTime();
   const [briefing, setBriefing] = useState(initialBriefing);
   const [mode, setMode] = useState(initialBriefing.mode);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -200,7 +201,7 @@ export function AssistantDemo({ briefing: initialBriefing, llmConfigured }: Assi
                 {mode === "llm" ? "AI briefing" : "Grounded briefing"}
               </span>
               <span className="text-[0.6875rem] font-medium text-neutral-500">
-                {formatBriefingTime(briefing.generatedAt)} · {briefing.provider}
+                {formatKickoffFull(briefing.generatedAt)} · {briefing.provider}
               </span>
             </div>
             <h2 className="text-heading mt-4 font-semibold text-neutral-950">{briefing.headline}</h2>

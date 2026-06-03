@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { fixtureDetailHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { FootballLogo } from "@/components/overview/football-logo";
 import {
   leaguesGlassInset,
@@ -173,6 +174,7 @@ function UpcomingMatchCard({
   fixture: LeagueFixture;
   teamName: string;
 }) {
+  const { formatDateShort, formatKickoffTime } = useFormatDateTime();
   const kickoff = new Date(fixture.kickoffAt);
   const isHome = fixture.homeTeam === teamName;
   const opponent = isHome ? fixture.awayTeam : fixture.homeTeam;
@@ -195,10 +197,10 @@ function UpcomingMatchCard({
         {fixture.matchday}
       </span>
       <p className="text-[0.6875rem] font-medium tabular-nums text-neutral-700">
-        {kickoff.toLocaleDateString([], { month: "short", day: "numeric" })}
+        {formatDateShort(fixture.kickoffAt)}
       </p>
       <p className="text-[0.6875rem] tabular-nums text-neutral-500">
-        {kickoff.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        {formatKickoffTime(fixture.kickoffAt)}
       </p>
     </>
   );

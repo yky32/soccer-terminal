@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import type { NewsArticle } from "@/lib/data/news-article";
-import { formatNewsRelativeTime } from "@/lib/data/format-news-date";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { findTeamsInHeadline } from "@/lib/data/news-team-registry";
 import { newsArticleHref } from "@/lib/news-paths";
 import { newsFocus, newsGlassInset, newsGlassSubtle } from "@/components/news/news-glass";
@@ -61,6 +61,7 @@ function WireTickerItem({
   embedded: boolean;
 }) {
   const teams = useMemo(() => findTeamsInHeadline(article.headline), [article.headline]);
+  const { formatRelativeTime } = useFormatDateTime();
 
   return (
     <Link
@@ -94,7 +95,7 @@ function WireTickerItem({
           embedded ? "text-[0.6875rem]" : "text-[0.75rem]",
         )}
       >
-        {formatNewsRelativeTime(article.publishedAt)}
+        {formatRelativeTime(article.publishedAt)}
       </span>
     </Link>
   );

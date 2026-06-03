@@ -2,11 +2,8 @@
 
 import { ChevronRight } from "@/components/app-shell";
 import { FootballLogo } from "@/components/overview/football-logo";
-import {
-  formatNewsRelativeTime,
-  formatNewsTimestamp,
-} from "@/lib/data/format-news-date";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import {
   getCategoryAccent,
   getCategoryAccentBar,
@@ -32,6 +29,7 @@ type NewsRowCardProps = {
 };
 
 export function NewsRowCard({ article, onSelect, className, style }: NewsRowCardProps) {
+  const { formatRelativeTime } = useFormatDateTime();
   const accentBar = getCategoryAccentBar(article.category);
   const isNew = isRecentNews(article.publishedAt);
 
@@ -82,7 +80,7 @@ export function NewsRowCard({ article, onSelect, className, style }: NewsRowCard
             dateTime={article.publishedAt}
             className="text-[0.8125rem] tabular-nums text-neutral-500"
           >
-            {formatNewsRelativeTime(article.publishedAt)}
+            {formatRelativeTime(article.publishedAt)}
           </time>
         </div>
       </div>
@@ -100,6 +98,7 @@ type NewsFeaturedCardProps = {
 };
 
 export function NewsFeaturedCard({ article, onSelect }: NewsFeaturedCardProps) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
   const accent = getCategoryAccent(article.category);
 
   return (
@@ -130,9 +129,9 @@ export function NewsFeaturedCard({ article, onSelect }: NewsFeaturedCardProps) {
             <time
               dateTime={article.publishedAt}
               className="text-[0.8125rem] font-semibold tabular-nums text-white/80"
-              title={formatNewsTimestamp(article.publishedAt)}
+              title={formatDateTimeTooltip(article.publishedAt)}
             >
-              {formatNewsRelativeTime(article.publishedAt)}
+              {formatRelativeTime(article.publishedAt)}
             </time>
           </div>
           <h2 className="mt-3 max-w-3xl text-[1.25rem] font-semibold leading-snug tracking-[-0.02em] text-white sm:text-[1.5rem]">

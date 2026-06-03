@@ -7,6 +7,7 @@ import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
 import { matchHref } from "@/lib/match-paths";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { glass, glassInset } from "@/components/glass-surface";
 import { cn } from "@/lib/utils";
 
@@ -17,31 +18,6 @@ type MatchEventCardProps = {
   colorIndex?: number;
   linkToDetail?: boolean;
 };
-
-function kickoffLabel(kickoffAt: string | null) {
-  if (!kickoffAt) return "TBD";
-
-  const date = new Date(kickoffAt);
-  return date.toLocaleString([], {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function kickoffShort(kickoffAt: string | null) {
-  if (!kickoffAt) return "TBD";
-
-  const date = new Date(kickoffAt);
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function liveLabel(match: LiveMatch) {
   if (match.elapsed !== null && match.elapsed !== undefined) {
@@ -182,6 +158,8 @@ export function MatchEventCard({
 }
 
 function CompactFutureMatchupRow({ match }: { match: LiveMatch }) {
+  const { formatKickoffShort } = useFormatDateTime();
+
   return (
     <MirrorMatchScoreline
       className="px-3 py-3"
@@ -195,7 +173,7 @@ function CompactFutureMatchupRow({ match }: { match: LiveMatch }) {
         <div className="shrink-0 rounded-md bg-sky-50 px-2 py-1.5 text-center ring-1 ring-sky-200/70">
           <p className="text-[10px] font-bold leading-none text-sky-900">vs</p>
           <p className="mt-0.5 text-[10px] font-semibold leading-none text-sky-800">
-            {kickoffShort(match.kickoffAt)}
+            {formatKickoffShort(match.kickoffAt)}
           </p>
         </div>
       }
@@ -243,6 +221,7 @@ function MatchCardHeader({
   compact?: boolean;
 }) {
   const isFuture = matchMode === "future";
+  const { formatKickoffFull, formatKickoffShort } = useFormatDateTime();
 
   return (
     <div
@@ -271,9 +250,9 @@ function MatchCardHeader({
             "font-bold tabular-nums text-neutral-600",
             compact ? "text-xs" : "text-[10px] text-neutral-700",
           )}
-          title={isFuture ? kickoffLabel(match.kickoffAt) : match.statusLong}
+          title={isFuture ? formatKickoffFull(match.kickoffAt) : match.statusLong}
         >
-          {isFuture ? kickoffShort(match.kickoffAt) : liveLabel(match)}
+          {isFuture ? formatKickoffShort(match.kickoffAt) : liveLabel(match)}
         </span>
       </div>
 

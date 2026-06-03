@@ -11,11 +11,8 @@ import {
   NewsThumbnail,
 } from "@/components/news/news-shared";
 import type { NewsSectionKind, NewsSectionPlan } from "@/lib/data/news-page-layout";
-import {
-  formatNewsRelativeTime,
-  formatNewsTimestamp,
-} from "@/lib/data/format-news-date";
 import type { NewsArticle } from "@/lib/data/news-article";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import {
   newsEnter,
   newsFocus,
@@ -130,6 +127,8 @@ function BreakingWide({
   articles: NewsArticle[];
   onSelect: (article: NewsArticle) => void;
 }) {
+  const { formatRelativeTime } = useFormatDateTime();
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {articles.map((article, index) => (
@@ -148,7 +147,7 @@ function BreakingWide({
               {article.headline}
             </h3>
             <p className="mt-0.5 text-[0.6875rem] tabular-nums text-white/75">
-              {formatNewsRelativeTime(article.publishedAt)}
+              {formatRelativeTime(article.publishedAt)}
             </p>
           </div>
         </button>
@@ -164,6 +163,8 @@ function BreakingStack({
   articles: NewsArticle[];
   onSelect: (article: NewsArticle) => void;
 }) {
+  const { formatRelativeTime } = useFormatDateTime();
+
   return (
     <div className={cn(newsGlassStrong, "divide-y divide-black/[0.06] overflow-hidden")}>
       {articles.map((article, index) => (
@@ -189,7 +190,7 @@ function BreakingStack({
               {article.excerpt}
             </p>
             <p className="mt-1 text-[0.75rem] tabular-nums text-neutral-500">
-              {formatNewsRelativeTime(article.publishedAt)}
+              {formatRelativeTime(article.publishedAt)}
             </p>
           </div>
         </button>
@@ -245,6 +246,8 @@ function QuickScanGrid({
   articles: NewsArticle[];
   onSelect: (article: NewsArticle) => void;
 }) {
+  const { formatRelativeTime } = useFormatDateTime();
+
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5">
       {articles.map((article, index) => (
@@ -264,7 +267,7 @@ function QuickScanGrid({
               {article.headline}
             </h3>
             <time dateTime={article.publishedAt} className="text-[0.75rem] tabular-nums text-neutral-500">
-              {formatNewsRelativeTime(article.publishedAt)}
+              {formatRelativeTime(article.publishedAt)}
             </time>
           </div>
         </button>
@@ -481,6 +484,8 @@ function TimelineTrack({
   onSelect: (article: NewsArticle) => void;
   showLeague?: boolean;
 }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
+
   return (
     <ol className="space-y-2 px-3 pb-3">
       {articles.map((article, index) => {
@@ -505,7 +510,7 @@ function TimelineTrack({
               type="button"
               onClick={() => onSelect(article)}
               style={{ animationDelay: `${index * 45}ms` }}
-              title={formatNewsTimestamp(article.publishedAt)}
+              title={formatDateTimeTooltip(article.publishedAt)}
               className={cn(
                 newsGlassSubtle,
                 newsGlassHover,
@@ -520,7 +525,7 @@ function TimelineTrack({
                     dateTime={article.publishedAt}
                     className="text-[0.6875rem] font-medium tabular-nums text-neutral-500"
                   >
-                    {formatNewsRelativeTime(article.publishedAt)}
+                    {formatRelativeTime(article.publishedAt)}
                   </time>
                   <NewsCategoryBadge category={article.category} compact />
                 </div>
@@ -729,6 +734,7 @@ function LatestStreamRow({
   featured?: boolean;
   style?: React.CSSProperties;
 }) {
+  const { formatRelativeTime, formatDateTimeTooltip } = useFormatDateTime();
   const isNew = isRecentNews(article.publishedAt);
 
   return (
@@ -754,10 +760,10 @@ function LatestStreamRow({
           />
           <time
             dateTime={article.publishedAt}
-            title={formatNewsTimestamp(article.publishedAt)}
+            title={formatDateTimeTooltip(article.publishedAt)}
             className="mt-auto text-[0.6875rem] font-medium tabular-nums leading-tight text-neutral-500"
           >
-            {formatNewsRelativeTime(article.publishedAt)}
+            {formatRelativeTime(article.publishedAt)}
           </time>
         </div>
 

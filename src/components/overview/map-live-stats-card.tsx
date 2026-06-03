@@ -4,6 +4,7 @@ import { useState, type MouseEvent } from "react";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import { glass, glassInset, glassSubtle } from "@/components/glass-surface";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 const PREVIEW_COUNT = 3;
@@ -57,6 +58,7 @@ export function MapLiveStatsCard({
   error = null,
   updatedAt = null,
 }: MapLiveStatsCardProps) {
+  const { formatKickoffTime } = useFormatDateTime();
   const [showAll, setShowAll] = useState(false);
   const sorted = [...countries].sort((a, b) => b.liveMatches - a.liveMatches);
   const visible = showAll ? sorted : sorted.slice(0, PREVIEW_COUNT);
@@ -146,10 +148,7 @@ export function MapLiveStatsCard({
       {updatedAt && !error ? (
         <p className="mt-1.5 text-[10px] leading-tight text-neutral-400">
           Updated{" "}
-          {new Date(updatedAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatKickoffTime(updatedAt)}
         </p>
       ) : null}
 

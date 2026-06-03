@@ -3,6 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { metricLabel, metricSize, metricUnit, StatValue } from "@/components/players/player-metric";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { cn } from "@/lib/utils";
 
 type SpecRowProps = {
@@ -87,6 +88,8 @@ export function MatchRow({
   minutes,
   rating,
 }: MatchRowProps) {
+  const { formatDateShort } = useFormatDateTime();
+
   return (
     <tr className="border-b border-black/[0.04] last:border-b-0">
       <td className={cn("py-3.5 pr-3", metricLabel.row, "tabular-nums text-neutral-400")}>
@@ -101,7 +104,7 @@ export function MatchRow({
         </div>
       </td>
       <td className={cn("hidden py-3.5 pr-3 sm:table-cell", metricLabel.row, "tabular-nums")}>
-        {new Date(date).toLocaleDateString([], { month: "short", day: "numeric" })}
+        {formatDateShort(date)}
       </td>
       <td className={cn("py-3.5 pr-3 text-center", metricSize.table)}>{goals}</td>
       <td className={cn("py-3.5 pr-3 text-center", metricSize.table)}>{assists}</td>

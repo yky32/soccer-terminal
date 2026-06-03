@@ -4,6 +4,7 @@ import { MapMarker, MarkerContent, MarkerTooltip } from "@/components/ui/map";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
+import { useFormatDateTime } from "@/lib/use-format-date-time";
 
 type MatchVenuePinProps = {
   match: LiveMatch;
@@ -12,23 +13,13 @@ type MatchVenuePinProps = {
   pulseDelay?: number;
 };
 
-function kickoffShort(kickoffAt: string | null) {
-  if (!kickoffAt) return "TBD";
-  const date = new Date(kickoffAt);
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 export function MatchVenuePin({
   match,
   colorIndex,
   mode = "live",
   pulseDelay = 0,
 }: MatchVenuePinProps) {
+  const { formatKickoffShort } = useFormatDateTime();
   if (match.latitude === null || match.longitude === null) return null;
 
   const color = getMatchPinColor(colorIndex);
@@ -79,7 +70,7 @@ export function MatchVenuePin({
         {isFuture ? (
           <>
             <br />
-            <span className="text-neutral-400">{kickoffShort(match.kickoffAt)}</span>
+            <span className="text-neutral-400">{formatKickoffShort(match.kickoffAt)}</span>
           </>
         ) : null}
         {match.venue ? (

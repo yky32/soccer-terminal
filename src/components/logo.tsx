@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoIcon } from "@/components/logo-icon";
+import { PRODUCT_NAME } from "@/lib/metadata";
 import { cn } from "@/lib/utils";
 
 type LogoProps = {
@@ -28,7 +29,7 @@ export function Logo({ showText = true, size = "default" }: LogoProps) {
             compact ? "text-[0.875rem] tracking-[-0.02em]" : "text-label",
           )}
         >
-          Soccer Monitor
+          {PRODUCT_NAME}
         </span>
       ) : null}
     </Link>

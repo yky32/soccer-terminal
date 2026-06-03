@@ -23,18 +23,35 @@ import {
   type LocaleCode,
   type ThemePreference,
 } from "@/lib/user-preferences";
+import {
+  detectBrowserTimeZone,
+  isValidTimeZone,
+  persistTimeZoneCookie,
+} from "@/lib/timezone";
 
 type UserPreferencesContextValue = {
   theme: ThemePreference;
   locale: LocaleCode;
   currency: CurrencyCode;
+  timeZone: string;
   setTheme: (theme: ThemePreference) => void;
   setLocale: (locale: LocaleCode) => void;
   setCurrency: (currency: CurrencyCode) => void;
+  setTimeZone: (timeZone: string) => void;
   ready: boolean;
 };
 
 const UserPreferencesContext = createContext<UserPreferencesContextValue | null>(null);
+
+function readStoredTimeZone(): string {
+  const stored = localStorage.getItem(USER_PREFERENCES_STORAGE.timezone);
+  if (isValidTimeZone(stored)) return stored;
+
+  const detected = detectBrowserTimeZone();
+  localStorage.setItem(USER_PREFERENCES_STORAGE.timezone, detected);
+  persistTimeZoneCookie(detected);
+  return detected;
+}
 
 function readStoredPreferences() {
   if (typeof window === "undefined") {
@@ -42,6 +59,7 @@ function readStoredPreferences() {
       theme: DEFAULT_THEME,
       locale: DEFAULT_LOCALE,
       currency: DEFAULT_CURRENCY,
+      timeZone: detectBrowserTimeZone(),
     };
   }
 
@@ -55,6 +73,7 @@ function readStoredPreferences() {
     theme: resolveThemePreference(theme),
     locale: isLocaleCode(localeRaw) ? localeRaw : DEFAULT_LOCALE,
     currency: isCurrencyCode(currencyRaw) ? currencyRaw : DEFAULT_CURRENCY,
+    timeZone: readStoredTimeZone(),
   };
 }
 
@@ -66,6 +85,7 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
     const stored = readStoredPreferences();
     setPreferences(stored);
     applyThemeToDocument(stored.theme);
+    persistTimeZoneCookie(stored.timeZone);
     setReady(true);
   }, []);
 
@@ -86,15 +106,23 @@ export function UserPreferencesProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(USER_PREFERENCES_STORAGE.currency, currency);
   }, []);
 
+  const setTimeZone = useCallback((timeZone: string) => {
+    if (!isValidTimeZone(timeZone)) return;
+    setPreferences((prev) => ({ ...prev, timeZone }));
+    localStorage.setItem(USER_PREFERENCES_STORAGE.timezone, timeZone);
+    persistTimeZoneCookie(timeZone);
+  }, []);
+
   const value = useMemo(
     () => ({
       ...preferences,
       setTheme,
       setLocale,
       setCurrency,
+      setTimeZone,
       ready,
     }),
-    [preferences, ready, setCurrency, setLocale, setTheme],
+    [preferences, ready, setCurrency, setLocale, setTheme, setTimeZone],
   );
 
   return (
