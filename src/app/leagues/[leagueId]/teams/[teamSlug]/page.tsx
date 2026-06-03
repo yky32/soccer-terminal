@@ -7,6 +7,10 @@ import {
   fetchTeamProfile,
 } from "@/lib/football/data";
 import { buildPageMetadata } from "@/lib/metadata";
+import {
+  formatTeamPageDescription,
+  formatTeamPageTitle,
+} from "@/lib/seo/detail-metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +30,8 @@ export async function generateMetadata({ params }: TeamPageProps) {
   }
 
   return buildPageMetadata({
-    title: `${team.name} · ${team.league.shortName}`,
-    description: `${team.name} overview, table, fixtures, and squad in ${team.league.name}.`,
+    title: formatTeamPageTitle(team),
+    description: formatTeamPageDescription(team),
     path: `/leagues/${leagueId}/teams/${teamSlug}`,
   });
 }

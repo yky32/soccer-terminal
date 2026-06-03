@@ -2,8 +2,12 @@ import type { MetadataRoute } from "next";
 import { ENABLE_AI, ENABLE_NEWS } from "@/lib/feature-flags";
 import { LEAGUE_CATALOG } from "@/lib/football/league-catalog";
 import { absoluteUrl } from "@/lib/metadata";
+import { collectDetailSitemapEntries } from "@/lib/seo/sitemap-urls";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+/** Refresh detail URLs (teams, players, matches) periodically. */
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const entries: MetadataRoute.Sitemap = [
@@ -45,5 +49,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
-  return entries;
+  const detailEntries = await collectDetailSitemapEntries();
+
+  return [...entries, ...detailEntries];
 }

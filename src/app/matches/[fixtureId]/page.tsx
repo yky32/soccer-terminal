@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { MatchDetailPanel } from "@/components/matches/match-detail-panel";
 import { fetchMatchDetail } from "@/lib/football/data";
 import { buildPageMetadata } from "@/lib/metadata";
+import {
+  formatMatchPageDescription,
+  formatMatchPageTitle,
+} from "@/lib/seo/detail-metadata";
 
 type MatchPageProps = {
   params: Promise<{ fixtureId: string }>;
@@ -19,12 +23,9 @@ export async function generateMetadata({ params }: MatchPageProps) {
     });
   }
 
-  const { match } = detail;
-  const title = `${match.homeTeam} vs ${match.awayTeam}`;
-
   return buildPageMetadata({
-    title,
-    description: `${match.league} — match facts, lineups, and head-to-head.`,
+    title: formatMatchPageTitle(detail.match),
+    description: formatMatchPageDescription(detail),
     path: `/matches/${fixtureId}`,
   });
 }

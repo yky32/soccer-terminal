@@ -5,6 +5,10 @@ import {
   findPlayerBySlug,
 } from "@/lib/football/data";
 import { buildPageMetadata } from "@/lib/metadata";
+import {
+  formatPlayerPageDescription,
+  formatPlayerPageTitle,
+} from "@/lib/seo/detail-metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -24,8 +28,8 @@ export async function generateMetadata({ params }: PlayerPageProps) {
   }
 
   return buildPageMetadata({
-    title: `${match.name} · ${match.standing.team}`,
-    description: `${match.name} profile, stats, match performance, and league form in ${match.league.name}.`,
+    title: formatPlayerPageTitle(match),
+    description: formatPlayerPageDescription(match),
     path: `/leagues/${leagueId}/players/${playerSlug}`,
   });
 }
