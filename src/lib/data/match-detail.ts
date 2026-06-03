@@ -99,12 +99,14 @@ export type MatchDetailPlayer = {
   assists: number | null;
   yellowCards: number | null;
   redCards: number | null;
+  captain: boolean;
 };
 
 export type MatchDetailPlayerPerformance = {
   id: number;
   name: string;
   photo: string | null;
+  number: string | null;
   position: string | null;
   rating: string | null;
   minutes: number | null;
@@ -114,6 +116,7 @@ export type MatchDetailPlayerPerformance = {
   passesTotal: number | null;
   yellowCards: number | null;
   redCards: number | null;
+  captain: boolean;
 };
 
 export type MatchDetailInjury = {
@@ -131,6 +134,7 @@ export type MatchDetailLineupSide = {
   teamLogo: string | null;
   formation: string | null;
   coach: string | null;
+  coachPhoto: string | null;
   starting: MatchDetailPlayer[];
   substitutes: MatchDetailPlayer[];
 };

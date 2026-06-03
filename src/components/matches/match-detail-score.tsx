@@ -1,9 +1,38 @@
 import type { MatchDetail } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { isMatchLiveStatus } from "@/lib/football/match-status";
 import { cn } from "@/lib/utils";
+
+export type TeamSideState = "leading" | "losing" | "draw" | "neutral";
 
 function isUpcoming(match: LiveMatch) {
   return ["NS", "TBD"].includes(match.statusShort);
+}
+
+export function teamSideState(match: LiveMatch, side: "home" | "away"): TeamSideState {
+  if (isUpcoming(match)) return "neutral";
+
+  const winner = side === "home" ? match.homeWinner : match.awayWinner;
+  if (winner === true) return "leading";
+  if (winner === false) return "losing";
+
+  if (match.homeGoals === match.awayGoals) return "draw";
+  return side === "home"
+    ? match.homeGoals > match.awayGoals
+      ? "leading"
+      : "losing"
+    : match.awayGoals > match.homeGoals
+      ? "leading"
+      : "losing";
+}
+
+function goalClass(state: TeamSideState) {
+  return cn(
+    state === "leading" && "text-emerald-800",
+    state === "losing" && "text-neutral-400",
+    state === "draw" && "text-neutral-950",
+    state === "neutral" && "text-neutral-950",
+  );
 }
 
 function kickoffLabel(kickoffAt: string | null) {
@@ -20,11 +49,65 @@ function kickoffLabel(kickoffAt: string | null) {
 function statusBadges(match: LiveMatch, detail: MatchDetail) {
   const badges: string[] = [];
   if (detail.score.extratime) badges.push("AET");
-  if (detail.score.penalty) badges.push("Pens");
-  if (badges.length > 0) return badges;
-  if (match.statusShort === "HT") return ["HT"];
-  if (["FT", "AET", "PEN"].includes(match.statusShort)) return ["FT"];
-  return [];
+  if (!detail.score.penalty && badges.length === 0) {
+    if (match.statusShort === "HT") badges.push("HT");
+    else if (["FT", "AET", "PEN"].includes(match.statusShort)) badges.push("FT");
+  }
+  return badges;
+}
+
+function preShootoutScore(match: LiveMatch, detail: MatchDetail) {
+  if (detail.score.extratime) return detail.score.extratime;
+  if (detail.score.fulltime) return detail.score.fulltime;
+  return { home: match.homeGoals, away: match.awayGoals };
+}
+
+function LiveStatusPill({ match }: { match: LiveMatch }) {
+  const label =
+    match.elapsed != null
+      ? `${match.elapsed}'`
+      : match.statusShort === "HT"
+        ? "HT"
+        : match.statusShort;
+
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.75rem] font-semibold tabular-nums text-emerald-800 ring-1 ring-emerald-500/20">
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/50 opacity-75" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      </span>
+      {label}
+    </span>
+  );
+}
+
+function ScoreRow({
+  home,
+  away,
+  prefix,
+  className,
+  dashClassName,
+  homeClassName,
+  awayClassName,
+}: {
+  home: number;
+  away: number;
+  prefix?: string;
+  className?: string;
+  dashClassName?: string;
+  homeClassName?: string;
+  awayClassName?: string;
+}) {
+  return (
+    <p className={cn("flex items-center justify-center tabular-nums", className)}>
+      {prefix ? <span className="mr-2 font-semibold">{prefix}</span> : null}
+      <span className="inline-flex items-center gap-x-3 sm:gap-x-4">
+        <span className={homeClassName}>{home}</span>
+        <span className={cn("font-normal", dashClassName ?? "text-neutral-300")}>–</span>
+        <span className={awayClassName}>{away}</span>
+      </span>
+    </p>
+  );
 }
 
 export function MatchDetailScoreBlock({
@@ -37,50 +120,67 @@ export function MatchDetailScoreBlock({
   className?: string;
 }) {
   const upcoming = isUpcoming(match);
+  const live = isMatchLiveStatus(match.statusShort);
   const badges = statusBadges(match, detail);
-  const displayScore = upcoming
-    ? null
-    : (detail.score.penalty && detail.score.fulltime) ||
-      detail.score.extratime ||
-      detail.score.fulltime ||
-      { home: match.homeGoals, away: match.awayGoals };
+  const penScore = detail.score.penalty;
+  const mainScore = upcoming ? null : preShootoutScore(match, detail);
+  const showFtSubline = Boolean(penScore && detail.score.extratime && detail.score.fulltime);
+  const homeState = teamSideState(match, "home");
+  const awayState = teamSideState(match, "away");
 
   return (
-    <div className={cn("text-center", className)}>
-      {upcoming ? (
-        <p className="text-[1.75rem] font-bold tracking-tight text-sky-800">vs</p>
-      ) : displayScore ? (
-        <p className="text-[clamp(2rem,5vw,2.75rem)] font-bold tabular-nums tracking-tight text-neutral-950">
-          <span>{displayScore.home}</span><span className="text-neutral-300">–</span><span>{displayScore.away}</span>
-        </p>
-      ) : (
-        <p className="text-[1.75rem] font-bold tracking-tight text-neutral-400">vs</p>
-      )}
+    <div className={cn("flex min-w-[5.5rem] flex-col items-center px-1 text-center", className)}>
+      <div className="flex flex-col items-center gap-1.5">
+        {upcoming ? (
+          <p className="text-[1.75rem] font-bold tracking-tight text-sky-800">vs</p>
+        ) : mainScore ? (
+          <ScoreRow
+            home={mainScore.home}
+            away={mainScore.away}
+            homeClassName={goalClass(homeState)}
+            awayClassName={goalClass(awayState)}
+            className="text-[clamp(2rem,5vw,2.75rem)] font-bold tracking-tight"
+          />
+        ) : (
+          <p className="text-[1.75rem] font-bold tracking-tight text-neutral-400">vs</p>
+        )}
 
-      {detail.score.penalty ? (
-        <p className="mt-1 text-[0.875rem] font-semibold tabular-nums text-neutral-700">
-          {`Pens ${detail.score.penalty.home}–${detail.score.penalty.away}`}
-        </p>
-      ) : null}
+        {penScore ? (
+          <ScoreRow
+            home={penScore.home}
+            away={penScore.away}
+            prefix="Pens"
+            className="text-[0.875rem] font-semibold text-neutral-700"
+            dashClassName="text-neutral-400"
+          />
+        ) : null}
 
-      {detail.score.extratime && detail.score.fulltime ? (
-        <p className="mt-0.5 text-[0.75rem] tabular-nums text-neutral-500">
-          FT {detail.score.fulltime.home}–{detail.score.fulltime.away}
-        </p>
-      ) : null}
+        {showFtSubline && detail.score.fulltime ? (
+          <ScoreRow
+            home={detail.score.fulltime.home}
+            away={detail.score.fulltime.away}
+            prefix="FT"
+            className="text-[0.75rem] text-neutral-500"
+            dashClassName="text-neutral-400"
+          />
+        ) : null}
+      </div>
 
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
+      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
+        {live ? <LiveStatusPill match={match} /> : null}
         {badges.map((badge) => (
           <span
             key={badge}
-            className="rounded-md bg-neutral-100 px-1.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-neutral-600"
+            className="rounded-full bg-neutral-100/90 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-neutral-600 ring-1 ring-black/[0.05]"
           >
             {badge}
           </span>
         ))}
-        <span className="text-[0.8125rem] font-medium text-neutral-500">
-          {upcoming ? kickoffLabel(match.kickoffAt) : match.statusLong}
-        </span>
+        {!live ? (
+          <span className="text-[0.8125rem] font-medium text-neutral-500">
+            {upcoming ? kickoffLabel(match.kickoffAt) : match.statusLong}
+          </span>
+        ) : null}
       </div>
     </div>
   );

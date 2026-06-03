@@ -5,12 +5,15 @@ import type {
 
 export type LineupPlayerHighlight = {
   topRating: boolean;
+  worstRating: boolean;
   subbedOut: boolean;
   subOutMinute: string | null;
 };
 
 export type LineupTeamHighlights = {
   topRatingKeys: Set<string>;
+  worstRatingKeys: Set<string>;
+  hasRatingSpread: boolean;
   subbedOut: Map<string, string>;
 };
 
@@ -57,6 +60,40 @@ export function buildTopRatingKeys(players: MatchDetailPlayer[]) {
   return new Set(keys);
 }
 
+export function buildWorstRatingKeys(players: MatchDetailPlayer[]) {
+  let worst: number | null = null;
+  const keys: string[] = [];
+
+  for (const player of players) {
+    const rating = parsePlayerRating(player.rating);
+    if (rating == null) continue;
+
+    if (worst == null || rating < worst) {
+      worst = rating;
+      keys.length = 0;
+      keys.push(lineupPlayerKey(player));
+    } else if (rating === worst) {
+      keys.push(lineupPlayerKey(player));
+    }
+  }
+
+  return new Set(keys);
+}
+
+function buildRatingSpread(players: MatchDetailPlayer[]) {
+  let min = Infinity;
+  let max = -Infinity;
+
+  for (const player of players) {
+    const rating = parsePlayerRating(player.rating);
+    if (rating == null) continue;
+    min = Math.min(min, rating);
+    max = Math.max(max, rating);
+  }
+
+  return min < max;
+}
+
 export function buildSubbedOutMap(
   timeline: MatchDetailTimelineView,
   side: "home" | "away",
@@ -79,8 +116,13 @@ export function buildLineupTeamHighlights(
   timeline: MatchDetailTimelineView,
   side: "home" | "away",
 ): LineupTeamHighlights {
+  const topRatingKeys = buildTopRatingKeys(lineupPlayers);
+  const worstRatingKeys = buildWorstRatingKeys(lineupPlayers);
+
   return {
-    topRatingKeys: buildTopRatingKeys(lineupPlayers),
+    topRatingKeys,
+    worstRatingKeys,
+    hasRatingSpread: buildRatingSpread(lineupPlayers),
     subbedOut: buildSubbedOutMap(timeline, side),
   };
 }
@@ -107,6 +149,10 @@ export function resolvePlayerHighlight(
 
   return {
     topRating: highlights.topRatingKeys.has(key),
+    worstRating:
+      highlights.hasRatingSpread &&
+      highlights.worstRatingKeys.has(key) &&
+      !highlights.topRatingKeys.has(key),
     subbedOut,
     subOutMinute,
   };
@@ -122,6 +168,8 @@ export function lineupPlayerTooltip(
     player.position ?? null,
     player.rating ? `Rating ${player.rating}` : null,
     highlight.topRating ? "Top rating" : null,
+    highlight.worstRating ? "Lowest rating" : null,
+    player.captain ? "Captain" : null,
     player.goals && player.goals > 0
       ? `${player.goals} goal${player.goals > 1 ? "s" : ""}`
       : null,

@@ -1,5 +1,6 @@
 import type { MatchDetail } from "@/lib/data/match-detail";
 import { coerceMatchDetail } from "@/lib/football/match-detail-coerce";
+import { matchDetailLacksCaptainSchema } from "@/lib/football/player-captain";
 import {
   API_REVALIDATE_MATCH_FINISHED_SEC,
   MATCH_DETAIL_UPCOMING_CACHE_MS,
@@ -25,26 +26,33 @@ function volatileTtlMs(statusShort: string) {
   return MATCH_DETAIL_UPCOMING_CACHE_MS;
 }
 
-function dropStaleTimelineCache(fixtureId: number, detail: MatchDetail) {
+function dropStaleMatchDetailCache(fixtureId: number, detail: MatchDetail) {
   if (Array.isArray(detail.timeline)) {
     finishedStore.delete(fixtureId);
     volatileStore.delete(fixtureId);
     return true;
   }
+
+  if (matchDetailLacksCaptainSchema(detail)) {
+    finishedStore.delete(fixtureId);
+    volatileStore.delete(fixtureId);
+    return true;
+  }
+
   return false;
 }
 
 export function getCachedMatchDetail(fixtureId: number): MatchDetail | null {
   const finished = finishedStore.get(fixtureId);
   if (finished) {
-    if (dropStaleTimelineCache(fixtureId, finished)) return null;
+    if (dropStaleMatchDetailCache(fixtureId, finished)) return null;
     return coerceMatchDetail(finished);
   }
 
   const volatile = volatileStore.get(fixtureId);
   if (!volatile) return null;
 
-  if (dropStaleTimelineCache(fixtureId, volatile.detail)) return null;
+  if (dropStaleMatchDetailCache(fixtureId, volatile.detail)) return null;
 
   const ttl = volatileTtlMs(volatile.detail.match.statusShort);
   if (Date.now() - volatile.cachedAt >= ttl) {
@@ -71,7 +79,7 @@ export function setCachedMatchDetail(detail: MatchDetail) {
 function cacheFinishedAcrossRequests(fixtureId: number, detail: MatchDetail) {
   return unstable_cache(
     async () => detail,
-    ["match-detail-v7", String(fixtureId)],
+    ["match-detail-v8", String(fixtureId)],
     { revalidate: API_REVALIDATE_MATCH_FINISHED_SEC },
   )();
 }

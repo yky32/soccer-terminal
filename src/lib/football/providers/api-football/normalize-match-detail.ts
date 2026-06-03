@@ -7,7 +7,7 @@ import type {
   MatchDetailPlayerPerformance,
 } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
-import { coerceMatchDetail } from "@/lib/football/match-detail-coerce";
+import { isCaptainFlag } from "@/lib/football/player-captain";
 import {
   computeH2HSummary,
   normalizeMatchStatistics,
@@ -20,6 +20,7 @@ import {
   normalizeTeamForm,
   type PlayerPhotoIndex,
 } from "@/lib/football/providers/api-football/normalize-match-detail-helpers";
+import { coerceMatchDetail } from "@/lib/football/match-detail-coerce";
 import {
   normalizeFixtureForMatchDetail,
 } from "@/lib/football/providers/api-football/normalize-fixtures";
@@ -45,6 +46,7 @@ type PlayerPerformanceIndex = Map<
     redCards: number | null;
     number: string | null;
     position: string | null;
+    captain: boolean;
   }
 >;
 
@@ -70,6 +72,7 @@ function buildPlayerPerformanceIndex(
             ? String(stats.games.number)
             : null,
         position: stats?.games.position?.trim() || null,
+        captain: isCaptainFlag(stats?.games.captain),
       });
     }
   }
@@ -105,6 +108,7 @@ function lineupPlayer(
     assists: perf?.assists ?? null,
     yellowCards: perf?.yellowCards ?? null,
     redCards: perf?.redCards ?? null,
+    captain: isCaptainFlag(perf?.captain),
   };
 }
 
@@ -125,6 +129,7 @@ function normalizeLineupSide(
     teamLogo: lineup.team.logo,
     formation: lineup.formation?.trim() || null,
     coach: lineup.coach?.name?.trim() || null,
+    coachPhoto: lineup.coach?.photo?.trim() || null,
     starting,
     substitutes,
   };
@@ -150,6 +155,10 @@ function normalizePlayerPerformances(
         id: entry.player.id,
         name: entry.player.name,
         photo: entry.player.photo,
+        number:
+          stats.games.number !== null && stats.games.number !== undefined
+            ? String(stats.games.number)
+            : null,
         position: stats.games.position?.trim() || null,
         rating: stats.games.rating,
         minutes: stats.games.minutes,
@@ -159,6 +168,7 @@ function normalizePlayerPerformances(
         passesTotal: stats.passes?.total ?? null,
         yellowCards: stats.cards?.yellow ?? null,
         redCards: stats.cards?.red ?? null,
+        captain: isCaptainFlag(stats.games.captain),
       });
     }
 

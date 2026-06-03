@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Globe, LayoutGrid } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchDetailH2H } from "@/components/matches/match-detail-h2h";
 import { MatchDetailHero } from "@/components/matches/match-detail-hero";
 import { MatchDetailInjuries } from "@/components/matches/match-detail-injuries";
@@ -17,7 +18,9 @@ import {
   leaguesGlassInset,
 } from "@/components/leagues/leagues-glass";
 import type { MatchDetail, MatchDetailTab } from "@/lib/data/match-detail";
+import type { LiveMatch } from "@/lib/data/live-match";
 import { coerceMatchDetail } from "@/lib/football/match-detail-coerce";
+import { getCatalogEntryForApiLeague } from "@/lib/football/league-catalog";
 import { cn } from "@/lib/utils";
 
 const TABS: { id: MatchDetailTab; label: string }[] = [
@@ -25,6 +28,64 @@ const TABS: { id: MatchDetailTab; label: string }[] = [
   { id: "lineup", label: "Lineups" },
   { id: "h2h", label: "Head-to-head" },
 ];
+
+function ExploreLink({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        leaguesGlassFocus,
+        "inline-flex items-center gap-2 rounded-full border border-black/[0.06] bg-white/55 px-3.5 py-2 text-[0.8125rem] font-medium text-neutral-700 shadow-[0_1px_0_rgba(255,255,255,0.65)_inset] transition-[background-color,border-color,color,transform] hover:border-black/[0.1] hover:bg-white/85 hover:text-neutral-950 active:scale-[0.98]",
+      )}
+    >
+      <span className="flex h-4 w-4 shrink-0 items-center justify-center text-neutral-500 [&>svg]:h-4 [&>svg]:w-4">
+        {icon}
+      </span>
+      {label}
+    </Link>
+  );
+}
+
+function MatchDetailExploreNav({ match }: { match: LiveMatch }) {
+  const league = getCatalogEntryForApiLeague(match.leagueId, match.league);
+
+  return (
+    <section
+      className={cn(leaguesGlassInset, "mt-8 rounded-2xl px-4 py-4 sm:px-5 sm:py-5")}
+      aria-label="Explore more"
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-neutral-500">
+          Explore
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <ExploreLink href="/" label="Global map" icon={<Globe aria-hidden />} />
+          {league ? (
+            <ExploreLink
+              href={`/leagues/${league.id}`}
+              label={league.shortName}
+              icon={
+                <LeagueIcon
+                  league={{ name: league.name, logo: league.logo ?? match.leagueLogo }}
+                  size="xs"
+                />
+              }
+            />
+          ) : null}
+          <ExploreLink href="/leagues" label="All leagues" icon={<LayoutGrid aria-hidden />} />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail }) {
   const router = useRouter();
@@ -120,11 +181,7 @@ export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail })
         )}
       </div>
 
-      <p className="mt-6 text-center text-[0.75rem] text-neutral-400">
-        <Link href="/" className="underline-offset-2 hover:text-neutral-600 hover:underline">
-          Return to global monitor
-        </Link>
-      </p>
+      <MatchDetailExploreNav match={match} />
     </div>
   );
 }

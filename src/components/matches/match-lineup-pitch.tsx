@@ -2,9 +2,11 @@
 
 import { FootballPitchSurface } from "@/components/matches/football-pitch-surface";
 import {
-  LineupPitchStatOverlay,
+  LineupPitchAvatarOverlays,
   LineupPitchSubOutIndicator,
-  lineupRatingClass,
+  LineupPlayerName,
+  LINEUP_PITCH_AVATAR_CLASS,
+  PlayerKitNumber,
 } from "@/components/matches/lineup-player-indicators";
 import { PlayerAvatar } from "@/components/players/player-avatar";
 import { leaguesGlassInset } from "@/components/leagues/leagues-glass";
@@ -57,40 +59,23 @@ function PitchPlayerPin({
             <LineupPitchSubOutIndicator minute={highlight.subOutMinute} />
           </div>
         ) : null}
-        <LineupPitchStatOverlay player={player} />
+        <LineupPitchAvatarOverlays player={player} highlight={highlight} />
         <PlayerAvatar
           src={player.photo}
           name={player.name}
-          className={cn(
-            "!size-[10.5cqw] !min-h-7 !min-w-7 shadow-sm",
-            lineupRatingClass(highlight, true),
-          )}
+          className={LINEUP_PITCH_AVATAR_CLASS}
         />
-        {player.rating ? (
-          <span
-            className={cn(
-              "absolute -bottom-0.5 -right-0.5 flex min-h-3.5 min-w-3.5 items-center justify-center rounded-full px-[0.35cqw] py-px text-[clamp(0.5rem,2.25cqw,0.6875rem)] font-bold tabular-nums shadow-sm ring-1",
-              highlight.topRating
-                ? "bg-amber-100 text-amber-950 ring-amber-400/50"
-                : "bg-white/95 text-neutral-800 ring-black/[0.08]",
-            )}
-          >
-            {player.rating}
-          </span>
-        ) : null}
       </div>
-      <p className="mt-[0.35cqw] max-w-full truncate text-center text-[clamp(0.5625rem,2.5cqw,0.75rem)] font-semibold leading-tight text-neutral-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.85)]">
-        {label}
+      <p className="mt-[0.35cqw] flex max-w-full justify-center text-center text-[clamp(0.5625rem,2.5cqw,0.75rem)] font-semibold leading-tight text-neutral-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.85)]">
+        <LineupPlayerName
+          name={label}
+          captain={player.captain}
+          align="center"
+          captainSize="pitch"
+        />
       </p>
       {player.number ? (
-        <span
-          className={cn(
-            "mt-[0.25cqw] text-[clamp(0.5rem,2.1cqw,0.6875rem)] font-bold tabular-nums",
-            side === "home" ? "text-emerald-800" : "text-sky-800",
-          )}
-        >
-          #{player.number}
-        </span>
+        <PlayerKitNumber number={player.number} side={side} size="pitch" className="mt-[0.25cqw]" />
       ) : null}
     </div>
   );
