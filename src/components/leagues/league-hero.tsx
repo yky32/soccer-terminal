@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { DeferredMount } from "@/components/deferred-mount";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { CountryFlag } from "@/components/players/country-flag";
 import { MapSectionSkeleton } from "@/components/loading/route-skeletons";
@@ -111,7 +112,15 @@ export function LeagueHero({ league }: LeagueHeroProps) {
         </div>
 
         <div className="relative min-h-[min(28vw,128px)] lg:min-h-[220px]">
-          <LeagueMapPane league={league} location={location} />
+          <DeferredMount
+            placeholder={
+              <MapSectionSkeleton variant="compact" className="absolute inset-0 rounded-none" />
+            }
+            rootMargin="120px 0px"
+            className="absolute inset-0"
+          >
+            <LeagueMapPane league={league} location={location} />
+          </DeferredMount>
 
           <div
             className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r from-white/95 via-white/55 to-transparent lg:from-white/88 lg:via-white/35 lg:to-transparent"

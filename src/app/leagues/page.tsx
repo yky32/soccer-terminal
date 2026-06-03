@@ -1,10 +1,11 @@
 import { LeaguesPageShell } from "@/components/leagues/leagues-page-shell";
-import { fetchFeaturedLeague, fetchLeagueCatalog } from "@/lib/football/data";
-import { getCatalogEntryById } from "@/lib/football/league-catalog";
+import { fetchLeagueCatalog } from "@/lib/football/data";
+import { FEATURED_LEAGUE_ID, getCatalogEntryById } from "@/lib/football/league-catalog";
 import { buildPageMetadata } from "@/lib/metadata";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+/** Catalog is static; league detail loads client-side via /api/leagues/[id]. */
+export const revalidate = 600;
 
 export const metadata = buildPageMetadata({
   title: "Leagues",
@@ -23,16 +24,13 @@ export default async function LeaguesPage({ searchParams }: LeaguesPageProps) {
     redirect(`/leagues/${legacyLeagueId}`);
   }
 
-  const [catalog, initialLeague] = await Promise.all([
-    fetchLeagueCatalog(),
-    fetchFeaturedLeague(),
-  ]);
+  const catalog = await fetchLeagueCatalog();
 
   return (
     <LeaguesPageShell
       catalog={catalog}
-      initialLeague={initialLeague}
-      selectedLeagueId={initialLeague?.id ?? null}
+      initialLeague={null}
+      selectedLeagueId={FEATURED_LEAGUE_ID}
     />
   );
 }

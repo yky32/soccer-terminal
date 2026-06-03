@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -10,12 +11,27 @@ type FootballLogoProps = {
   className?: string;
 };
 
+const sizePx = {
+  xs: 14,
+  sm: 16,
+  md: 20,
+  lg: 24,
+} as const;
+
 const sizeClass = {
   xs: "h-3.5 w-3.5",
   sm: "h-4 w-4",
   md: "h-5 w-5",
   lg: "h-6 w-6",
 } as const;
+
+function isOptimizableLogoUrl(src: string) {
+  try {
+    return new URL(src).hostname === "media.api-sports.io";
+  } catch {
+    return false;
+  }
+}
 
 export function FootballLogo({
   src,
@@ -25,6 +41,7 @@ export function FootballLogo({
 }: FootballLogoProps) {
   const [failed, setFailed] = useState(false);
   const dim = sizeClass[size];
+  const px = sizePx[size];
 
   if (!src || failed) {
     return (
@@ -43,8 +60,23 @@ export function FootballLogo({
     );
   }
 
+  if (isOptimizableLogoUrl(src)) {
+    return (
+      <Image
+        src={src}
+        alt=""
+        width={px}
+        height={px}
+        sizes={`${px}px`}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className={cn("shrink-0 object-contain", dim, className)}
+      />
+    );
+  }
+
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- external CDN logos from API-Football
+    // eslint-disable-next-line @next/next/no-img-element -- non-CDN or legacy logo URLs
     <img
       src={src}
       alt=""

@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { DeferredMount } from "@/components/deferred-mount";
 import { MapSectionSkeleton } from "@/components/loading/route-skeletons";
 
 const WorldMapPreview = dynamic(
@@ -28,8 +29,15 @@ const MatchMonitorSection = dynamic(
 export function GlobalMapSection() {
   return (
     <>
-      <WorldMapPreview />
-      <MatchMonitorSection />
+      <DeferredMount placeholder={<MapSectionSkeleton variant="map" />}>
+        <WorldMapPreview />
+      </DeferredMount>
+      <DeferredMount
+        placeholder={<MapSectionSkeleton variant="monitor" />}
+        rootMargin="320px 0px"
+      >
+        <MatchMonitorSection />
+      </DeferredMount>
     </>
   );
 }

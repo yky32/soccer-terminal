@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/football/local-map-cache";
 import { CLIENT_MAP_REFRESH_MS, MAP_LOCAL_TTL_MS } from "@/lib/football/refresh-policy";
 import { apiRequest } from "@/lib/http/api-client";
+import { usePageVisible } from "@/lib/use-page-visible";
 
 type MapCountriesContextValue = {
   data: LiveCountriesBothResponse | null;
@@ -27,6 +29,7 @@ type MapCountriesContextValue = {
 const MapCountriesContext = createContext<MapCountriesContextValue | null>(null);
 
 export function MapCountriesProvider({ children }: { children: ReactNode }) {
+  const pageVisible = usePageVisible();
   const [data, setData] = useState<LiveCountriesBothResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,12 +76,30 @@ export function MapCountriesProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (!pageVisible) return;
+
     const interval = setInterval(
       () => void refresh({ silent: true }),
       CLIENT_MAP_REFRESH_MS,
     );
     return () => clearInterval(interval);
-  }, [refresh]);
+  }, [pageVisible, refresh]);
+
+  const wasHiddenRef = useRef(false);
+  useEffect(() => {
+    if (!pageVisible) {
+      wasHiddenRef.current = true;
+      return;
+    }
+
+    if (wasHiddenRef.current) {
+      wasHiddenRef.current = false;
+      void refresh({ silent: true });
+    }
+  }, [pageVisible, refresh]);
 
   const value = useMemo(
     () => ({ data, loading, error, refresh }),

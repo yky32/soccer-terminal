@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import { LeaguesPageShell } from "@/components/leagues/leagues-page-shell";
-import { fetchLeagueById, fetchLeagueCatalog } from "@/lib/football/data";
+import { fetchLeagueCatalog } from "@/lib/football/data";
 import { getCatalogEntryById } from "@/lib/football/league-catalog";
 import { buildPageMetadata } from "@/lib/metadata";
 
-export const dynamic = "force-dynamic";
+/** League detail is fetched on the client; catalog shell is static. */
+export const revalidate = 600;
 
 type LeaguePageProps = {
   params: Promise<{ leagueId: string }>;
@@ -35,15 +36,12 @@ export default async function LeaguePage({ params }: LeaguePageProps) {
     notFound();
   }
 
-  const [catalog, initialLeague] = await Promise.all([
-    fetchLeagueCatalog(),
-    fetchLeagueById(leagueId),
-  ]);
+  const catalog = await fetchLeagueCatalog();
 
   return (
     <LeaguesPageShell
       catalog={catalog}
-      initialLeague={initialLeague}
+      initialLeague={null}
       selectedLeagueId={leagueId}
     />
   );
