@@ -1,3 +1,6 @@
+import "server-only";
+
+import { API_REVALIDATE_STANDINGS_SEC } from "@/lib/football/refresh-policy";
 import { apiRequest } from "@/lib/http/api-client";
 import {
   assertNoApiErrors,
@@ -13,7 +16,9 @@ export type ApiFootballGetOptions = {
   cache?: RequestCache;
 };
 
-function resolveGetOptions(options: number | ApiFootballGetOptions = 300): ApiFootballGetOptions {
+function resolveGetOptions(
+  options: number | ApiFootballGetOptions = API_REVALIDATE_STANDINGS_SEC,
+): ApiFootballGetOptions {
   return typeof options === "number" ? { revalidate: options } : options;
 }
 
@@ -21,9 +26,9 @@ export async function apiFootballGet<T>(
   apiKey: string,
   path: string,
   query: Record<string, string | number>,
-  options: number | ApiFootballGetOptions = 300,
+  options: number | ApiFootballGetOptions = API_REVALIDATE_STANDINGS_SEC,
 ): Promise<T[]> {
-  const { revalidate = 300, cache } = resolveGetOptions(options);
+  const { revalidate = API_REVALIDATE_STANDINGS_SEC, cache } = resolveGetOptions(options);
 
   return enqueueApiFootballRequest(async () => {
     const { data } = await apiRequest<ApiFootballEnvelope<T>>({
@@ -48,9 +53,9 @@ export async function apiFootballFetch<T>(
   apiKey: string,
   path: string,
   query: Record<string, string | number>,
-  options: number | ApiFootballGetOptions = 300,
+  options: number | ApiFootballGetOptions = API_REVALIDATE_STANDINGS_SEC,
 ): Promise<ApiFootballEnvelope<T>> {
-  const { revalidate = 300, cache } = resolveGetOptions(options);
+  const { revalidate = API_REVALIDATE_STANDINGS_SEC, cache } = resolveGetOptions(options);
 
   return enqueueApiFootballRequest(async () => {
     const { data } = await apiRequest<ApiFootballEnvelope<T>>({
@@ -75,7 +80,7 @@ export async function apiFootballGetSafe<T>(
   apiKey: string,
   path: string,
   query: Record<string, string | number>,
-  options: number | ApiFootballGetOptions = 300,
+  options: number | ApiFootballGetOptions = API_REVALIDATE_STANDINGS_SEC,
 ): Promise<T[]> {
   try {
     return await apiFootballGet<T>(apiKey, path, query, options);

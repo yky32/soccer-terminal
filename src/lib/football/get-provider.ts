@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { FootballDataProvider } from "@/lib/football/provider";
 import { createApiFootballProvider } from "@/lib/football/providers/api-football/client";
 import { createMockProvider } from "@/lib/football/providers/mock/client";

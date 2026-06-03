@@ -4,8 +4,11 @@ import { fetchApiFootballFixture } from "@/lib/football/providers/api-football/f
 import { buildMatchDetailFromApi } from "@/lib/football/providers/api-football/normalize-match-detail";
 import { normalizeFixtureForMatchDetail } from "@/lib/football/providers/api-football/normalize-fixtures";
 import type { ApiFootballSquad } from "@/lib/football/providers/api-football/normalize-catalog";
+import {
+  API_REVALIDATE_DEFAULT_SEC,
+  API_REVALIDATE_PLAYER_SEC,
+} from "@/lib/football/refresh-policy";
 import { apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
-import { API_REVALIDATE_DEFAULT_SEC } from "@/lib/football/refresh-policy";
 import type {
   ApiFootballFixtureEvent,
   ApiFootballFixtureInjury,
@@ -107,8 +110,18 @@ export async function fetchApiMatchDetail(
       teamFormQuery(awayTeamId, season, 6),
       revalidate,
     ),
-    apiFootballGetSafe<ApiFootballSquad>(apiKey, "/players/squads", { team: homeTeamId }, revalidate),
-    apiFootballGetSafe<ApiFootballSquad>(apiKey, "/players/squads", { team: awayTeamId }, revalidate),
+    apiFootballGetSafe<ApiFootballSquad>(
+      apiKey,
+      "/players/squads",
+      { team: homeTeamId },
+      API_REVALIDATE_PLAYER_SEC,
+    ),
+    apiFootballGetSafe<ApiFootballSquad>(
+      apiKey,
+      "/players/squads",
+      { team: awayTeamId },
+      API_REVALIDATE_PLAYER_SEC,
+    ),
   ]);
 
   return buildMatchDetailFromApi(

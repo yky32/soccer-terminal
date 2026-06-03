@@ -3,7 +3,7 @@
 import { ArrowUp, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatBriefingTime } from "@/lib/assistant/build-briefing";
+import { formatBriefingTime } from "@/lib/assistant/format-briefing-time";
 import { getDemoPrompts } from "@/lib/assistant/demo-responses";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import type { AssistantBriefing } from "@/lib/assistant/generate-assistant";

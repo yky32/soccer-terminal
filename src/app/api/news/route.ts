@@ -4,7 +4,7 @@ import { withApiRouteHandler } from "@/lib/http/route-handler";
 import type { NewsArticle } from "@/lib/data/news-article";
 
 /** Keep in sync with ROUTE_REVALIDATE_NEWS_SEC in refresh-policy.ts */
-export const revalidate = 1800;
+export const revalidate = 900;
 
 export async function GET(request: Request) {
   type NewsRouteBody = { error: string } | { articles: NewsArticle[] };

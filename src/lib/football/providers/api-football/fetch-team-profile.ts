@@ -17,6 +17,10 @@ import {
   type ApiFootballSquad,
   type ApiFootballTeamInfo,
 } from "@/lib/football/providers/api-football/normalize-catalog";
+import {
+  API_REVALIDATE_FIXTURES_SEC,
+  API_REVALIDATE_PLAYER_SEC,
+} from "@/lib/football/refresh-policy";
 import { apiFootballGet, apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import { getCatalogEntryById } from "@/lib/football/league-catalog";
 import { resolveSeasonYearForEntry } from "@/lib/football/providers/api-football/resolve-season";
@@ -144,11 +148,36 @@ export async function fetchTeamProfile(
 
   const [squadBlocks, lastFixtures, nextFixtures, teamInfoBlocks, coachBlocks] =
     await Promise.all([
-      apiFootballGet<ApiFootballSquad>(apiKey, "/players/squads", { team: teamId }),
-      apiFootballGet<ApiFootballLiveFixture>(apiKey, "/fixtures", { team: teamId, last: 5, season }),
-      apiFootballGet<ApiFootballLiveFixture>(apiKey, "/fixtures", { team: teamId, next: 5, season }),
-      apiFootballGet<ApiFootballTeamInfo>(apiKey, "/teams", { id: teamId }),
-      apiFootballGetSafe<ApiFootballCoach>(apiKey, "/coachs", { team: teamId }),
+      apiFootballGet<ApiFootballSquad>(
+        apiKey,
+        "/players/squads",
+        { team: teamId },
+        API_REVALIDATE_PLAYER_SEC,
+      ),
+      apiFootballGet<ApiFootballLiveFixture>(
+        apiKey,
+        "/fixtures",
+        { team: teamId, last: 5, season },
+        API_REVALIDATE_FIXTURES_SEC,
+      ),
+      apiFootballGet<ApiFootballLiveFixture>(
+        apiKey,
+        "/fixtures",
+        { team: teamId, next: 5, season },
+        API_REVALIDATE_FIXTURES_SEC,
+      ),
+      apiFootballGet<ApiFootballTeamInfo>(
+        apiKey,
+        "/teams",
+        { id: teamId },
+        API_REVALIDATE_PLAYER_SEC,
+      ),
+      apiFootballGetSafe<ApiFootballCoach>(
+        apiKey,
+        "/coachs",
+        { team: teamId },
+        API_REVALIDATE_PLAYER_SEC,
+      ),
     ]);
 
   const squadBlock = squadBlocks[0];

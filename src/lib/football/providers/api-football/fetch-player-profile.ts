@@ -15,6 +15,11 @@ import {
   type ApiFootballPlayerProfile,
   type ApiFootballSquad,
 } from "@/lib/football/providers/api-football/normalize-catalog";
+import {
+  API_REVALIDATE_FIXTURES_SEC,
+  API_REVALIDATE_LIVE_SEC,
+  API_REVALIDATE_PLAYER_SEC,
+} from "@/lib/football/refresh-policy";
 import { apiFootballGet, apiFootballGetSafe } from "@/lib/football/providers/api-football/request";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
 import { playerSlugFromName, playerSlugFromTeamAndName } from "@/lib/player-paths";
@@ -61,19 +66,23 @@ async function fetchPlayerSeasonProfile(
   match: PlayerSlugMatch,
   season: number,
 ) {
-  const byId = await apiFootballGetSafe<ApiFootballPlayerProfile>(apiKey, "/players", {
-    id: match.playerId,
-    season,
-  });
+  const byId = await apiFootballGetSafe<ApiFootballPlayerProfile>(
+    apiKey,
+    "/players",
+    { id: match.playerId, season },
+    API_REVALIDATE_PLAYER_SEC,
+  );
 
   if (byId[0]) return byId[0];
 
   if (!match.standing.teamId) return null;
 
-  const byTeam = await apiFootballGetSafe<ApiFootballPlayerProfile>(apiKey, "/players", {
-    team: match.standing.teamId,
-    season,
-  });
+  const byTeam = await apiFootballGetSafe<ApiFootballPlayerProfile>(
+    apiKey,
+    "/players",
+    { team: match.standing.teamId, season },
+    API_REVALIDATE_PLAYER_SEC,
+  );
 
   return byTeam.find((item) => item.player.id === match.playerId) ?? null;
 }
@@ -87,7 +96,7 @@ async function fetchFixturePlayerStats(
     apiKey,
     "/fixtures/players",
     { fixture: fixtureId },
-    600,
+    API_REVALIDATE_LIVE_SEC,
   );
 
   for (const block of blocks) {
@@ -118,9 +127,12 @@ export async function findPlayerBySlug(
   if (!standing?.teamId) return null;
 
   const nameSlug = playerSlug.slice(`${teamSlugFromName(standing.team)}-`.length);
-  const squads = await apiFootballGet<ApiFootballSquad>(apiKey, "/players/squads", {
-    team: standing.teamId,
-  });
+  const squads = await apiFootballGet<ApiFootballSquad>(
+    apiKey,
+    "/players/squads",
+    { team: standing.teamId },
+    API_REVALIDATE_PLAYER_SEC,
+  );
   const players = squads[0]?.players ?? [];
 
   for (let slot = 0; slot < players.length; slot += 1) {
@@ -153,14 +165,20 @@ export async function fetchPlayerProfile(
   const [profile, fixtures, squads] = await Promise.all([
     fetchPlayerSeasonProfile(apiKey, match, season),
     teamId
-      ? apiFootballGetSafe<ApiFootballLiveFixture>(apiKey, "/fixtures", {
-          team: teamId,
-          last: 10,
-          season,
-        })
+      ? apiFootballGetSafe<ApiFootballLiveFixture>(
+          apiKey,
+          "/fixtures",
+          { team: teamId, last: 10, season },
+          API_REVALIDATE_FIXTURES_SEC,
+        )
       : Promise.resolve([] as ApiFootballLiveFixture[]),
     teamId
-      ? apiFootballGetSafe<ApiFootballSquad>(apiKey, "/players/squads", { team: teamId })
+      ? apiFootballGetSafe<ApiFootballSquad>(
+          apiKey,
+          "/players/squads",
+          { team: teamId },
+          API_REVALIDATE_PLAYER_SEC,
+        )
       : Promise.resolve([] as ApiFootballSquad[]),
   ]);
 
