@@ -100,12 +100,21 @@ export function WorldMapPreview() {
   const mapPaneRef = useRef<HTMLDivElement>(null);
   const { data, loading, error: fetchError } = useMapCountries();
   const [matchMode, setMatchMode] = useState<MapMatchMode>("live");
+  const autoModeAppliedRef = useRef(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
     null,
   );
   const [splitOpen, setSplitOpen] = useState(false);
 
   const modeSnapshot = matchMode === "live" ? data?.live : data?.future;
+  const liveStats = useMemo(
+    () => getLiveMatchStats(data?.live?.countries ?? []),
+    [data?.live?.countries],
+  );
+  const futureStats = useMemo(
+    () => getLiveMatchStats(data?.future?.countries ?? []),
+    [data?.future?.countries],
+  );
   const stats = useMemo(
     () => getLiveMatchStats(modeSnapshot?.countries ?? []),
     [modeSnapshot?.countries],
@@ -115,6 +124,15 @@ export function WorldMapPreview() {
   const error = fetchError;
 
   const { countryCount, totalMatches, maxMatches, countries } = stats;
+
+  useEffect(() => {
+    if (loading || !data || autoModeAppliedRef.current) return;
+
+    if (liveStats.totalMatches === 0 && futureStats.totalMatches > 0) {
+      autoModeAppliedRef.current = true;
+      setMatchMode("future");
+    }
+  }, [data, futureStats.totalMatches, liveStats.totalMatches, loading]);
 
   const selectedCountry = useMemo(
     () => countries.find((country) => country.code === selectedCountryCode),
@@ -224,6 +242,8 @@ export function WorldMapPreview() {
   const showMatchPins = Boolean(showMatchColumn);
 
   const showLiveChip = !showMatchColumn && !loading;
+  const alternateModeCount =
+    matchMode === "live" ? futureStats.totalMatches : liveStats.totalMatches;
 
   return (
     <section id="global-map" className="relative w-full scroll-mt-[4.25rem]">
@@ -298,18 +318,32 @@ export function WorldMapPreview() {
             <div className="pointer-events-none absolute inset-x-0 bottom-8 z-10 flex justify-center px-4 sm:bottom-10">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/55 px-4 py-2 text-[0.8125rem] font-semibold tracking-[-0.01em] text-neutral-900 shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-xl">
                 <span className="relative flex h-2 w-2" aria-hidden>
-                  <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500/60" />
-                  <span className="relative m-auto h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  {matchMode === "live" ? (
+                    <>
+                      <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500/60" />
+                      <span className="relative m-auto h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    </>
+                  ) : (
+                    <span className="relative m-auto h-1.5 w-1.5 rounded-full bg-sky-500" />
+                  )}
                 </span>
                 <span>
                   {matchMode === "live" ? "Live worldwide" : "Upcoming fixtures"}
                 </span>
-                <span className="text-neutral-500" aria-hidden>
-                  ·
-                </span>
-                <span className="tabular-nums text-neutral-700">
-                  {countryCount} {countryCount === 1 ? "country" : "countries"}
-                </span>
+                {totalMatches > 0 ? (
+                  <>
+                    <span className="text-neutral-500" aria-hidden>
+                      ·
+                    </span>
+                    <span className="tabular-nums text-neutral-700">
+                      {countryCount} {countryCount === 1 ? "country" : "countries"}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-neutral-500">
+                    · switch to {matchMode === "live" ? "Future" : "Live"} for more
+                  </span>
+                )}
               </div>
             </div>
           ) : null}
@@ -321,6 +355,7 @@ export function WorldMapPreview() {
               countryCount={countryCount}
               totalMatches={totalMatches}
               countries={countries}
+              alternateModeCount={alternateModeCount}
               selectedCountryCode={selectedCountryCode}
               onCountrySelect={focusCountry}
               onResetView={resetWorldView}

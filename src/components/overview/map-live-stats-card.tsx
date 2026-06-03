@@ -37,6 +37,7 @@ type MapLiveStatsCardProps = {
   countryCount: number;
   totalMatches: number;
   countries: CountryMatchActivity[];
+  alternateModeCount?: number;
   selectedCountryCode?: string | null;
   onCountrySelect?: (country: CountryMatchActivity) => void;
   onResetView?: () => void;
@@ -51,6 +52,7 @@ export function MapLiveStatsCard({
   countryCount,
   totalMatches,
   countries,
+  alternateModeCount = 0,
   selectedCountryCode = null,
   onCountrySelect,
   onResetView,
@@ -72,6 +74,8 @@ export function MapLiveStatsCard({
   const modeLabel = mode === "live" ? "Live now" : "Upcoming";
   const emptyLabel =
     mode === "live" ? "No live matches right now" : "No upcoming matches in the next 7 days";
+  const showFutureHint =
+    mode === "live" && totalMatches === 0 && alternateModeCount > 0;
 
   return (
     <div
@@ -208,7 +212,19 @@ export function MapLiveStatsCard({
           ) : null}
         </div>
       ) : !error && !loading ? (
-        <p className="mt-2 text-[11px] text-neutral-500">{emptyLabel}</p>
+        <div className="mt-2 space-y-2">
+          <p className="text-[11px] leading-snug text-neutral-500">{emptyLabel}</p>
+          {showFutureHint ? (
+            <button
+              type="button"
+              data-map-list-action
+              onClick={() => onModeChange("future")}
+              className="w-full rounded-md bg-sky-600/10 px-2 py-1.5 text-left text-[10px] font-semibold text-sky-800 transition-colors hover:bg-sky-600/15"
+            >
+              View {alternateModeCount} upcoming {alternateModeCount === 1 ? "match" : "matches"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

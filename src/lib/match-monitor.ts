@@ -18,6 +18,7 @@ export type LeagueMatchGroup = {
 };
 
 export const WATCHLIST_STORAGE_KEY = "soccer-terminal.match-watchlist";
+export const WATCHLIST_ONBOARDED_KEY = "soccer-terminal.watchlist-onboarded";
 export const HEATMAP_LAYOUT_STORAGE_KEY = "soccer-terminal.heatmap-layout";
 export const MAX_WATCHLIST = 16;
 
@@ -481,6 +482,21 @@ export function readWatchlistIds(): number[] {
 export function writeWatchlistIds(ids: number[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(WATCHLIST_STORAGE_KEY, JSON.stringify(ids));
+}
+
+export function readWatchlistOnboarded(): boolean {
+  if (typeof window === "undefined") return true;
+
+  try {
+    return window.localStorage.getItem(WATCHLIST_ONBOARDED_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+export function markWatchlistOnboarded() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(WATCHLIST_ONBOARDED_KEY, "1");
 }
 
 export function isSameLocalDay(a: Date, b: Date) {

@@ -29,6 +29,7 @@ import {
   type CurrencyCode,
   type ThemePreference,
 } from "@/lib/user-preferences";
+import { ENABLE_AI, ENABLE_NEWS } from "@/lib/feature-flags";
 import { buildTimeZoneOptions } from "@/lib/timezone";
 import { cn } from "@/lib/utils";
 
@@ -209,15 +210,42 @@ function UserMenuPanel({
         <button
           type="button"
           role="menuitem"
+          disabled
+          aria-disabled
+          title="Sign in coming soon"
           className={cn(
             glassFocus,
-            "flex w-full cursor-pointer items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.8125rem] font-medium text-neutral-900 transition-colors hover:bg-white/60",
+            "flex w-full cursor-not-allowed items-center gap-2.5 px-3.5 py-2.5 text-left text-[0.8125rem] font-medium text-neutral-500",
           )}
-          onClick={onClose}
         >
-          <LogIn className="h-4 w-4 shrink-0 text-neutral-500" strokeWidth={2} aria-hidden />
-          Sign in
+          <LogIn className="h-4 w-4 shrink-0 opacity-60" strokeWidth={2} aria-hidden />
+          <span>Sign in</span>
+          <span className="ml-auto rounded-full bg-neutral-900/6 px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide text-neutral-400">
+            Soon
+          </span>
         </button>
+
+        {!ENABLE_NEWS || !ENABLE_AI ? (
+          <>
+            <div className="mx-3 border-t border-black/[0.06]" aria-hidden />
+            <MenuSection label="Coming soon">
+              <ul className="space-y-1.5 text-[0.8125rem] text-neutral-600">
+                {!ENABLE_NEWS ? (
+                  <li className="rounded-lg bg-neutral-950/[0.03] px-2.5 py-2">
+                    <span className="font-medium text-neutral-800">News</span>
+                    <span className="text-neutral-500"> — headlines and transfers</span>
+                  </li>
+                ) : null}
+                {!ENABLE_AI ? (
+                  <li className="rounded-lg bg-neutral-950/[0.03] px-2.5 py-2">
+                    <span className="font-medium text-neutral-800">AI Assistant</span>
+                    <span className="text-neutral-500"> — briefings and chat</span>
+                  </li>
+                ) : null}
+              </ul>
+            </MenuSection>
+          </>
+        ) : null}
 
         <div className="mx-3 border-t border-black/[0.06]" aria-hidden />
 

@@ -18,7 +18,9 @@ import {
   isMatchLive,
   MAX_WATCHLIST,
   matchMinuteLabel,
+  markWatchlistOnboarded,
   readWatchlistIds,
+  readWatchlistOnboarded,
   searchMatches,
   sortHeatmapItems,
   teamAbbrev,
@@ -168,10 +170,11 @@ function SearchResultRow({
 export function MatchMonitorSection() {
   const { data, loading, error } = useMapCountries();
   const { formatKickoffTime } = useFormatDateTime();
-  const [watchlistIds, setWatchlistIds] = useState<number[]>([]);
+  const [watchlistIds, setWatchlistIds] = useState<number[]>(() => readWatchlistIds());
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const onboardAppliedRef = useRef(false);
 
   const catalog = useMemo(
     () =>
@@ -185,10 +188,6 @@ export function MatchMonitorSection() {
   );
 
   const updatedAt = data?.live.updatedAt ?? data?.future.updatedAt ?? null;
-
-  useEffect(() => {
-    setWatchlistIds(readWatchlistIds());
-  }, []);
 
   useEffect(() => {
     writeWatchlistIds(watchlistIds);
@@ -238,6 +237,33 @@ export function MatchMonitorSection() {
     [famousMatches, watchlistIds],
   );
 
+  useEffect(() => {
+    if (loading || !data || onboardAppliedRef.current) return;
+    if (readWatchlistOnboarded()) return;
+
+    if (watchlistIds.length > 0) {
+      markWatchlistOnboarded();
+      return;
+    }
+
+    const seed =
+      todayMatches.length > 0
+        ? todayMatches
+        : famousMatches.length > 0
+          ? famousMatches
+          : [];
+
+    onboardAppliedRef.current = true;
+
+    if (seed.length === 0) {
+      markWatchlistOnboarded();
+      return;
+    }
+
+    setWatchlistIds((current) => bulkAddToWatchlist(current, seed));
+    markWatchlistOnboarded();
+  }, [data, famousMatches, loading, todayMatches, watchlistIds.length]);
+
   const famousLeagueQuickAdds = useMemo(
     () =>
       FAMOUS_LEAGUES.map((league) => {
@@ -276,6 +302,26 @@ export function MatchMonitorSection() {
   }, []);
 
   const atCapacity = watchlistIds.length >= MAX_WATCHLIST;
+
+  const heatmapEmptySlot =
+    watchedItems.length === 0 ? (
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <QuickAddButton
+          icon={CalendarDays}
+          label="Today"
+          count={todayAddable}
+          disabled={loading || todayAddable === 0 || atCapacity}
+          onClick={() => addMatchesBulk(todayMatches)}
+        />
+        <QuickAddButton
+          icon={Sparkles}
+          label="All top"
+          count={famousAddable}
+          disabled={loading || famousAddable === 0 || atCapacity}
+          onClick={() => addMatchesBulk(famousMatches)}
+        />
+      </div>
+    ) : null;
 
   return (
     <section id="match-monitor" className="w-full scroll-mt-[4.25rem] pb-10 pt-10 sm:pb-14 sm:pt-12">
@@ -431,7 +477,12 @@ export function MatchMonitorSection() {
       </div>
 
       <div className="mt-0 w-full">
-        <MatchHeatmapGrid items={watchedItems} onRemove={removeMatch} fullWidth />
+        <MatchHeatmapGrid
+          items={watchedItems}
+          onRemove={removeMatch}
+          fullWidth
+          emptySlot={heatmapEmptySlot}
+        />
       </div>
     </section>
   );

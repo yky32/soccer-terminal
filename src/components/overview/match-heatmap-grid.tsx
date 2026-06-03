@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties, ElementType } from "react";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 import {
   Blocks,
   LayoutDashboard,
@@ -43,6 +43,7 @@ type MatchHeatmapGridProps = {
   items: MonitoredMatch[];
   onRemove: (matchId: number) => void;
   fullWidth?: boolean;
+  emptySlot?: ReactNode;
 };
 
 type SideState = "leading" | "losing" | "draw";
@@ -992,7 +993,12 @@ function TimelineLayout({
   );
 }
 
-export function MatchHeatmapGrid({ items, onRemove, fullWidth = false }: MatchHeatmapGridProps) {
+export function MatchHeatmapGrid({
+  items,
+  onRemove,
+  fullWidth = false,
+  emptySlot,
+}: MatchHeatmapGridProps) {
   const [prefs, setPrefs] = useState<HeatmapViewPrefs>(() => readHeatmapViewPrefs());
 
   useEffect(() => {
@@ -1011,10 +1017,13 @@ export function MatchHeatmapGrid({ items, onRemove, fullWidth = false }: MatchHe
             : "rounded-xl border border-dashed border-black/10 bg-neutral-950/[0.03]",
         )}
       >
-        <p className="max-w-sm text-[0.875rem] leading-relaxed text-neutral-500">
-          Search for a match above, then add it to your watchlist. Selected fixtures appear
-          here as a live heat map.
-        </p>
+        <div className="flex max-w-md flex-col items-center gap-4">
+          <p className="text-[0.875rem] leading-relaxed text-neutral-500">
+            Add fixtures with Quick add or search above. Your watchlist appears here as a live
+            heat map.
+          </p>
+          {emptySlot}
+        </div>
       </div>
     );
   }
