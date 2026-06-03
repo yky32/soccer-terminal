@@ -85,6 +85,7 @@ cp .env.example .env.local
 |----------|-------------|
 | `API_FOOTBALL_KEY` | Key from [API-Football](https://www.api-football.com/) |
 | `FOOTBALL_DATA_PROVIDER` | Data source (`api-football`; more providers can be added) |
+| `NEXT_PUBLIC_SITE_URL` | Public origin for canonical URLs, Open Graph, and sitemap (e.g. `https://www.soccer-terminal.app`) |
 
 The Global map loads fixtures via `GET /api/map/live-countries` (cached ~60s on the server). Set `FOOTBALL_DATA_PROVIDER=mock` for offline development.
 
@@ -134,7 +135,11 @@ src/
 1. Push this repo to GitHub.
 2. Import the project at [vercel.com/new](https://vercel.com/new).
 3. Vercel auto-detects Next.js — no extra config needed.
-4. Deploy.
+4. Add your custom domain under **Project → Settings → Domains** (e.g. `soccer-terminal.app` and `www.soccer-terminal.app`). Set the primary host to redirect to `www` if you use that as canonical.
+5. In **Environment Variables** (Production), set `NEXT_PUBLIC_SITE_URL=https://www.soccer-terminal.app` so metadata, sitemap, and share previews use the custom domain.
+6. Deploy.
+
+**Live:** [soccer-terminal.app](https://www.soccer-terminal.app/)
 
 Or use the CLI:
 

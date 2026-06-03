@@ -7,13 +7,17 @@ export const TITLE_TEMPLATE = `%s - ${PRODUCT_NAME}`;
 export const SITE_DESCRIPTION =
   "Live and upcoming football worldwide — global match map, league dashboards, and match monitoring.";
 
-const PRODUCTION_SITE_URL = "https://soccer-terminal.vercel.app";
+const PRODUCTION_SITE_URL = "https://www.soccer-terminal.app";
 
 /** Resolve public site origin for canonical URLs, OG, and sitemap. */
 export function getSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (configured) {
     return configured.replace(/\/$/, "");
+  }
+
+  if (process.env.VERCEL_ENV === "production") {
+    return PRODUCTION_SITE_URL;
   }
 
   const vercel = process.env.VERCEL_URL?.trim();

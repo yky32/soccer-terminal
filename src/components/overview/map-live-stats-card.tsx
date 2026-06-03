@@ -43,6 +43,7 @@ type MapLiveStatsCardProps = {
   onResetView?: () => void;
   loading?: boolean;
   error?: string | null;
+  onRetry?: () => void;
   updatedAt?: string | null;
 };
 
@@ -58,6 +59,7 @@ export function MapLiveStatsCard({
   onResetView,
   loading = false,
   error = null,
+  onRetry,
   updatedAt = null,
 }: MapLiveStatsCardProps) {
   const { formatKickoffTime } = useFormatDateTime();
@@ -127,7 +129,18 @@ export function MapLiveStatsCard({
       </p>
 
       {error ? (
-        <p className="mt-2 text-[11px] leading-snug text-red-600">{error}</p>
+        <div className="mt-2 space-y-1.5" data-map-list-action>
+          <p className="text-[11px] leading-snug text-red-600">{error}</p>
+          {onRetry ? (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="text-[10px] font-semibold text-red-700 underline-offset-2 hover:underline"
+            >
+              Retry
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
       <dl className="mt-2 grid grid-cols-2 gap-x-3.5 gap-y-1">

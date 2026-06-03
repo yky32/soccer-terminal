@@ -16,6 +16,7 @@ import {
   writeCachedMapSnapshot,
 } from "@/lib/football/local-map-cache";
 import { CLIENT_MAP_REFRESH_MS, MAP_LOCAL_TTL_MS } from "@/lib/football/refresh-policy";
+import { formatFetchError } from "@/lib/format-fetch-error";
 import { apiRequest } from "@/lib/http/api-client";
 import { usePageVisible } from "@/lib/use-page-visible";
 
@@ -59,7 +60,7 @@ export function MapCountriesProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.error) {
-        throw new Error(response.error);
+        throw new Error(formatFetchError(response.error));
       }
 
       setData(response);
@@ -67,7 +68,9 @@ export function MapCountriesProvider({ children }: { children: ReactNode }) {
       setError(null);
     } catch (err) {
       if (!silent && !cached) {
-        setError(err instanceof Error ? err.message : "Failed to load matches");
+        const message =
+          err instanceof Error ? err.message : "Failed to load matches";
+        setError(formatFetchError(message));
       }
     } finally {
       if (!silent) setLoading(false);

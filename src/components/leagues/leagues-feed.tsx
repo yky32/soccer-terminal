@@ -100,6 +100,7 @@ export function LeaguesFeed({
     return { [initialLeague.id]: initialLeague };
   });
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [loadErrorId, setLoadErrorId] = useState<string | null>(null);
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const loadedRef = useRef<Set<string>>(
     new Set(initialLeague ? [initialLeague.id] : []),
@@ -118,11 +119,14 @@ export function LeaguesFeed({
   const loadLeague = useCallback(async (leagueId: string) => {
     const cached = readCachedLeagueProfile(leagueId);
     const cachedFresh = cached ? Date.now() - cached.cachedAt < LEAGUE_LOCAL_TTL_MS : false;
+    let hadValidProfile = false;
 
     if (cached && isValidCachedLeagueProfile(cached.profile, leagueId)) {
+      hadValidProfile = true;
       // Instant render from local cache.
       setProfiles((current) => ({ ...current, [leagueId]: cached.profile }));
       loadedRef.current.add(leagueId);
+      setLoadErrorId((current) => (current === leagueId ? null : current));
 
       // If fresh, skip network; if stale, refresh silently in background.
       if (cachedFresh) return;
@@ -130,6 +134,7 @@ export function LeaguesFeed({
       return;
     }
 
+    setLoadErrorId((current) => (current === leagueId ? null : current));
     setLoadingId(leagueId);
     try {
       const { data } = await apiRequest<LeagueApiResponse>({
@@ -139,15 +144,47 @@ export function LeaguesFeed({
         url: `/api/leagues/${leagueId}`,
       });
 
-      if (data.error || !isValidCachedLeagueProfile(data, leagueId)) return;
+      if (data.error || !isValidCachedLeagueProfile(data, leagueId)) {
+        if (!hadValidProfile) setLoadErrorId(leagueId);
+        return;
+      }
 
       loadedRef.current.add(leagueId);
       setProfiles((current) => ({ ...current, [leagueId]: data }));
       writeCachedLeagueProfile(leagueId, data);
+      setLoadErrorId((current) => (current === leagueId ? null : current));
+    } catch {
+      if (!hadValidProfile) setLoadErrorId(leagueId);
     } finally {
       setLoadingId((current) => (current === leagueId ? null : current));
     }
   }, []);
+
+  const retryLeague = useCallback(
+    (leagueId: string) => {
+      loadedRef.current.delete(leagueId);
+      setLoadErrorId((current) => (current === leagueId ? null : current));
+      void loadLeague(leagueId);
+    },
+    [loadLeague],
+  );
+
+  const prefetchLeague = useCallback(
+    (leagueId: string) => {
+      router.prefetch(`/leagues/${leagueId}`);
+      if (loadedRef.current.has(leagueId)) return;
+      const cached = readCachedLeagueProfile(leagueId);
+      if (
+        cached &&
+        isValidCachedLeagueProfile(cached.profile, leagueId) &&
+        Date.now() - cached.cachedAt < LEAGUE_LOCAL_TTL_MS
+      ) {
+        return;
+      }
+      void loadLeague(leagueId);
+    },
+    [loadLeague, router],
+  );
 
   const handleSelectLeague = useCallback(
     (leagueId: string) => {
@@ -263,6 +300,7 @@ export function LeaguesFeed({
               onSearchOpenChange={setSearchOpen}
               onScopeOpenChange={setScopeOpen}
               onSelectLeague={handleSelectLeague}
+              onPrefetchLeague={prefetchLeague}
               onResetFilters={resetFilters}
             />
           </div>
@@ -288,15 +326,39 @@ export function LeaguesFeed({
         <>
           {selected ? (
             <div className={cn(leaguesGlassEnter, "space-y-4")}>
-              <LeagueHero
-                league={selected}
-                loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
-              />
-              <LeagueDetailPanel
-                league={selected}
-                articles={articles}
-                loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
-              />
+              {loadErrorId === selected.id && !isLoadedLeagueProfile(selected) ? (
+                <div className={cn(leaguesGlass, "px-6 py-14 text-center")}>
+                  <p className="text-[1.0625rem] font-semibold text-neutral-950">
+                    Couldn&apos;t load {selected.shortName}
+                  </p>
+                  <p className="mt-2 text-[0.9375rem] text-neutral-600">
+                    Standings and fixtures are unavailable right now. Try again in a moment.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => retryLeague(selected.id)}
+                    className={cn(
+                      leaguesGlassInset,
+                      leaguesGlassFocus,
+                      "mt-5 px-4 py-2 text-[0.875rem] font-medium text-neutral-800",
+                    )}
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <LeagueHero
+                    league={selected}
+                    loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
+                  />
+                  <LeagueDetailPanel
+                    league={selected}
+                    articles={articles}
+                    loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
+                  />
+                </>
+              )}
             </div>
           ) : null}
         </>
@@ -322,6 +384,7 @@ type LeagueRailProps = {
   onSearchOpenChange: (open: boolean) => void;
   onScopeOpenChange: (open: boolean) => void;
   onSelectLeague: (id: string) => void;
+  onPrefetchLeague: (id: string) => void;
   onResetFilters: () => void;
 };
 
@@ -341,6 +404,7 @@ function LeagueRail({
   onSearchOpenChange,
   onScopeOpenChange,
   onSelectLeague,
+  onPrefetchLeague,
   onResetFilters,
 }: LeagueRailProps) {
   return (
@@ -374,6 +438,7 @@ function LeagueRail({
               league={league}
               active={selected?.id === league.id}
               onClick={() => onSelectLeague(league.id)}
+              onPrefetch={() => onPrefetchLeague(league.id)}
             />
           ))}
         </div>
@@ -494,15 +559,19 @@ function LeaguePickerChip({
   league,
   active,
   onClick,
+  onPrefetch,
 }: {
   league: LeagueProfile;
   active: boolean;
   onClick: () => void;
+  onPrefetch?: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onMouseEnter={onPrefetch}
+      onFocus={onPrefetch}
       className={cn(
         leaguesGlassFocus,
         "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.8125rem] font-medium transition-all active:scale-95 sm:px-3",

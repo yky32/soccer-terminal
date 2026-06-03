@@ -171,7 +171,7 @@ function SearchResultRow({
 }
 
 export function MatchMonitorSection() {
-  const { data, loading, error } = useMapCountries();
+  const { data, loading, error, refresh } = useMapCountries();
   const { formatKickoffTime } = useFormatDateTime();
   const [watchlistIds, setWatchlistIds] = useState<number[]>(() => readWatchlistIds());
   const [searchQuery, setSearchQuery] = useState("");
@@ -354,6 +354,23 @@ export function MatchMonitorSection() {
             </p>
           ) : null}
         </div>
+
+        {error && !loading ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200/70 bg-rose-50/90 px-4 py-3">
+            <p className="text-[0.8125rem] leading-snug text-rose-800">{error}</p>
+            <button
+              type="button"
+              onClick={() => void refresh()}
+              className={cn(
+                glassInset,
+                glassFocus,
+                "shrink-0 rounded-full px-3 py-1.5 text-[0.75rem] font-semibold text-rose-900",
+              )}
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
 
         <div ref={searchRef} className="relative mt-6 max-w-2xl">
           <div

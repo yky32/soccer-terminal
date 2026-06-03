@@ -110,7 +110,7 @@ function MapControlsToolbar({
 export function WorldMapPreview() {
   const mapRef = useRef<MapRef>(null);
   const mapPaneRef = useRef<HTMLDivElement>(null);
-  const { data, loading, error: fetchError } = useMapCountries();
+  const { data, loading, error: fetchError, refresh } = useMapCountries();
   const [matchMode, setMatchMode] = useState<MapMatchMode>(initialMapMatchMode);
   const autoModeAppliedRef = useRef(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
@@ -373,6 +373,7 @@ export function WorldMapPreview() {
               onResetView={resetWorldView}
               loading={loading}
               error={error}
+              onRetry={error ? () => void refresh() : undefined}
               updatedAt={updatedAt}
             />
           </div>
