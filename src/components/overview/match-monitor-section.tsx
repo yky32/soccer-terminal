@@ -429,36 +429,44 @@ export function MatchMonitorSection() {
           ) : null}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-400">
-            Quick add
-          </span>
-          <QuickAddButton
-            icon={CalendarDays}
-            label="Today"
-            count={todayAddable}
-            disabled={loading || todayAddable === 0 || atCapacity}
-            onClick={() => addMatchesBulk(todayMatches)}
-          />
-          <QuickAddButton
-            icon={Sparkles}
-            label="All top"
-            count={famousAddable}
-            disabled={loading || famousAddable === 0 || atCapacity}
-            onClick={() => addMatchesBulk(famousMatches)}
-          />
-          <span className="hidden h-4 w-px bg-black/10 sm:block" aria-hidden />
-          {famousLeagueQuickAdds.map((league) => (
-            <LeagueQuickAddButton
-              key={league.name}
-              leagueName={league.name}
-              leagueLogo={league.logo}
-              shortLabel={league.shortLabel}
-              count={league.addable}
-              disabled={loading || league.addable === 0 || atCapacity}
-              onClick={() => addMatchesBulk(league.pool)}
+        <div className="mt-3 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+              Quick add
+            </span>
+            <QuickAddButton
+              icon={CalendarDays}
+              label="Today"
+              count={todayAddable}
+              disabled={loading || todayAddable === 0 || atCapacity}
+              onClick={() => addMatchesBulk(todayMatches)}
             />
-          ))}
+            <QuickAddButton
+              icon={Sparkles}
+              label="All top"
+              count={famousAddable}
+              disabled={loading || famousAddable === 0 || atCapacity}
+              onClick={() => addMatchesBulk(famousMatches)}
+            />
+            <span className="hidden h-4 w-px bg-black/10 sm:block" aria-hidden />
+            {famousLeagueQuickAdds.map((league) => (
+              <LeagueQuickAddButton
+                key={league.name}
+                leagueName={league.name}
+                leagueLogo={league.logo}
+                shortLabel={league.shortLabel}
+                count={league.addable}
+                disabled={loading || league.addable === 0 || atCapacity}
+                onClick={() => addMatchesBulk(league.pool)}
+              />
+            ))}
+          </div>
+          {atCapacity ? (
+            <p className="text-[0.8125rem] leading-snug text-amber-800">
+              Watchlist full ({MAX_WATCHLIST} matches). Remove a fixture below or use Clear
+              all to add more.
+            </p>
+          ) : null}
         </div>
 
         {watchlistIds.length > 0 ? (

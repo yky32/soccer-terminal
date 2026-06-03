@@ -29,14 +29,18 @@ const LeagueMapPane = dynamic(
 
 type LeagueHeroProps = {
   league: LeagueProfile;
+  loading?: boolean;
 };
 
-export function LeagueHero({ league }: LeagueHeroProps) {
+export function LeagueHero({ league, loading = false }: LeagueHeroProps) {
   const { formatDateShort } = useFormatDateTime();
   const location = getLeagueMapLocation(league);
 
   return (
-    <div className={cn(leaguesGlassStrong, "relative overflow-hidden")}>
+    <div
+      className={cn(leaguesGlassStrong, "relative overflow-hidden")}
+      aria-busy={loading}
+    >
       <div className="relative grid lg:grid-cols-[minmax(0,4fr)_minmax(0,1fr)]">
         <div className="relative z-[2] min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-4 sm:px-5 sm:py-5">
@@ -66,18 +70,25 @@ export function LeagueHero({ league }: LeagueHeroProps) {
                 <h2 className="mt-1 text-[clamp(1.375rem,3vw,1.875rem)] font-semibold leading-tight tracking-[-0.03em] text-neutral-950">
                   {league.name}
                 </h2>
-                <p className="mt-1 text-[0.875rem] text-neutral-600">
-                  {league.teams} teams · Matchday {league.matchday}
-                  {league.liveMatches > 0 ? (
-                    <>
-                      {" "}
-                      ·{" "}
-                      <span className="font-semibold text-emerald-700">
-                        {league.liveMatches} live now
-                      </span>
-                    </>
-                  ) : null}
-                </p>
+                {loading ? (
+                  <div
+                    className="mt-1 h-4 w-44 max-w-full animate-pulse rounded bg-black/[0.06]"
+                    aria-hidden
+                  />
+                ) : (
+                  <p className="mt-1 text-[0.875rem] text-neutral-600">
+                    {league.teams} teams · Matchday {league.matchday}
+                    {league.liveMatches > 0 ? (
+                      <>
+                        {" "}
+                        ·{" "}
+                        <span className="font-semibold text-emerald-700">
+                          {league.liveMatches} live now
+                        </span>
+                      </>
+                    ) : null}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -102,11 +113,12 @@ export function LeagueHero({ league }: LeagueHeroProps) {
           </div>
 
           <div className="grid grid-cols-3 gap-3 px-4 pb-4 pt-1 sm:px-5 sm:pb-5">
-            <HeroStat label="Teams" value={String(league.teams)} />
-            <HeroStat label="Matchday" value={String(league.matchday)} />
+            <HeroStat label="Teams" value={String(league.teams)} loading={loading} />
+            <HeroStat label="Matchday" value={String(league.matchday)} loading={loading} />
             <HeroStat
               label="Updated"
               value={formatDateShort(new Date().toISOString())}
+              loading={loading}
             />
           </div>
         </div>
@@ -145,15 +157,30 @@ export function LeagueHero({ league }: LeagueHeroProps) {
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+function HeroStat({
+  label,
+  value,
+  loading = false,
+}: {
+  label: string;
+  value: string;
+  loading?: boolean;
+}) {
   return (
     <div className="px-4 py-3 text-center sm:px-5">
       <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-neutral-500">
         {label}
       </p>
-      <p className="mt-0.5 text-[1rem] font-bold tabular-nums tracking-[-0.02em] text-neutral-950 sm:text-[1.0625rem]">
-        {value}
-      </p>
+      {loading ? (
+        <div
+          className="mx-auto mt-1.5 h-5 w-10 animate-pulse rounded bg-black/[0.06]"
+          aria-hidden
+        />
+      ) : (
+        <p className="mt-0.5 text-[1rem] font-bold tabular-nums tracking-[-0.02em] text-neutral-950 sm:text-[1.0625rem]">
+          {value}
+        </p>
+      )}
     </div>
   );
 }

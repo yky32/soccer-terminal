@@ -12,6 +12,7 @@ import type { LiveMatch } from "@/lib/data/live-match";
 import type { CountryMatchActivity } from "@/lib/data/live-match-countries";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getLiveMatchStats } from "@/lib/data/live-match-countries";
+import { readCachedMapSnapshot } from "@/lib/football/local-map-cache";
 import { useMapCountries } from "@/components/overview/map-countries-context";
 import { glassFocus, glassHover, glassInset } from "@/components/glass-surface";
 import { scrollToSection } from "@/lib/scroll-to-section";
@@ -24,6 +25,17 @@ const COUNTRY_FOCUS_ZOOM = 3.25;
 const SPLIT_TRANSITION_MS = 700;
 const MAP_FLY_MS = 900;
 const NO_PADDING = { top: 0, right: 0, bottom: 0, left: 0 };
+
+function initialMapMatchMode(): MapMatchMode {
+  const cached = readCachedMapSnapshot();
+  if (!cached) return "live";
+
+  const live = getLiveMatchStats(cached.snapshot.live?.countries ?? []);
+  const future = getLiveMatchStats(cached.snapshot.future?.countries ?? []);
+
+  if (live.totalMatches === 0 && future.totalMatches > 0) return "future";
+  return "live";
+}
 
 function mapFocusPadding(pane: HTMLElement | null, withLegend: boolean) {
   const width = pane?.clientWidth ?? 800;
@@ -99,7 +111,7 @@ export function WorldMapPreview() {
   const mapRef = useRef<MapRef>(null);
   const mapPaneRef = useRef<HTMLDivElement>(null);
   const { data, loading, error: fetchError } = useMapCountries();
-  const [matchMode, setMatchMode] = useState<MapMatchMode>("live");
+  const [matchMode, setMatchMode] = useState<MapMatchMode>(initialMapMatchMode);
   const autoModeAppliedRef = useRef(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState<string | null>(
     null,

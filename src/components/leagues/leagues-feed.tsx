@@ -288,7 +288,10 @@ export function LeaguesFeed({
         <>
           {selected ? (
             <div className={cn(leaguesGlassEnter, "space-y-4")}>
-              <LeagueHero league={selected} />
+              <LeagueHero
+                league={selected}
+                loading={loadingId === selected.id && !isLoadedLeagueProfile(selected)}
+              />
               <LeagueDetailPanel
                 league={selected}
                 articles={articles}
