@@ -9,11 +9,13 @@ import {
   formatPlayerPageDescription,
   formatPlayerPageTitle,
 } from "@/lib/seo/detail-metadata";
+import { parseReturnTo } from "@/lib/return-navigation";
 
 export const dynamic = "force-dynamic";
 
 type PlayerPageProps = {
   params: Promise<{ leagueId: string; playerSlug: string }>;
+  searchParams: Promise<{ from?: string }>;
 };
 
 export async function generateMetadata({ params }: PlayerPageProps) {
@@ -34,8 +36,10 @@ export async function generateMetadata({ params }: PlayerPageProps) {
   });
 }
 
-export default async function PlayerPage({ params }: PlayerPageProps) {
+export default async function PlayerPage({ params, searchParams }: PlayerPageProps) {
   const { leagueId, playerSlug } = await params;
+  const { from } = await searchParams;
+  const returnTo = parseReturnTo(from);
   const match = await findPlayerBySlug(leagueId, playerSlug);
 
   if (!match) {
@@ -46,7 +50,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
   return (
     <div className="page-container pb-14 pt-6 sm:pb-16 sm:pt-8">
-      <PlayerDetailPanel player={player} />
+      <PlayerDetailPanel player={player} returnTo={returnTo} />
     </div>
   );
 }

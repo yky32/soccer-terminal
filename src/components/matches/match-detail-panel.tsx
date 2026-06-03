@@ -139,7 +139,12 @@ export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail })
 
         {tab === "lineup" ? (
           <div className="space-y-6">
-            <MatchDetailLineups lineups={detail.lineups} timeline={detail.timeline} />
+            <MatchDetailLineups
+              lineups={detail.lineups}
+              timeline={detail.timeline}
+              catalogLeagueId={getCatalogEntryForApiLeague(match.leagueId, match.league)?.id ?? null}
+              returnTo={`/matches/${match.id}`}
+            />
             <MatchDetailPlayerStats
               homeTeam={match.homeTeam}
               homeLogo={match.homeLogo}

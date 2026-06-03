@@ -1,6 +1,7 @@
 "use client";
 
 import { FootballPitchSurface } from "@/components/matches/football-pitch-surface";
+import { LineupPlayerLink } from "@/components/matches/lineup-player-link";
 import {
   LineupPitchAvatarOverlays,
   LineupPitchSubOutIndicator,
@@ -27,6 +28,9 @@ type MatchLineupPitchProps = {
   side: "home" | "away";
   formation?: string | null;
   highlights: LineupTeamHighlights;
+  catalogLeagueId: string | null;
+  teamName: string;
+  returnTo: string;
   className?: string;
 };
 
@@ -35,22 +39,27 @@ function PitchPlayerPin({
   coords,
   side,
   highlights,
+  catalogLeagueId,
+  teamName,
+  returnTo,
 }: {
   player: MatchDetailPlayer;
   coords: { x: number; y: number };
   side: "home" | "away";
   highlights: LineupTeamHighlights;
+  catalogLeagueId: string | null;
+  teamName: string;
+  returnTo: string;
 }) {
   const label = shortPlayerName(player.name);
   const highlight = resolvePlayerHighlight(player, highlights);
 
-  return (
+  const pin = (
     <div
       className={cn(
-        "absolute z-[1] flex w-[18cqw] min-w-[2.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-opacity",
+        "flex w-[18cqw] min-w-[2.5rem] flex-col items-center transition-opacity",
         highlight.subbedOut && "opacity-60",
       )}
-      style={{ left: `${coords.x}%`, top: `${coords.y}%` }}
       title={lineupPlayerTooltip(player, highlight)}
     >
       <div className="relative">
@@ -79,6 +88,22 @@ function PitchPlayerPin({
       ) : null}
     </div>
   );
+
+  return (
+    <LineupPlayerLink
+      catalogLeagueId={catalogLeagueId}
+      teamName={teamName}
+      playerName={player.name}
+      returnTo={returnTo}
+      className={cn(
+        "absolute z-[1] -translate-x-1/2 -translate-y-1/2 rounded-xl",
+        highlight.subbedOut && "opacity-60",
+      )}
+      style={{ left: `${coords.x}%`, top: `${coords.y}%` }}
+    >
+      {pin}
+    </LineupPlayerLink>
+  );
 }
 
 export function MatchLineupPitch({
@@ -86,6 +111,9 @@ export function MatchLineupPitch({
   side,
   formation,
   highlights,
+  catalogLeagueId,
+  teamName,
+  returnTo,
   className,
 }: MatchLineupPitchProps) {
   const placed = layoutLineupOnPitch(players, side, formation);
@@ -113,6 +141,9 @@ export function MatchLineupPitch({
           coords={coords}
           side={side}
           highlights={highlights}
+          catalogLeagueId={catalogLeagueId}
+          teamName={teamName}
+          returnTo={returnTo}
         />
       ))}
     </FootballPitchSurface>

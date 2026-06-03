@@ -1,4 +1,5 @@
 import { FootballLogo } from "@/components/overview/football-logo";
+import { LineupPlayerLink } from "@/components/matches/lineup-player-link";
 import { MatchLineupPitch } from "@/components/matches/match-lineup-pitch";
 import { MatchDetailSectionTitle } from "@/components/matches/match-detail-section-title";
 import {
@@ -37,14 +38,20 @@ function substitutePlayed(player: MatchDetailPlayer) {
 function SubstituteChip({
   player,
   highlights,
+  catalogLeagueId,
+  teamName,
+  returnTo,
 }: {
   player: MatchDetailPlayer;
   highlights: LineupTeamHighlights;
+  catalogLeagueId: string | null;
+  teamName: string;
+  returnTo: string;
 }) {
   const played = substitutePlayed(player);
   const highlight = resolvePlayerHighlight(player, highlights);
 
-  return (
+  const chip = (
     <div
       className={cn(
         leaguesGlassInset,
@@ -98,14 +105,32 @@ function SubstituteChip({
       </div>
     </div>
   );
+
+  return (
+    <LineupPlayerLink
+      catalogLeagueId={catalogLeagueId}
+      teamName={teamName}
+      playerName={player.name}
+      returnTo={returnTo}
+      className="h-full"
+    >
+      {chip}
+    </LineupPlayerLink>
+  );
 }
 
 function SubstitutesBench({
   players,
   highlights,
+  catalogLeagueId,
+  teamName,
+  returnTo,
 }: {
   players: MatchDetailPlayer[];
   highlights: LineupTeamHighlights;
+  catalogLeagueId: string | null;
+  teamName: string;
+  returnTo: string;
 }) {
   if (players.length === 0) return null;
 
@@ -126,6 +151,9 @@ function SubstitutesBench({
                   key={`${group.kind}-${player.id ?? player.name}-${player.number ?? index}`}
                   player={player}
                   highlights={highlights}
+                  catalogLeagueId={catalogLeagueId}
+                  teamName={teamName}
+                  returnTo={returnTo}
                 />
               ))}
             </div>
@@ -140,10 +168,14 @@ function TeamFormationColumn({
   lineup,
   side,
   timeline,
+  catalogLeagueId,
+  returnTo,
 }: {
   lineup: MatchDetailLineupSide;
   side: "home" | "away";
   timeline: MatchDetailTimelineView;
+  catalogLeagueId: string | null;
+  returnTo: string;
 }) {
   const squad = [...lineup.starting, ...lineup.substitutes];
   const highlights = buildLineupTeamHighlights(squad, timeline, side);
@@ -174,11 +206,20 @@ function TeamFormationColumn({
           side={side}
           formation={lineup.formation}
           highlights={highlights}
+          catalogLeagueId={catalogLeagueId}
+          teamName={lineup.team}
+          returnTo={returnTo}
           className="w-full"
         />
       </div>
 
-      <SubstitutesBench players={lineup.substitutes} highlights={highlights} />
+      <SubstitutesBench
+        players={lineup.substitutes}
+        highlights={highlights}
+        catalogLeagueId={catalogLeagueId}
+        teamName={lineup.team}
+        returnTo={returnTo}
+      />
     </div>
   );
 }
@@ -186,12 +227,16 @@ function TeamFormationColumn({
 export function MatchDetailLineups({
   lineups,
   timeline,
+  catalogLeagueId,
+  returnTo,
 }: {
   lineups: {
     home: MatchDetailLineupSide | null;
     away: MatchDetailLineupSide | null;
   };
   timeline: MatchDetailTimelineView;
+  catalogLeagueId: string | null;
+  returnTo: string;
 }) {
   return (
     <section className={cn(leaguesGlass, "overflow-hidden")} aria-label="Formation">
@@ -211,13 +256,25 @@ export function MatchDetailLineups({
                   lineups.away && "lg:pr-5 lg:border-r lg:border-black/[0.06]",
                 )}
               >
-                <TeamFormationColumn lineup={lineups.home} side="home" timeline={timeline} />
+                <TeamFormationColumn
+                  lineup={lineups.home}
+                  side="home"
+                  timeline={timeline}
+                  catalogLeagueId={catalogLeagueId}
+                  returnTo={returnTo}
+                />
               </div>
             ) : null}
 
             {lineups.away ? (
               <div className={cn("min-w-0", lineups.home && "lg:pl-5")}>
-                <TeamFormationColumn lineup={lineups.away} side="away" timeline={timeline} />
+                <TeamFormationColumn
+                  lineup={lineups.away}
+                  side="away"
+                  timeline={timeline}
+                  catalogLeagueId={catalogLeagueId}
+                  returnTo={returnTo}
+                />
               </div>
             ) : null}
           </div>

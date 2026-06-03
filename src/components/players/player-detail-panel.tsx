@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { ArrowLeft, Clock, TrendingUp, Trophy } from "lucide-react";
@@ -23,12 +24,14 @@ import {
   leaguesGlassInset,
 } from "@/components/leagues/leagues-glass";
 import type { PlayerProfile } from "@/lib/data/player-profile";
+import { returnLabelForPath } from "@/lib/return-navigation";
 import { cn } from "@/lib/utils";
 
 type PlayerDetailTab = "overview" | "stats" | "matches" | "performance";
 
 type PlayerDetailPanelProps = {
   player: PlayerProfile;
+  returnTo?: string | null;
 };
 
 const TABS: { id: PlayerDetailTab; label: string }[] = [
@@ -38,9 +41,15 @@ const TABS: { id: PlayerDetailTab; label: string }[] = [
   { id: "performance", label: "Performance" },
 ];
 
-export function PlayerDetailPanel({ player }: PlayerDetailPanelProps) {
+export function PlayerDetailPanel({ player, returnTo }: PlayerDetailPanelProps) {
   const router = useRouter();
   const [tab, setTab] = useState<PlayerDetailTab>("overview");
+  const backClassName = cn(
+    leaguesGlassInset,
+    leaguesGlassFocus,
+    "inline-flex cursor-pointer items-center gap-2 rounded-full px-3.5 py-2 text-[0.8125rem] font-medium text-neutral-700 transition-colors hover:text-neutral-950",
+  );
+  const backLabel = returnTo ? returnLabelForPath(returnTo) : "Back";
 
   const lastFiveGoals = player.matchPerformances.reduce((sum, match) => sum + match.goals, 0);
   const lastFiveAssists = player.matchPerformances.reduce((sum, match) => sum + match.assists, 0);
@@ -64,18 +73,17 @@ export function PlayerDetailPanel({ player }: PlayerDetailPanelProps) {
 
   return (
     <div className="space-y-6">
-      <button
-        type="button"
-        onClick={() => router.back()}
-        className={cn(
-          leaguesGlassInset,
-          leaguesGlassFocus,
-          "inline-flex cursor-pointer items-center gap-2 rounded-full px-3.5 py-2 text-[0.8125rem] font-medium text-neutral-700 transition-colors hover:text-neutral-950",
-        )}
-      >
-        <ArrowLeft className="h-4 w-4" strokeWidth={2} aria-hidden />
-        Back
-      </button>
+      {returnTo ? (
+        <Link href={returnTo} className={backClassName}>
+          <ArrowLeft className="h-4 w-4" strokeWidth={2} aria-hidden />
+          {backLabel}
+        </Link>
+      ) : (
+        <button type="button" onClick={() => router.back()} className={backClassName}>
+          <ArrowLeft className="h-4 w-4" strokeWidth={2} aria-hidden />
+          {backLabel}
+        </button>
+      )}
 
       <PlayerHero player={player} />
 
