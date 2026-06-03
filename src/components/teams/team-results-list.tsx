@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FootballLogo } from "@/components/overview/football-logo";
+import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { TeamMatchResult } from "@/lib/data/team-profile";
 import { fixtureDetailHref } from "@/lib/match-paths";
@@ -54,42 +54,48 @@ function ResultRow({ result, teamName }: { result: TeamMatchResult; teamName: st
         </time>
       </div>
 
-      <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <FootballLogo src={result.homeLogo} label={result.homeTeam} size="sm" />
+      <MirrorMatchScoreline
+        className="mt-3"
+        variant="default"
+        homeTeam={result.homeTeam}
+        awayTeam={result.awayTeam}
+        homeLogo={result.homeLogo}
+        awayLogo={result.awayLogo}
+        homeGoals={result.homeScore}
+        awayGoals={result.awayScore}
+        homeState={
+          result.homeScore > result.awayScore
+            ? "leading"
+            : result.homeScore < result.awayScore
+              ? "losing"
+              : "draw"
+        }
+        awayState={
+          result.awayScore > result.homeScore
+            ? "leading"
+            : result.awayScore < result.homeScore
+              ? "losing"
+              : "draw"
+        }
+        homeNameClassName={cn(
+          result.homeTeam === teamName ? "font-semibold text-neutral-950" : "text-neutral-700",
+        )}
+        awayNameClassName={cn(
+          result.awayTeam === teamName ? "font-semibold text-neutral-950" : "text-neutral-700",
+        )}
+        centerContent={
           <span
             className={cn(
-              "truncate text-[0.8125rem] font-semibold",
-              result.homeTeam === teamName ? "text-neutral-950" : "text-neutral-700",
+              "rounded-md px-2 py-1 text-[0.8125rem] font-bold tabular-nums",
+              teamWon && "bg-emerald-500/10 text-emerald-900",
+              teamDraw && "bg-neutral-500/10 text-neutral-700",
+              !teamWon && !teamDraw && "bg-rose-500/10 text-rose-800",
             )}
           >
-            {result.homeTeam}
+            {result.homeScore} – {result.awayScore}
           </span>
-        </div>
-
-        <span
-          className={cn(
-            "rounded-md px-2 py-1 text-[0.8125rem] font-bold tabular-nums",
-            teamWon && "bg-emerald-500/10 text-emerald-900",
-            teamDraw && "bg-neutral-500/10 text-neutral-700",
-            !teamWon && !teamDraw && "bg-rose-500/10 text-rose-800",
-          )}
-        >
-          {result.homeScore} – {result.awayScore}
-        </span>
-
-        <div className="flex min-w-0 items-center justify-end gap-2">
-          <span
-            className={cn(
-              "truncate text-right text-[0.8125rem] font-semibold",
-              result.awayTeam === teamName ? "text-neutral-950" : "text-neutral-700",
-            )}
-          >
-            {result.awayTeam}
-          </span>
-          <FootballLogo src={result.awayLogo} label={result.awayTeam} size="sm" />
-        </div>
-      </div>
+        }
+      />
     </>
   );
 

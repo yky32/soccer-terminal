@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
+import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import type { LiveMatch } from "@/lib/data/live-match";
 import type { MapMatchMode } from "@/lib/data/map-match-mode";
 import { getMatchPinColor } from "@/lib/football/match-pin-colors";
@@ -64,31 +65,6 @@ function matchSideState(homeGoals: number, awayGoals: number) {
   return { home: "draw" as const, away: "draw" as const };
 }
 
-function TeamSideLabel({
-  name,
-  align,
-  state,
-}: {
-  name: string;
-  align: "left" | "right";
-  state: "leading" | "losing" | "draw";
-}) {
-  return (
-    <span
-      className={cn(
-        "min-w-0 truncate rounded px-1.5 py-0.5 text-xs leading-snug transition-colors",
-        align === "right" && "text-right",
-        state === "leading" &&
-          "bg-emerald-50 font-semibold text-emerald-800 ring-1 ring-emerald-200/80",
-        state === "losing" && "font-normal text-neutral-400",
-        state === "draw" && "font-medium text-neutral-800",
-      )}
-    >
-      {name}
-    </span>
-  );
-}
-
 function ScoreValue({
   goals,
   state,
@@ -107,40 +83,6 @@ function ScoreValue({
     >
       {goals}
     </span>
-  );
-}
-
-function TeamRow({
-  name,
-  logo,
-  goals,
-  state,
-}: {
-  name: string;
-  logo: string | null;
-  goals: number;
-  state: "leading" | "losing" | "draw";
-}) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 rounded px-1 py-0.5",
-        state === "leading" && "bg-emerald-50/90 ring-1 ring-emerald-200/70",
-      )}
-    >
-      <FootballLogo src={logo} label={name} size="md" />
-      <p
-        className={cn(
-          "min-w-0 flex-1 truncate text-[10px] leading-tight",
-          state === "leading" && "font-semibold text-emerald-800",
-          state === "losing" && "font-normal text-neutral-400",
-          state === "draw" && "font-semibold text-neutral-900",
-        )}
-      >
-        {name}
-      </p>
-      <ScoreValue goals={goals} state={state} />
-    </div>
   );
 }
 
@@ -203,20 +145,18 @@ export function MatchEventCard({
         {isFuture ? (
           <CompactFutureMatchupRow match={match} />
         ) : (
-          <div className="mt-2 space-y-1">
-            <TeamRow
-              name={match.homeTeam}
-              logo={match.homeLogo}
-              goals={match.homeGoals}
-              state={sideState.home}
-            />
-            <TeamRow
-              name={match.awayTeam}
-              logo={match.awayLogo}
-              goals={match.awayGoals}
-              state={sideState.away}
-            />
-          </div>
+          <MirrorMatchScoreline
+            className="mt-2"
+            variant="default"
+            homeTeam={match.homeTeam}
+            awayTeam={match.awayTeam}
+            homeLogo={match.homeLogo}
+            awayLogo={match.awayLogo}
+            homeGoals={match.homeGoals}
+            awayGoals={match.awayGoals}
+            homeState={sideState.home}
+            awayState={sideState.away}
+          />
         )}
         <MatchCardFooter match={match} matchMode={matchMode} />
       </MatchCardShell>
@@ -243,28 +183,23 @@ export function MatchEventCard({
 
 function CompactFutureMatchupRow({ match }: { match: LiveMatch }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-3">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <FootballLogo src={match.homeLogo} label={match.homeTeam} size="md" />
-        <span className="min-w-0 truncate text-xs font-medium leading-snug text-neutral-800">
-          {match.homeTeam}
-        </span>
-      </div>
-
-      <div className="shrink-0 rounded-md bg-sky-50 px-2 py-1.5 text-center ring-1 ring-sky-200/70">
-        <p className="text-[10px] font-bold leading-none text-sky-900">vs</p>
-        <p className="mt-0.5 text-[10px] font-semibold leading-none text-sky-800">
-          {kickoffShort(match.kickoffAt)}
-        </p>
-      </div>
-
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <span className="min-w-0 truncate text-right text-xs font-medium leading-snug text-neutral-800">
-          {match.awayTeam}
-        </span>
-        <FootballLogo src={match.awayLogo} label={match.awayTeam} size="md" />
-      </div>
-    </div>
+    <MirrorMatchScoreline
+      className="px-3 py-3"
+      variant="compact"
+      homeTeam={match.homeTeam}
+      awayTeam={match.awayTeam}
+      homeLogo={match.homeLogo}
+      awayLogo={match.awayLogo}
+      upcoming
+      centerContent={
+        <div className="shrink-0 rounded-md bg-sky-50 px-2 py-1.5 text-center ring-1 ring-sky-200/70">
+          <p className="text-[10px] font-bold leading-none text-sky-900">vs</p>
+          <p className="mt-0.5 text-[10px] font-semibold leading-none text-sky-800">
+            {kickoffShort(match.kickoffAt)}
+          </p>
+        </div>
+      }
+    />
   );
 }
 
@@ -276,23 +211,25 @@ function CompactMatchupRow({
   sideState: ReturnType<typeof matchSideState>;
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-3">
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <FootballLogo src={match.homeLogo} label={match.homeTeam} size="md" />
-        <TeamSideLabel name={match.homeTeam} align="left" state={sideState.home} />
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1 rounded-md bg-neutral-100 px-2.5 py-1.5">
-        <ScoreValue goals={match.homeGoals} state={sideState.home} />
-        <span className="text-[11px] font-medium leading-none text-neutral-400">vs</span>
-        <ScoreValue goals={match.awayGoals} state={sideState.away} />
-      </div>
-
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <TeamSideLabel name={match.awayTeam} align="right" state={sideState.away} />
-        <FootballLogo src={match.awayLogo} label={match.awayTeam} size="md" />
-      </div>
-    </div>
+    <MirrorMatchScoreline
+      className="px-3 py-3"
+      variant="compact"
+      homeTeam={match.homeTeam}
+      awayTeam={match.awayTeam}
+      homeLogo={match.homeLogo}
+      awayLogo={match.awayLogo}
+      homeGoals={match.homeGoals}
+      awayGoals={match.awayGoals}
+      homeState={sideState.home}
+      awayState={sideState.away}
+      centerContent={
+        <div className="flex shrink-0 items-center gap-1 rounded-md bg-neutral-100 px-2.5 py-1.5">
+          <ScoreValue goals={match.homeGoals} state={sideState.home} />
+          <span className="text-[11px] font-medium leading-none text-neutral-400">–</span>
+          <ScoreValue goals={match.awayGoals} state={sideState.away} />
+        </div>
+      }
+    />
   );
 }
 

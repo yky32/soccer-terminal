@@ -1,10 +1,5 @@
-import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
-import {
-  MatchDetailScoreBlock,
-  teamSideState,
-  type TeamSideState,
-} from "@/components/matches/match-detail-score";
+import { MatchDetailScoreBlock } from "@/components/matches/match-detail-score";
 import {
   leaguesGlassInset,
   leaguesGlassInsetBar,
@@ -29,25 +24,6 @@ function kickoffHeader(kickoffAt: string | null) {
   });
 }
 
-function teamNameClass(state: TeamSideState) {
-  return cn(
-    "truncate text-[clamp(1rem,2.5vw,1.25rem)] leading-tight",
-    state === "leading" && "font-semibold text-neutral-950",
-    state === "losing" && "font-medium text-neutral-400",
-    state === "draw" && "font-semibold text-neutral-950",
-    state === "neutral" && "font-semibold text-neutral-950",
-  );
-}
-
-function teamLogoClass(state: TeamSideState) {
-  return cn(
-    "!h-10 !w-10 rounded-full ring-1 sm:!h-11 sm:!w-11",
-    state === "leading" && "ring-emerald-300/70",
-    state === "losing" && "opacity-80 ring-black/[0.06]",
-    (state === "draw" || state === "neutral") && "ring-black/[0.08]",
-  );
-}
-
 type MatchDetailHeroProps = {
   match: LiveMatch;
   detail: MatchDetail;
@@ -56,8 +32,6 @@ type MatchDetailHeroProps = {
 export function MatchDetailHero({ match, detail }: MatchDetailHeroProps) {
   const kickoff = kickoffHeader(match.kickoffAt);
   const upcoming = isUpcoming(match);
-  const homeState = teamSideState(match, "home");
-  const awayState = teamSideState(match, "away");
 
   const metaItems = [
     detail.referee ? `Referee · ${detail.referee}` : null,
@@ -89,33 +63,7 @@ export function MatchDetailHero({ match, detail }: MatchDetailHeroProps) {
           </p>
         ) : null}
 
-        <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-4 sm:gap-x-6">
-          <div className="flex items-center gap-3 sm:justify-end sm:text-right">
-            <div className="min-w-0 sm:order-2">
-              <p className={teamNameClass(homeState)}>{match.homeTeam}</p>
-            </div>
-            <FootballLogo
-              src={match.homeLogo}
-              label={match.homeTeam}
-              size="lg"
-              className={cn(teamLogoClass(homeState), "sm:order-1")}
-            />
-          </div>
-
-          <MatchDetailScoreBlock match={match} detail={detail} />
-
-          <div className="flex items-center gap-3">
-            <FootballLogo
-              src={match.awayLogo}
-              label={match.awayTeam}
-              size="lg"
-              className={teamLogoClass(awayState)}
-            />
-            <div className="min-w-0">
-              <p className={teamNameClass(awayState)}>{match.awayTeam}</p>
-            </div>
-          </div>
-        </div>
+        <MatchDetailScoreBlock match={match} detail={detail} className="mt-5 w-full" />
       </div>
 
       {metaItems.length > 0 ? (

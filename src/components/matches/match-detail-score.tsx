@@ -1,5 +1,6 @@
 import type { MatchDetail } from "@/lib/data/match-detail";
 import type { LiveMatch } from "@/lib/data/live-match";
+import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import { isMatchLiveStatus } from "@/lib/football/match-status";
 import { cn } from "@/lib/utils";
 
@@ -24,15 +25,6 @@ export function teamSideState(match: LiveMatch, side: "home" | "away"): TeamSide
     : match.awayGoals > match.homeGoals
       ? "leading"
       : "losing";
-}
-
-function goalClass(state: TeamSideState) {
-  return cn(
-    state === "leading" && "text-emerald-800",
-    state === "losing" && "text-neutral-400",
-    state === "draw" && "text-neutral-950",
-    state === "neutral" && "text-neutral-950",
-  );
 }
 
 function kickoffLabel(kickoffAt: string | null) {
@@ -87,24 +79,20 @@ function ScoreRow({
   prefix,
   className,
   dashClassName,
-  homeClassName,
-  awayClassName,
 }: {
   home: number;
   away: number;
   prefix?: string;
   className?: string;
   dashClassName?: string;
-  homeClassName?: string;
-  awayClassName?: string;
 }) {
   return (
     <p className={cn("flex items-center justify-center tabular-nums", className)}>
       {prefix ? <span className="mr-2 font-semibold">{prefix}</span> : null}
       <span className="inline-flex items-center gap-x-3 sm:gap-x-4">
-        <span className={homeClassName}>{home}</span>
+        <span>{home}</span>
         <span className={cn("font-normal", dashClassName ?? "text-neutral-300")}>–</span>
-        <span className={awayClassName}>{away}</span>
+        <span>{away}</span>
       </span>
     </p>
   );
@@ -129,22 +117,21 @@ export function MatchDetailScoreBlock({
   const awayState = teamSideState(match, "away");
 
   return (
-    <div className={cn("flex min-w-[5.5rem] flex-col items-center px-1 text-center", className)}>
-      <div className="flex flex-col items-center gap-1.5">
-        {upcoming ? (
-          <p className="text-[1.75rem] font-bold tracking-tight text-sky-800">vs</p>
-        ) : mainScore ? (
-          <ScoreRow
-            home={mainScore.home}
-            away={mainScore.away}
-            homeClassName={goalClass(homeState)}
-            awayClassName={goalClass(awayState)}
-            className="text-[clamp(2rem,5vw,2.75rem)] font-bold tracking-tight"
-          />
-        ) : (
-          <p className="text-[1.75rem] font-bold tracking-tight text-neutral-400">vs</p>
-        )}
+    <div className={cn("flex w-full flex-col", className)}>
+      <MirrorMatchScoreline
+        variant="hero"
+        homeTeam={match.homeTeam}
+        awayTeam={match.awayTeam}
+        homeLogo={match.homeLogo}
+        awayLogo={match.awayLogo}
+        homeGoals={mainScore?.home ?? 0}
+        awayGoals={mainScore?.away ?? 0}
+        upcoming={upcoming || !mainScore}
+        homeState={homeState}
+        awayState={awayState}
+      />
 
+      <div className="mt-2.5 flex flex-col items-center gap-1.5">
         {penScore ? (
           <ScoreRow
             home={penScore.home}
@@ -164,23 +151,23 @@ export function MatchDetailScoreBlock({
             dashClassName="text-neutral-400"
           />
         ) : null}
-      </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center justify-center gap-1.5">
-        {live ? <LiveStatusPill match={match} /> : null}
-        {badges.map((badge) => (
-          <span
-            key={badge}
-            className="rounded-full bg-neutral-100/90 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-neutral-600 ring-1 ring-black/[0.05]"
-          >
-            {badge}
-          </span>
-        ))}
-        {!live ? (
-          <span className="text-[0.8125rem] font-medium text-neutral-500">
-            {upcoming ? kickoffLabel(match.kickoffAt) : match.statusLong}
-          </span>
-        ) : null}
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          {live ? <LiveStatusPill match={match} /> : null}
+          {badges.map((badge) => (
+            <span
+              key={badge}
+              className="rounded-full bg-neutral-100/90 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-[0.08em] text-neutral-600 ring-1 ring-black/[0.05]"
+            >
+              {badge}
+            </span>
+          ))}
+          {!live ? (
+            <span className="text-[0.8125rem] font-medium text-neutral-500">
+              {upcoming ? kickoffLabel(match.kickoffAt) : match.statusLong}
+            </span>
+          ) : null}
+        </div>
       </div>
     </div>
   );

@@ -129,18 +129,18 @@ function SearchResultRow({
           : "hover:bg-neutral-50",
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <FootballLogo src={match.homeLogo} label={match.homeTeam} size="xs" />
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
         <span className="min-w-0 truncate text-[0.8125rem] font-medium text-neutral-900">
           {match.homeTeam}
         </span>
+        <FootballLogo src={match.homeLogo} label={match.homeTeam} size="xs" />
         <span className="shrink-0 text-[0.75rem] font-bold tabular-nums text-neutral-700">
           {live ? `${match.homeGoals}–${match.awayGoals}` : "vs"}
         </span>
+        <FootballLogo src={match.awayLogo} label={match.awayTeam} size="xs" />
         <span className="min-w-0 truncate text-[0.8125rem] font-medium text-neutral-900">
           {match.awayTeam}
         </span>
-        <FootballLogo src={match.awayLogo} label={match.awayTeam} size="xs" />
       </div>
       <div className="hidden shrink-0 text-right sm:block">
         <p className="text-[0.6875rem] font-medium text-neutral-500">{match.league}</p>

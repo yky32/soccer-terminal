@@ -11,7 +11,7 @@ import {
   Minimize2,
   Maximize2,
 } from "lucide-react";
-import { FootballLogo } from "@/components/overview/football-logo";
+import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import {
   groupMatchesByLeague,
@@ -28,7 +28,6 @@ import {
   matchSideState,
   readHeatmapViewPrefs,
   sortHeatmapItems,
-  teamAbbrev,
   writeHeatmapViewPrefs,
   type HeatmapDensity,
   type HeatmapLayout,
@@ -106,14 +105,14 @@ function heatmapTypeMosaic(tier: MosaicTier, density: HeatmapDensity): HeatmapTi
     case "xl":
       return {
         eventRow: "leading-snug",
-        league: "text-xs font-semibold uppercase leading-none tracking-[0.06em]",
-        minute: compact ? "text-lg leading-none" : "text-xl leading-none",
-        live: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.1em]",
-        score: "text-sm leading-snug",
-        scoreGoals: compact ? "text-base font-extrabold" : "text-lg font-extrabold",
-        scoreVs: "text-xs font-medium opacity-50",
-        insight: "text-xs leading-snug",
-        eventGlyph: "text-xs",
+        league: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.06em]",
+        minute: compact ? "text-xs leading-none" : "text-sm leading-none",
+        live: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.1em]",
+        score: "text-xs leading-snug",
+        scoreGoals: compact ? "text-sm font-extrabold" : "text-base font-extrabold",
+        scoreVs: "text-[0.625rem] font-medium opacity-50",
+        insight: "text-[0.6875rem] leading-snug",
+        eventGlyph: "text-[0.625rem]",
         scoreWide: "hidden items-center gap-1.5 @[11rem]:flex",
         scoreNarrow: "flex flex-col gap-1 @[11rem]:hidden",
         hideMiddleOnGrid: false,
@@ -122,14 +121,14 @@ function heatmapTypeMosaic(tier: MosaicTier, density: HeatmapDensity): HeatmapTi
     case "lg":
       return {
         eventRow: "leading-snug",
-        league: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.06em]",
-        minute: compact ? "text-base leading-none" : "text-lg leading-none",
-        live: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.1em]",
-        score: "text-[0.8125rem] leading-snug",
-        scoreGoals: "text-sm font-extrabold",
-        scoreVs: "text-[0.625rem] font-medium opacity-50",
-        insight: "text-[0.6875rem] leading-snug",
-        eventGlyph: "text-[0.625rem]",
+        league: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.06em]",
+        minute: compact ? "text-xs leading-none" : "text-sm leading-none",
+        live: "text-[0.5625rem] font-semibold uppercase leading-none tracking-[0.1em]",
+        score: "text-[0.6875rem] leading-snug",
+        scoreGoals: "text-xs font-extrabold",
+        scoreVs: "text-[0.5625rem] font-medium opacity-50",
+        insight: "text-[0.625rem] leading-snug",
+        eventGlyph: "text-[0.5625rem]",
         scoreWide: "hidden items-center gap-1.5 @[9.5rem]:flex",
         scoreNarrow: "flex flex-col gap-1 @[9.5rem]:hidden",
         hideMiddleOnGrid: true,
@@ -138,14 +137,14 @@ function heatmapTypeMosaic(tier: MosaicTier, density: HeatmapDensity): HeatmapTi
     case "md":
       return {
         eventRow: "leading-tight",
-        league: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.05em]",
-        minute: compact ? "text-sm leading-none" : "text-base leading-none",
-        live: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.08em]",
-        score: "text-xs leading-snug",
-        scoreGoals: "text-sm font-extrabold leading-none",
-        scoreVs: "text-[0.625rem] font-medium opacity-50",
-        insight: "text-[0.6875rem] leading-snug",
-        eventGlyph: "text-[0.625rem]",
+        league: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.05em]",
+        minute: compact ? "text-[0.5625rem] leading-none" : "text-[0.625rem] leading-none",
+        live: "text-[0.5625rem] font-semibold uppercase leading-none tracking-[0.08em]",
+        score: "text-[0.6875rem] leading-snug",
+        scoreGoals: "text-xs font-extrabold leading-none",
+        scoreVs: "text-[0.5625rem] font-medium opacity-50",
+        insight: "text-[0.625rem] leading-snug",
+        eventGlyph: "text-[0.5625rem]",
         scoreWide: "hidden",
         scoreNarrow: "flex flex-col gap-1",
         hideMiddleOnGrid: true,
@@ -154,14 +153,14 @@ function heatmapTypeMosaic(tier: MosaicTier, density: HeatmapDensity): HeatmapTi
     case "sm":
       return {
         eventRow: "leading-tight",
-        league: "text-[0.625rem] font-semibold uppercase leading-none",
-        minute: "text-sm font-bold leading-none",
-        live: "text-[0.5625rem] font-semibold uppercase leading-none",
-        score: "text-xs font-bold leading-none",
-        scoreGoals: "text-xs font-extrabold",
-        scoreVs: "text-[0.5625rem] opacity-50",
-        insight: "text-[0.625rem] leading-tight",
-        eventGlyph: "text-[0.5625rem]",
+        league: "text-[0.5625rem] font-semibold uppercase leading-none",
+        minute: "text-[0.625rem] font-semibold leading-none opacity-90",
+        live: "text-[0.5rem] font-semibold uppercase leading-none",
+        score: "text-[0.6875rem] font-bold leading-none",
+        scoreGoals: "text-[0.6875rem] font-extrabold",
+        scoreVs: "text-[0.5rem] opacity-50",
+        insight: "text-[0.5625rem] leading-tight",
+        eventGlyph: "text-[0.5rem]",
         scoreWide: "hidden",
         scoreNarrow: "hidden",
         hideMiddleOnGrid: true,
@@ -180,13 +179,13 @@ function heatmapType(density: HeatmapDensity, layout: HeatmapLayout, rank?: Heat
 
   if (layout === "grid") {
     return {
-      league: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.06em]",
-      minute: compact ? "text-sm leading-none" : "text-[0.9375rem] leading-none",
-      live: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.1em]",
-      score: compact ? "text-xs leading-tight" : "text-[0.8125rem] leading-tight",
-      scoreGoals: "text-sm font-extrabold leading-none",
-      scoreVs: "text-[0.625rem] font-medium leading-none opacity-50",
-      insight: "text-[0.6875rem] leading-snug",
+      league: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.06em]",
+      minute: compact ? "text-[0.5625rem] leading-none" : "text-[0.625rem] leading-none",
+      live: "text-[0.5625rem] font-semibold uppercase leading-none tracking-[0.1em]",
+      score: compact ? "text-[0.6875rem] leading-tight" : "text-xs leading-tight",
+      scoreGoals: "text-xs font-extrabold leading-none",
+      scoreVs: "text-[0.5625rem] font-medium leading-none opacity-50",
+      insight: "text-[0.625rem] leading-snug",
       eventRow: "leading-tight",
       eventGlyph: "text-[0.625rem]",
       scoreWide: "hidden",
@@ -198,15 +197,15 @@ function heatmapType(density: HeatmapDensity, layout: HeatmapLayout, rank?: Heat
 
   if (layout === "timeline") {
     return {
-      league: "text-xs font-semibold uppercase leading-none tracking-[0.06em]",
-      minute: compact ? "text-base leading-none" : "text-lg leading-none",
-      live: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.1em]",
-      score: compact ? "text-sm leading-snug" : "text-sm leading-snug",
-      scoreGoals: compact ? "text-base font-extrabold" : "text-lg font-extrabold",
-      scoreVs: "text-xs font-medium opacity-50",
-      insight: compact ? "text-xs leading-snug" : "text-sm leading-snug",
+      league: "text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.06em]",
+      minute: compact ? "text-xs leading-none" : "text-sm leading-none",
+      live: "text-[0.625rem] font-semibold uppercase leading-none tracking-[0.1em]",
+      score: "text-xs leading-snug",
+      scoreGoals: compact ? "text-sm font-extrabold" : "text-base font-extrabold",
+      scoreVs: "text-[0.625rem] font-medium opacity-50",
+      insight: compact ? "text-[0.6875rem] leading-snug" : "text-xs leading-snug",
       eventRow: "leading-snug",
-      eventGlyph: compact ? "text-[0.6875rem]" : "text-xs",
+      eventGlyph: compact ? "text-[0.625rem]" : "text-[0.6875rem]",
       scoreWide: "flex items-center gap-1.5",
       scoreNarrow: "hidden",
       hideMiddleOnGrid: false,
@@ -216,16 +215,16 @@ function heatmapType(density: HeatmapDensity, layout: HeatmapLayout, rank?: Heat
 
   return {
     league: compact
-      ? "text-[0.6875rem] leading-tight tracking-[0.06em]"
-      : "text-xs leading-tight tracking-[0.07em]",
-    minute: compact ? "text-base leading-none" : "text-lg leading-none",
-    live: compact ? "text-[0.6875rem] leading-none" : "text-xs leading-none",
-    score: compact ? "text-[0.8125rem] leading-snug" : "text-sm leading-snug",
-    scoreGoals: compact ? "text-sm font-extrabold" : "text-base font-extrabold",
-    scoreVs: compact ? "text-[0.6875rem]" : "text-xs",
-    insight: compact ? "text-[0.6875rem] leading-snug" : "text-xs leading-snug",
+      ? "text-[0.625rem] leading-tight tracking-[0.06em]"
+      : "text-[0.6875rem] leading-tight tracking-[0.07em]",
+    minute: compact ? "text-xs leading-none" : "text-sm leading-none",
+    live: compact ? "text-[0.625rem] leading-none" : "text-[0.6875rem] leading-none",
+    score: compact ? "text-xs leading-snug" : "text-[0.6875rem] leading-snug",
+    scoreGoals: compact ? "text-xs font-extrabold" : "text-sm font-extrabold",
+    scoreVs: compact ? "text-[0.625rem]" : "text-[0.6875rem]",
+    insight: compact ? "text-[0.625rem] leading-snug" : "text-[0.6875rem] leading-snug",
     eventRow: "leading-snug",
-    eventGlyph: compact ? "text-[0.6875rem]" : "text-xs",
+    eventGlyph: compact ? "text-[0.625rem]" : "text-[0.6875rem]",
     scoreWide: compact ? "hidden @[8.5rem]:flex" : "hidden @[10rem]:flex",
     scoreNarrow: compact ? "flex flex-col gap-1 @[8.5rem]:hidden" : "flex flex-col gap-1 @[10rem]:hidden",
     hideMiddleOnGrid: false,
@@ -241,8 +240,8 @@ function eventLyricsRowClass(
 ) {
   if (layout === "grid" || layout === "mosaic") {
     const distanceFromLatest = total - 1 - index;
-    if (distanceFromLatest === 0) return "text-[0.6875rem] text-white/90";
-    return "text-[0.625rem] text-white/45";
+    if (distanceFromLatest === 0) return "text-[0.625rem] text-white/90";
+    return "text-[0.5625rem] text-white/45";
   }
 
   const compact = density === "compact";
@@ -312,56 +311,33 @@ function HeatmapScoreline({
   rank,
 }: HeatmapScorelinePropsWithDensity) {
   const type = heatmapType(density, layout, rank);
-  const scoreTextClass = cn(type.score, "font-bold tabular-nums tracking-tight");
-  const goalsClass = cn(type.scoreGoals, "tabular-nums");
 
   return (
-    <div className="mt-auto pt-1.5">
-      <div className={cn("items-center gap-1.5", type.scoreWide)}>
-        <FootballLogo src={homeLogo} label={homeTeam} size="xs" />
-        <p
-          className={cn(
-            "flex min-w-0 flex-1 items-center justify-center gap-1",
-            scoreTextClass,
-          )}
-        >
-          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(homeState, "label"))}>
-            {teamAbbrev(homeTeam)}
-            {homeState === "leading" ? <LeadingDot label="Home leading" /> : null}
-          </span>
-          <span className={cn(scoreSideClass(homeState, "goals"), goalsClass)}>{homeGoals}</span>
-          <span className={cn("px-0.5 font-semibold opacity-55", type.scoreVs)}>vs</span>
-          <span className={cn(scoreSideClass(awayState, "goals"), goalsClass)}>{awayGoals}</span>
-          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(awayState, "label"))}>
-            {awayState === "leading" ? <LeadingDot label="Away leading" /> : null}
-            {teamAbbrev(awayTeam)}
-          </span>
-        </p>
-        <FootballLogo src={awayLogo} label={awayTeam} size="xs" />
-      </div>
-
-      <div className={cn("flex-col gap-1", type.scoreNarrow, scoreTextClass)}>
-        <div className="flex items-center gap-1.5">
-          <FootballLogo src={homeLogo} label={homeTeam} size="xs" />
-          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(homeState, "label"))}>
-            {teamAbbrev(homeTeam)}
-            {homeState === "leading" ? <LeadingDot label="Home leading" /> : null}
-          </span>
-          <span className={cn("ml-auto", scoreSideClass(homeState, "goals"), goalsClass)}>
-            {homeGoals}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <FootballLogo src={awayLogo} label={awayTeam} size="xs" />
-          <span className={cn("inline-flex items-center gap-0.5", scoreSideClass(awayState, "label"))}>
-            {teamAbbrev(awayTeam)}
-            {awayState === "leading" ? <LeadingDot label="Away leading" /> : null}
-          </span>
-          <span className={cn("ml-auto", scoreSideClass(awayState, "goals"), goalsClass)}>
-            {awayGoals}
-          </span>
-        </div>
-      </div>
+    <div className="mt-auto flex min-h-[1.125rem] items-center pt-1.5">
+      <MirrorMatchScoreline
+        className="w-full"
+        variant="heatmap"
+        abbreviate
+        homeTeam={homeTeam}
+        awayTeam={awayTeam}
+        homeLogo={homeLogo}
+        awayLogo={awayLogo}
+        homeGoals={homeGoals}
+        awayGoals={awayGoals}
+        homeState={homeState}
+        awayState={awayState}
+        scoreClassName={cn(type.score, "font-bold tracking-tight leading-none")}
+        homeGoalsClassName={cn(type.scoreGoals, "leading-none")}
+        awayGoalsClassName={cn(type.scoreGoals, "leading-none")}
+        homeNameClassName={cn(scoreSideClass(homeState, "label"), type.score, "leading-none")}
+        awayNameClassName={cn(scoreSideClass(awayState, "label"), type.score, "leading-none")}
+        homeLabelExtra={
+          homeState === "leading" ? <LeadingDot label="Home leading" /> : null
+        }
+        awayLabelExtra={
+          awayState === "leading" ? <LeadingDot label="Away leading" /> : null
+        }
+      />
     </div>
   );
 }
@@ -519,30 +495,126 @@ function MosaicCompactFace({
       <div className="flex items-center justify-between gap-1.5">
         <LeagueIcon league={{ logo: match.leagueLogo, name: match.league }} size="xs" />
         <div className="min-w-0 text-right leading-none">
-          <p className={cn("tabular-nums", type.minute)}>{minuteLabel}</p>
+          <p className={cn("tabular-nums opacity-85", type.minute)}>{minuteLabel}</p>
           {live ? (
             <p className={cn("mt-0.5 uppercase opacity-90", type.live)}>Live</p>
           ) : null}
         </div>
       </div>
 
-      <p
-        className={cn(
-          "mt-auto flex min-w-0 items-center justify-center gap-1 tabular-nums",
-          type.score,
-        )}
-      >
-        <span className={scoreSideClass(homeState, "label")}>{teamAbbrev(match.homeTeam)}</span>
-        <span className={cn(scoreSideClass(homeState, "goals"), type.scoreGoals)}>
-          {match.homeGoals}
-        </span>
-        <span className="text-white/35">–</span>
-        <span className={cn(scoreSideClass(awayState, "goals"), type.scoreGoals)}>
-          {match.awayGoals}
-        </span>
-        <span className={scoreSideClass(awayState, "label")}>{teamAbbrev(match.awayTeam)}</span>
-      </p>
+      <div className="mt-auto flex min-h-[1.125rem] items-center">
+        <MirrorMatchScoreline
+          className="w-full leading-none"
+          variant="heatmap"
+          abbreviate
+          showLogos={false}
+          homeTeam={match.homeTeam}
+          awayTeam={match.awayTeam}
+          homeLogo={match.homeLogo}
+          awayLogo={match.awayLogo}
+          homeGoals={match.homeGoals}
+          awayGoals={match.awayGoals}
+          homeState={homeState}
+          awayState={awayState}
+          scoreClassName={cn("min-w-0 justify-center font-bold tracking-tight leading-none", type.score)}
+          homeGoalsClassName={cn(scoreSideClass(homeState, "goals"), type.scoreGoals, "leading-none")}
+          awayGoalsClassName={cn(scoreSideClass(awayState, "goals"), type.scoreGoals, "leading-none")}
+          homeNameClassName={cn(scoreSideClass(homeState, "label"), type.score, "leading-none")}
+          awayNameClassName={cn(scoreSideClass(awayState, "label"), type.score, "leading-none")}
+        />
+      </div>
     </>
+  );
+}
+
+function HeatmapCellHeader({
+  match,
+  type,
+  minuteLabel,
+  live,
+  palette,
+  layout,
+}: {
+  match: LiveMatch;
+  type: HeatmapTileType;
+  minuteLabel: string;
+  live: boolean;
+  palette: { accent: string };
+  layout: HeatmapLayout;
+}) {
+  const leagueLabel = (
+    <div className="flex min-w-0 flex-1 items-center gap-1 leading-none">
+      <LeagueIcon
+        league={{ logo: match.leagueLogo, name: match.league }}
+        size="xs"
+        className="shrink-0"
+      />
+      <p
+        className={cn("min-w-0 truncate font-semibold uppercase leading-none", type.league)}
+        style={{ color: palette.accent }}
+      >
+        {match.league}
+      </p>
+    </div>
+  );
+
+  if (layout === "grid") {
+    return (
+      <div className="flex items-center justify-between gap-1.5 leading-none">
+        {leagueLabel}
+        <div className="flex shrink-0 items-center gap-1">
+          <p className={cn("font-semibold tabular-nums opacity-85", type.minute)}>{minuteLabel}</p>
+          {live ? (
+            <span
+              className={cn(
+                "inline-flex items-center gap-0.5 font-semibold uppercase opacity-90",
+                type.live,
+              )}
+            >
+              <span className="relative flex h-1 w-1 shrink-0" aria-hidden>
+                <span className="absolute inset-0 animate-ping rounded-full bg-white/70" />
+                <span className="relative m-auto h-1 w-1 rounded-full bg-white" />
+              </span>
+              Live
+            </span>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start justify-between gap-2">
+      <div className="flex min-w-0 items-center gap-1.5 pt-0.5">
+        <LeagueIcon league={{ logo: match.leagueLogo, name: match.league }} size="xs" />
+        <p
+          className={cn("min-w-0 truncate font-semibold uppercase", type.league)}
+          style={{ color: palette.accent }}
+        >
+          {match.league}
+        </p>
+      </div>
+
+      <div className="shrink-0 text-right leading-none">
+        <p className={cn("font-semibold tabular-nums tracking-tight opacity-85", type.minute)}>
+          {minuteLabel}
+        </p>
+        {live ? (
+          <p
+            className={cn(
+              "mt-0.5 flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.1em] opacity-90",
+              type.live,
+            )}
+          >
+            <span className="relative flex h-1.5 w-1.5" aria-hidden>
+              <span className="absolute inset-0 animate-ping rounded-full bg-white/70" />
+              <span className="relative m-auto h-1 w-1 rounded-full bg-white" />
+            </span>
+            Live
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -630,35 +702,14 @@ function MatchHeatmapCell({
       style={cellStyle}
       title={cellTitle}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5 pt-0.5">
-          <LeagueIcon league={{ logo: match.leagueLogo, name: match.league }} size="xs" />
-          <p
-            className={cn("min-w-0 truncate font-semibold uppercase", type.league)}
-            style={{ color: palette.accent }}
-          >
-            {match.league}
-          </p>
-        </div>
-
-        <div className="shrink-0 text-right">
-          <p className={cn("font-bold tabular-nums tracking-tight", type.minute)}>{minuteLabel}</p>
-          {live ? (
-            <p
-              className={cn(
-                "mt-0.5 flex items-center justify-end gap-1 font-semibold uppercase tracking-[0.1em] opacity-90",
-                type.live,
-              )}
-            >
-              <span className="relative flex h-1.5 w-1.5" aria-hidden>
-                <span className="absolute inset-0 animate-ping rounded-full bg-white/70" />
-                <span className="relative m-auto h-1 w-1 rounded-full bg-white" />
-              </span>
-              Live
-            </p>
-          ) : null}
-        </div>
-      </div>
+      <HeatmapCellHeader
+        match={match}
+        type={type}
+        minuteLabel={minuteLabel}
+        live={live}
+        palette={palette}
+        layout={layout}
+      />
 
       <HeatmapMiddleBand match={match} density={density} layout={layout} rank={rank} />
 

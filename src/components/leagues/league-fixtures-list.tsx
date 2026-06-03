@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FootballLogo } from "@/components/overview/football-logo";
+import { MirrorMatchScoreline } from "@/components/matches/mirror-match-scoreline";
 import { formatNewsTimestamp } from "@/lib/data/format-news-date";
 import type { LeagueFixture } from "@/lib/data/league-profile";
 import { fixtureDetailHref } from "@/lib/match-paths";
@@ -58,23 +58,20 @@ function FixtureRow({ fixture }: { fixture: LeagueFixture }) {
         </time>
       </div>
 
-      <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <FootballLogo src={fixture.homeLogo} label={fixture.homeTeam} size="sm" />
-          <span className="truncate text-[0.8125rem] font-semibold text-neutral-950">
-            {fixture.homeTeam}
+      <MirrorMatchScoreline
+        className="mt-3"
+        variant="default"
+        homeTeam={fixture.homeTeam}
+        awayTeam={fixture.awayTeam}
+        homeLogo={fixture.homeLogo}
+        awayLogo={fixture.awayLogo}
+        upcoming
+        centerContent={
+          <span className="rounded-md bg-neutral-900/5 px-2 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-neutral-500">
+            vs
           </span>
-        </div>
-        <span className="rounded-md bg-neutral-900/5 px-2 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.08em] text-neutral-500">
-          vs
-        </span>
-        <div className="flex min-w-0 items-center justify-end gap-2">
-          <span className="truncate text-right text-[0.8125rem] font-semibold text-neutral-950">
-            {fixture.awayTeam}
-          </span>
-          <FootballLogo src={fixture.awayLogo} label={fixture.awayTeam} size="sm" />
-        </div>
-      </div>
+        }
+      />
     </>
   );
 
