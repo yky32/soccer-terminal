@@ -126,6 +126,7 @@ function buildLiveMatch(fixture: ApiFootballLiveFixture, countryCode: string): L
       fixture.league.id,
       fixture.league.name,
       fixture.league.flag,
+      fixture.league.country,
     ),
     venue: formatVenue(fixture.fixture.venue?.name, fixture.fixture.venue?.city),
     venueCity: fixture.fixture.venue?.city?.trim() || null,

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueMapZone } from "@/components/leagues/league-map-zone";
+import { CountryFlag } from "@/components/players/country-flag";
 import { leaguesGlassInset, leaguesGlassStrong } from "@/components/leagues/leagues-glass";
 import { Map, type MapRef } from "@/components/ui/map";
 import type { LeagueProfile } from "@/lib/data/league-profile";
@@ -39,7 +40,12 @@ export function LeagueHero({ league }: LeagueHeroProps) {
               />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <FootballLogo src={league.countryFlag} label={league.country} size="xs" />
+                  <CountryFlag
+                    key={league.id}
+                    nationality={league.country}
+                    src={league.countryFlag}
+                    size="xs"
+                  />
                   <span className="text-[0.8125rem] font-medium text-neutral-600">
                     {league.country}
                   </span>

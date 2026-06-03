@@ -9,6 +9,7 @@ import {
   type LeagueTeamStat,
 } from "@/lib/data/league-profile";
 import type { LeagueCatalogEntry } from "@/lib/football/league-catalog";
+import { countryFlagUrl } from "@/lib/data/nationality-flag";
 import {
   competitionFormatForEntry,
   seasonLabelForEntry,
@@ -208,7 +209,7 @@ export function buildLeagueShell(
     name: entry.name,
     shortName: entry.shortName,
     country: entry.country,
-    countryFlag: entry.countryFlag,
+    countryFlag: countryFlagUrl(entry.country, entry.countryFlag),
     logo: entry.logo,
     region: entry.region,
     tier: entry.tier,

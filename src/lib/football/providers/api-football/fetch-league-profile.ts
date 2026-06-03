@@ -1,5 +1,5 @@
 import type { LeagueLeaderBoards, LeagueProfile } from "@/lib/data/league-profile";
-import { entryHasKnockoutStage, type LeagueCatalogEntry } from "@/lib/football/league-catalog";
+import { entryHasKnockoutStage, resolveLeagueFlag, type LeagueCatalogEntry } from "@/lib/football/league-catalog";
 import { resolveSeasonYearForEntry } from "@/lib/football/providers/api-football/resolve-season";
 import { finalizeApiLeaderBoards } from "@/lib/data/league-stats";
 import {
@@ -82,9 +82,19 @@ async function fetchLeagueProfileUncached(
   );
 
   const standingsLeague = standingsBlocks[0]?.league;
+  const country = standingsLeague?.country ?? shell.country;
+  const countryFlag = resolveLeagueFlag(
+    entry.apiId,
+    entry.name,
+    standingsLeague?.flag,
+    country,
+  );
+
   if (standingsLeague && standingsLeague.id !== entry.apiId) {
     return {
       ...shell,
+      country,
+      countryFlag,
       apiLeagueId: standingsLeague.id,
       apiSeason: season,
       teams: 0,
@@ -106,6 +116,8 @@ async function fetchLeagueProfileUncached(
   if (standings.length === 0) {
     return {
       ...shell,
+      country,
+      countryFlag,
       teams: 0,
       matchday: 0,
       liveMatches: 0,
@@ -158,6 +170,8 @@ async function fetchLeagueProfileUncached(
 
   return {
     ...shell,
+    country,
+    countryFlag,
     apiLeagueId: entry.apiId,
     apiSeason: season,
     teams: standings.length,

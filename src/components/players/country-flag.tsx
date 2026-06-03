@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { nationalityFlagUrl } from "@/lib/data/nationality-flag";
+import { useEffect, useMemo, useState } from "react";
+import { countryFlagUrl } from "@/lib/data/nationality-flag";
 import { cn } from "@/lib/utils";
 
 type CountryFlagProps = {
   nationality: string;
+  src?: string | null;
   size?: "xs" | "sm" | "md";
   className?: string;
 };
@@ -16,12 +17,24 @@ const sizeClass = {
   md: "h-5 w-7",
 } as const;
 
-export function CountryFlag({ nationality, size = "sm", className }: CountryFlagProps) {
-  const [failed, setFailed] = useState(false);
-  const src = nationalityFlagUrl(nationality);
+export function CountryFlag({
+  nationality,
+  src: srcProp,
+  size = "sm",
+  className,
+}: CountryFlagProps) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const resolvedSrc = useMemo(
+    () => countryFlagUrl(nationality, srcProp),
+    [nationality, srcProp],
+  );
   const dim = sizeClass[size];
 
-  if (!src || failed) {
+  useEffect(() => {
+    setFailedSrc(null);
+  }, [nationality, srcProp, resolvedSrc]);
+
+  if (!resolvedSrc || failedSrc === resolvedSrc) {
     return (
       <span
         className={cn(
@@ -39,10 +52,14 @@ export function CountryFlag({ nationality, size = "sm", className }: CountryFlag
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={resolvedSrc}
       alt=""
-      className={cn("inline-block shrink-0 rounded-sm object-cover ring-1 ring-black/[0.06]", dim, className)}
-      onError={() => setFailed(true)}
+      className={cn(
+        "inline-block shrink-0 rounded-sm object-cover ring-1 ring-black/[0.06]",
+        dim,
+        className,
+      )}
+      onError={() => setFailedSrc(resolvedSrc)}
     />
   );
 }

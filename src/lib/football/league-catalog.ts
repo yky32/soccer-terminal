@@ -1,5 +1,6 @@
 import type { LeagueProfile } from "@/lib/data/league-profile";
 import type { LeagueRegion, LeagueTier } from "@/lib/data/league-profile";
+import { countryFlagUrl } from "@/lib/data/nationality-flag";
 
 export type LeagueSeasonKind = "split" | "calendar" | "tournament";
 
@@ -104,9 +105,12 @@ export function resolveLeagueFlag(
   apiId: number,
   leagueName: string | null | undefined,
   apiFlag: string | null | undefined,
+  country?: string | null,
 ): string | null {
-  if (apiFlag) return apiFlag;
-  return getCatalogEntryForApiLeague(apiId, leagueName)?.countryFlag ?? null;
+  const entry = getCatalogEntryForApiLeague(apiId, leagueName);
+  const resolvedCountry = country?.trim() || entry?.country || "";
+
+  return countryFlagUrl(resolvedCountry, apiFlag ?? entry?.countryFlag ?? null);
 }
 
 export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
@@ -129,7 +133,7 @@ export const LEAGUE_CATALOG: LeagueCatalogEntry[] = [
     name: "FIFA World Cup",
     shortName: "WC",
     country: "World",
-    countryFlag: "https://media.api-sports.io/flags/world.svg",
+    countryFlag: countryFlagUrl("World"),
     logo: leagueLogo(1),
     region: "world",
     tier: "continental",
@@ -295,7 +299,7 @@ export function buildLeagueCatalogShell(entry: LeagueCatalogEntry): LeagueProfil
     name: entry.name,
     shortName: entry.shortName,
     country: entry.country,
-    countryFlag: entry.countryFlag,
+    countryFlag: countryFlagUrl(entry.country, entry.countryFlag),
     logo: entry.logo,
     region: entry.region,
     tier: entry.tier,
