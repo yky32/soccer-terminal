@@ -7,6 +7,7 @@ import {
   fetchRelatedNewsArticles,
 } from "@/lib/football/data";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
+import { buildPageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -16,20 +17,30 @@ type NewsArticlePageProps = {
 
 export async function generateMetadata({ params }: NewsArticlePageProps) {
   if (!ENABLE_NEWS) {
-    return { title: "Not found" };
+    return buildPageMetadata({ title: "Not found", index: false });
   }
 
   const { id } = await params;
   const article = await fetchNewsArticleById(id);
 
   if (!article) {
-    return { title: "Article not found" };
+    return buildPageMetadata({ title: "Article not found", index: false });
   }
 
-  return {
+  return buildPageMetadata({
     title: article.headline,
     description: article.excerpt,
-  };
+    path: `/news/${id}`,
+    openGraph: {
+      type: "article",
+      images: [
+        {
+          url: article.imageUrl,
+          alt: article.imageAlt,
+        },
+      ],
+    },
+  });
 }
 
 export default async function NewsArticlePage({ params }: NewsArticlePageProps) {

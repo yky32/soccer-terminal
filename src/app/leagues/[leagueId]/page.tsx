@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { LeaguesPageShell } from "@/components/leagues/leagues-page-shell";
 import { fetchLeagueById, fetchLeagueCatalog } from "@/lib/football/data";
 import { getCatalogEntryById } from "@/lib/football/league-catalog";
+import { buildPageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,17 @@ export async function generateMetadata({ params }: LeaguePageProps) {
   const entry = getCatalogEntryById(leagueId);
 
   if (!entry) {
-    return { title: "League not found" };
+    return buildPageMetadata({
+      title: "League not found",
+      index: false,
+    });
   }
 
-  return {
+  return buildPageMetadata({
     title: entry.name,
     description: `${entry.name} standings, fixtures, teams, and league leaders.`,
-  };
+    path: `/leagues/${leagueId}`,
+  });
 }
 
 export default async function LeaguePage({ params }: LeaguePageProps) {

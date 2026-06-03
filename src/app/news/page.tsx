@@ -2,11 +2,14 @@ import { NewsFeed } from "@/components/news/news-feed";
 import { PageHeader } from "@/components/page-header";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
 import { fetchNewsArticles, getNewsLeaguesFromArticles } from "@/lib/football/data";
+import { buildPageMetadata } from "@/lib/metadata";
 import { notFound } from "next/navigation";
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: "News",
-};
+  description: "Football headlines, transfers, and breaking stories.",
+  path: "/news",
+});
 
 export const dynamic = "force-dynamic";
 

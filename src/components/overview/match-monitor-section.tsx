@@ -39,12 +39,14 @@ function QuickAddButton({
   count,
   disabled,
   onClick,
+  className,
 }: {
   icon: typeof CalendarDays;
   label: string;
   count: number;
   disabled?: boolean;
   onClick: () => void;
+  className?: string;
 }) {
   return (
     <button
@@ -56,6 +58,7 @@ function QuickAddButton({
         glassFocus,
         "inline-flex items-center gap-1.5 rounded-full py-1 pl-2 pr-2.5 text-[0.75rem] font-medium transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 sm:pr-3",
         "text-neutral-700 hover:bg-white/80 hover:text-neutral-950",
+        className,
       )}
     >
       <Icon className="h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
@@ -303,23 +306,33 @@ export function MatchMonitorSection() {
 
   const atCapacity = watchlistIds.length >= MAX_WATCHLIST;
 
+  const heatmapQuickAddClass =
+    "border border-white/12 bg-white/10 py-2 pl-2.5 pr-3 text-[0.8125rem] text-neutral-100 shadow-none hover:bg-white/16 hover:text-white disabled:text-neutral-500 [&_span.rounded-full]:bg-white/12 [&_span.rounded-full]:text-neutral-200";
+
   const heatmapEmptySlot =
     watchedItems.length === 0 ? (
-      <div className="flex flex-wrap items-center justify-center gap-2">
-        <QuickAddButton
-          icon={CalendarDays}
-          label="Today"
-          count={todayAddable}
-          disabled={loading || todayAddable === 0 || atCapacity}
-          onClick={() => addMatchesBulk(todayMatches)}
-        />
-        <QuickAddButton
-          icon={Sparkles}
-          label="All top"
-          count={famousAddable}
-          disabled={loading || famousAddable === 0 || atCapacity}
-          onClick={() => addMatchesBulk(famousMatches)}
-        />
+      <div className="flex w-full max-w-sm flex-col items-stretch gap-3">
+        <p className="text-center text-[0.6875rem] font-semibold uppercase tracking-[0.1em] text-neutral-400">
+          Quick add
+        </p>
+        <div className="grid grid-cols-2 gap-2.5">
+          <QuickAddButton
+            icon={CalendarDays}
+            label="Today"
+            count={todayAddable}
+            disabled={loading || todayAddable === 0 || atCapacity}
+            onClick={() => addMatchesBulk(todayMatches)}
+            className={cn(heatmapQuickAddClass, "w-full justify-center")}
+          />
+          <QuickAddButton
+            icon={Sparkles}
+            label="All top leagues"
+            count={famousAddable}
+            disabled={loading || famousAddable === 0 || atCapacity}
+            onClick={() => addMatchesBulk(famousMatches)}
+            className={cn(heatmapQuickAddClass, "w-full justify-center")}
+          />
+        </div>
       </div>
     ) : null;
 

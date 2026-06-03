@@ -6,6 +6,7 @@ import {
   fetchNewsArticles,
   fetchTeamProfile,
 } from "@/lib/football/data";
+import { buildPageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -18,13 +19,17 @@ export async function generateMetadata({ params }: TeamPageProps) {
   const team = await fetchTeamProfile(leagueId, teamSlug);
 
   if (!team) {
-    return { title: "Team not found" };
+    return buildPageMetadata({
+      title: "Team not found",
+      index: false,
+    });
   }
 
-  return {
+  return buildPageMetadata({
     title: `${team.name} · ${team.league.shortName}`,
     description: `${team.name} overview, table, fixtures, and squad in ${team.league.name}.`,
-  };
+    path: `/leagues/${leagueId}/teams/${teamSlug}`,
+  });
 }
 
 export default async function TeamPage({ params }: TeamPageProps) {

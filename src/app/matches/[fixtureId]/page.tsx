@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MatchDetailPanel } from "@/components/matches/match-detail-panel";
 import { fetchMatchDetail } from "@/lib/football/data";
+import { buildPageMetadata } from "@/lib/metadata";
 
 type MatchPageProps = {
   params: Promise<{ fixtureId: string }>;
@@ -12,14 +13,20 @@ export async function generateMetadata({ params }: MatchPageProps) {
   const detail = Number.isFinite(id) ? await fetchMatchDetail(id) : null;
 
   if (!detail) {
-    return { title: "Match not found" };
+    return buildPageMetadata({
+      title: "Match not found",
+      index: false,
+    });
   }
 
   const { match } = detail;
-  return {
-    title: `${match.homeTeam} vs ${match.awayTeam}`,
+  const title = `${match.homeTeam} vs ${match.awayTeam}`;
+
+  return buildPageMetadata({
+    title,
     description: `${match.league} — match facts, lineups, and head-to-head.`,
-  };
+    path: `/matches/${fixtureId}`,
+  });
 }
 
 export default async function MatchPage({ params }: MatchPageProps) {

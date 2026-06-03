@@ -4,6 +4,7 @@ import {
   fetchPlayerProfile,
   findPlayerBySlug,
 } from "@/lib/football/data";
+import { buildPageMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +17,17 @@ export async function generateMetadata({ params }: PlayerPageProps) {
   const match = await findPlayerBySlug(leagueId, playerSlug);
 
   if (!match) {
-    return { title: "Player not found" };
+    return buildPageMetadata({
+      title: "Player not found",
+      index: false,
+    });
   }
 
-  return {
+  return buildPageMetadata({
     title: `${match.name} · ${match.standing.team}`,
     description: `${match.name} profile, stats, match performance, and league form in ${match.league.name}.`,
-  };
+    path: `/leagues/${leagueId}/players/${playerSlug}`,
+  });
 }
 
 export default async function PlayerPage({ params }: PlayerPageProps) {

@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import { ThemeInitScript } from "@/components/theme-init-script";
-import { PRODUCT_NAME, TITLE_TEMPLATE } from "@/lib/metadata";
+import { rootMetadata } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -11,18 +10,7 @@ const inter = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: PRODUCT_NAME,
-    template: TITLE_TEMPLATE,
-  },
-  description:
-    "Professional soccer intelligence — global live map, leagues, and match insights.",
-  icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
-  },
-};
+export const metadata = rootMetadata;
 
 export default function RootLayout({
   children,

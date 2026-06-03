@@ -1017,11 +1017,26 @@ export function MatchHeatmapGrid({
             : "rounded-xl border border-dashed border-black/10 bg-neutral-950/[0.03]",
         )}
       >
-        <div className="flex max-w-md flex-col items-center gap-4">
-          <p className="text-[0.875rem] leading-relaxed text-neutral-500">
-            Add fixtures with Quick add or search above. Your watchlist appears here as a live
-            heat map.
-          </p>
+        <div className="flex w-full max-w-lg flex-col items-center gap-6 px-2">
+          <div className="space-y-2 text-center">
+            <h3
+              className={cn(
+                "text-[1.0625rem] font-semibold tracking-tight",
+                fullWidth ? "text-neutral-100" : "text-neutral-900",
+              )}
+            >
+              Your watchlist is empty
+            </h3>
+            <p
+              className={cn(
+                "text-[0.9375rem] leading-relaxed",
+                fullWidth ? "text-neutral-400" : "text-neutral-600",
+              )}
+            >
+              Search for a team or league above, or use quick add below. Matches show up here
+              as a live scoreboard.
+            </p>
+          </div>
           {emptySlot}
         </div>
       </div>

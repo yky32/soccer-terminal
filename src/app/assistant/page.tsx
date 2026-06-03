@@ -4,11 +4,14 @@ import { isLlmEnabled } from "@/lib/assistant/llm";
 import { AssistantDemo } from "@/components/assistant/assistant-demo";
 import { PageHeader } from "@/components/page-header";
 import { ENABLE_AI, ENABLE_NEWS } from "@/lib/feature-flags";
+import { buildPageMetadata } from "@/lib/metadata";
 import { notFound } from "next/navigation";
 
-export const metadata = {
-  title: "AI",
-};
+export const metadata = buildPageMetadata({
+  title: "AI Assistant",
+  description: "Football briefings and conversational insights powered by live data.",
+  path: "/assistant",
+});
 
 export const dynamic = "force-dynamic";
 
