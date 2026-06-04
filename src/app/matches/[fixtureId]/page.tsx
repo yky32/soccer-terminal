@@ -6,6 +6,7 @@ import {
   formatMatchPageDescription,
   formatMatchPageTitle,
 } from "@/lib/seo/detail-metadata";
+import { buildMatchPageIntro } from "@/lib/seo/page-intros";
 
 type MatchPageProps = {
   params: Promise<{ fixtureId: string }>;
@@ -44,5 +45,7 @@ export default async function MatchPage({ params }: MatchPageProps) {
     notFound();
   }
 
-  return <MatchDetailPanel detail={detail} />;
+  return (
+    <MatchDetailPanel detail={detail} introParagraphs={buildMatchPageIntro(detail)} />
+  );
 }

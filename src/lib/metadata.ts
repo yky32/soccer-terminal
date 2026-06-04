@@ -5,7 +5,7 @@ export const PRODUCT_NAME = "Soccer Terminal";
 export const TITLE_TEMPLATE = `%s - ${PRODUCT_NAME}`;
 
 export const SITE_DESCRIPTION =
-  "Live and upcoming football worldwide — global match map, league dashboards, and match monitoring.";
+  "Live football map and scores worldwide — league standings, fixtures, lineups, and match stats in one terminal.";
 
 /** Public AdSense publisher ID (site verification + ad units). */
 export const ADSENSE_PUBLISHER_ID = "ca-pub-6625924027167786";
@@ -114,8 +114,11 @@ export const rootMetadata: Metadata = {
   authors: [{ name: PRODUCT_NAME }],
   creator: PRODUCT_NAME,
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon", sizes: "48x48", type: "image/png" },
+      { url: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     type: "website",

@@ -22,7 +22,9 @@ export function buildSiteJsonLdGraph(): JsonLdNode {
         url: siteUrl,
         logo: {
           "@type": "ImageObject",
-          url: absoluteUrl("/icon.svg"),
+          url: absoluteUrl("/apple-icon"),
+          width: 180,
+          height: 180,
         },
       },
       {

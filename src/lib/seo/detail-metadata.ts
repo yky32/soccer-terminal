@@ -17,16 +17,20 @@ function formatKickoffDate(iso: string) {
   }).format(new Date(iso));
 }
 
+export function formatKickoffDateForSeo(iso: string) {
+  return formatKickoffDate(iso);
+}
+
 export function formatMatchPageTitle(match: LiveMatch) {
   if (isMatchLive(match)) {
-    return `${match.homeTeam} ${match.homeGoals}–${match.awayGoals} ${match.awayTeam} (Live)`;
+    return `${match.homeTeam} ${match.homeGoals}–${match.awayGoals} ${match.awayTeam} - Live Score`;
   }
 
   if (FINISHED_STATUSES.has(match.statusShort)) {
-    return `${match.homeTeam} ${match.homeGoals}–${match.awayGoals} ${match.awayTeam}`;
+    return `${match.homeTeam} ${match.homeGoals}–${match.awayGoals} ${match.awayTeam} - Match Result`;
   }
 
-  return `${match.homeTeam} vs ${match.awayTeam}`;
+  return `${match.homeTeam} vs ${match.awayTeam} - Live Score & Stats`;
 }
 
 export function formatMatchPageDescription(detail: MatchDetail) {
@@ -55,7 +59,7 @@ export function formatMatchPageDescription(detail: MatchDetail) {
 }
 
 export function formatTeamPageTitle(team: TeamProfile) {
-  return `${team.name} · ${team.league.shortName}`;
+  return `${team.name} - Fixtures, Squad & Stats`;
 }
 
 export function formatTeamPageDescription(team: TeamProfile) {
@@ -78,4 +82,16 @@ export function formatPlayerPageDescription(match: PlayerSlugMatch) {
     `League position #${standing.rank} — ${standing.points} pts.`,
     "Player profile, stats, and recent match performance.",
   ].join(" ");
+}
+
+export function formatLeaguePageTitle(name: string) {
+  return `${name} - Standings, Fixtures & Teams`;
+}
+
+export function formatLeaguePageDescription(entry: {
+  name: string;
+  country: string;
+  shortName: string;
+}) {
+  return `${entry.name} (${entry.country}) standings, fixtures, teams, and stat leaders — ${entry.shortName} dashboard on Soccer Terminal.`;
 }

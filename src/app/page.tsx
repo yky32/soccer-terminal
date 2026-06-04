@@ -5,9 +5,9 @@ import { GlobalMapSection } from "@/components/overview/global-map-section";
 import { buildPageMetadata } from "@/lib/metadata";
 
 export const metadata = buildPageMetadata({
-  title: "Global",
+  title: "Live Football Map & Scores",
   description:
-    "Live and upcoming matches on a global map, with league coverage and a personal match monitor.",
+    "Follow live and upcoming football on an interactive global map — league standings, fixtures, lineups, and match stats.",
   path: "/",
 });
 

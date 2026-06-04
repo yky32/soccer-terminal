@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { BrandIconImage } from "@/lib/brand-icon-image";
 import { PRODUCT_NAME, SITE_DESCRIPTION } from "@/lib/metadata";
 
 export const alt = PRODUCT_NAME;
@@ -27,20 +28,14 @@ export default function OpenGraphImage() {
               width: 56,
               height: 56,
               borderRadius: 999,
-              background: "#000",
+              overflow: "hidden",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              background: "#ffffff",
             }}
           >
-            <div
-              style={{
-                width: 18,
-                height: 18,
-                background: "#fff",
-                transform: "rotate(30deg)",
-              }}
-            />
+            <BrandIconImage size={56} />
           </div>
           <span style={{ fontSize: 36, fontWeight: 700, letterSpacing: "-0.02em" }}>
             {PRODUCT_NAME}

@@ -11,6 +11,7 @@ import {
   formatTeamPageDescription,
   formatTeamPageTitle,
 } from "@/lib/seo/detail-metadata";
+import { buildTeamPageIntro } from "@/lib/seo/page-intros";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,12 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
   return (
     <div className="page-container pb-14 pt-6 sm:pb-16 sm:pt-8">
-      <TeamDetailPanel team={team} articles={articles} teamNews={teamNews} />
+      <TeamDetailPanel
+        team={team}
+        articles={articles}
+        teamNews={teamNews}
+        introParagraphs={buildTeamPageIntro(team)}
+      />
     </div>
   );
 }

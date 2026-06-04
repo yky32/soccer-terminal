@@ -12,6 +12,7 @@ import { MatchDetailLineups } from "@/components/matches/match-detail-lineups";
 import { MatchDetailPlayerStats } from "@/components/matches/match-detail-player-stats";
 import { MatchDetailStats } from "@/components/matches/match-detail-stats";
 import { MatchDetailTimeline } from "@/components/matches/match-detail-timeline";
+import { SeoIntroBlock } from "@/components/seo/seo-intro-block";
 import {
   leaguesGlass,
   leaguesGlassFocus,
@@ -87,7 +88,13 @@ function MatchDetailExploreNav({ match }: { match: LiveMatch }) {
   );
 }
 
-export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail }) {
+export function MatchDetailPanel({
+  detail: rawDetail,
+  introParagraphs,
+}: {
+  detail: MatchDetail;
+  introParagraphs?: string[];
+}) {
   const router = useRouter();
   const [tab, setTab] = useState<MatchDetailTab>("overview");
   const detail = coerceMatchDetail(rawDetail);
@@ -187,6 +194,10 @@ export function MatchDetailPanel({ detail: rawDetail }: { detail: MatchDetail })
       </div>
 
       <MatchDetailExploreNav match={match} />
+
+      {introParagraphs?.length ? (
+        <SeoIntroBlock className="mt-6" paragraphs={introParagraphs} />
+      ) : null}
     </div>
   );
 }

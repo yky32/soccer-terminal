@@ -12,6 +12,7 @@ import { TeamFormStrip, TeamHero, TeamUpcomingStrip } from "@/components/teams/t
 import { TeamNewsPanel } from "@/components/teams/team-news-panel";
 import { TeamResultsList } from "@/components/teams/team-results-list";
 import { TeamSquadList } from "@/components/teams/team-squad-list";
+import { SeoIntroBlock } from "@/components/seo/seo-intro-block";
 import type { TeamProfile } from "@/lib/data/team-profile";
 import type { NewsArticle } from "@/lib/data/news-article";
 import { ENABLE_NEWS } from "@/lib/feature-flags";
@@ -31,6 +32,7 @@ type TeamDetailPanelProps = {
   team: TeamProfile;
   articles: NewsArticle[];
   teamNews: NewsArticle[];
+  introParagraphs?: string[];
 };
 
 const ALL_TABS: { id: TeamDetailTab; label: string }[] = [
@@ -46,7 +48,7 @@ const ALL_TABS: { id: TeamDetailTab; label: string }[] = [
 
 const TABS = ALL_TABS.filter((tab) => ENABLE_NEWS || tab.id !== "news");
 
-export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelProps) {
+export function TeamDetailPanel({ team, articles, teamNews, introParagraphs }: TeamDetailPanelProps) {
   const [tab, setTab] = useState<TeamDetailTab>("overview");
 
   return (
@@ -193,6 +195,10 @@ export function TeamDetailPanel({ team, articles, teamNews }: TeamDetailPanelPro
 
       {ENABLE_NEWS && tab === "news" ? (
         <TeamNewsPanel team={team} articles={teamNews.length > 0 ? teamNews : articles.slice(0, 6)} />
+      ) : null}
+
+      {introParagraphs?.length ? (
+        <SeoIntroBlock className="mt-6" paragraphs={introParagraphs} />
       ) : null}
     </div>
   );

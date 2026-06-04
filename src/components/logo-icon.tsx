@@ -1,22 +1,11 @@
-import {
-  hexagonPoints,
-  pointsToPath,
-  twoHexCenters,
-} from "@/lib/logo-geometry";
+import { getBrandLogoHexPaths } from "@/lib/brand-logo-mark";
 
 type LogoIconProps = {
   className?: string;
 };
 
 export function LogoIcon({ className = "h-10 w-10" }: LogoIconProps) {
-  const cx = 24;
-  const cy = 24;
-  const ballR = 22;
-  const hexR = 6;
-
-  const hexPaths = twoHexCenters(cx, cy, hexR).map((center) =>
-    pointsToPath(hexagonPoints(center.x, center.y, hexR)),
-  );
+  const hexPaths = getBrandLogoHexPaths();
 
   return (
     <svg
@@ -27,7 +16,7 @@ export function LogoIcon({ className = "h-10 w-10" }: LogoIconProps) {
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
-      <circle cx={cx} cy={cy} r={ballR} fill="currentColor" />
+      <circle cx={24} cy={24} r={22} fill="currentColor" />
       {hexPaths.map((d, i) => (
         <path key={i} d={d} fill="#ffffff" />
       ))}
