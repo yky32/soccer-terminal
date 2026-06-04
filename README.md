@@ -1,7 +1,8 @@
-# Soccer World Monitor
+# Soccer Terminal
 
-**Professional soccer intelligence platform** — live match monitoring, deep analytics, and talent scouting in a unified command center for serious football professionals.
+**Live football on a global map** — scores, standings, match detail, and league dashboards in one fast, scannable app.
 
+[![Live site](https://img.shields.io/badge/Live-soccer--terminal.app-16a34a?style=flat)](https://www.soccer-terminal.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-yky32%2Fsoccer--terminal-181717?style=flat&logo=github)](https://github.com/yky32/soccer-terminal)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -10,57 +11,41 @@
 
 &nbsp;
 
-[Product Vision](./product-summary.md) · [Quick Start](#quick-start) · [Roadmap](#roadmap)
+**Live:** [soccer-terminal.app](https://www.soccer-terminal.app/) · [Product vision](./product-summary.md) · [Quick start](#quick-start)
 
 ---
 
 ## What It Does
 
-Soccer World Monitor is a global football intelligence dashboard inspired by the *concept* of situational awareness tools like [World Monitor](https://github.com/koala73/worldmonitor) — adapted entirely for the sport. It is **not a copy** of that project; it has its own identity, UX, and football-specific data model.
+Soccer Terminal is a global football dashboard inspired by situational-awareness tools like [World Monitor](https://github.com/koala73/worldmonitor) — adapted entirely for the sport. It is **not a copy** of that project; it has its own identity, UX, and football-specific data model.
 
-The platform is designed to combine:
+| Area | What you get |
+|------|----------------|
+| **Global map** | Live and upcoming fixtures worldwide (MapLibre), country drill-down, league filters |
+| **Leagues** | Standings, fixtures, knockout brackets, stat leaders, team and player profiles |
+| **Matches** | Live score, lineups (with player deep links), stats, timeline, head-to-head |
+| **News** | Headlines and story pages *(feature-flagged; off by default)* |
+| **AI Assistant** | Daily briefings and chat *(feature-flagged; off by default)* |
 
-- **Global** — live and upcoming matches on an interactive world map with country drill-down and league filters
-- **News** — football headlines, transfers, and curated stories from leagues worldwide
-- **Leagues** — standings, fixtures, and league dashboards across competitions
-- **AI** — daily briefings, tactical trend analysis, and a conversational interface for plain-language questions
-
-For the full product vision, UX philosophy, and differentiation strategy, see **[product-summary.md](./product-summary.md)**.
-
----
-
-## Who It's For
-
-| Audience | Use case |
-|----------|----------|
-| Analysts & coaches | Live global match context and league coverage |
-| News & media professionals | Headlines, transfers, and story tracking |
-| League operators & fans | Standings, fixtures, and competition dashboards |
-| Tactical & data analysts | AI briefings and conversational insights |
+For the full product vision and differentiation strategy, see **[product-summary.md](./product-summary.md)**.
 
 ---
 
 ## Project Status
 
-The project is in **early alpha**. The app shell, navigation, and route structure are in place; core data integrations and feature UIs are under active development.
+**Production beta** — core map, league, match, team, and player flows are live at [soccer-terminal.app](https://www.soccer-terminal.app/). News and AI ship behind feature flags until ready for general release.
 
 | Module | Route | Status |
 |--------|-------|--------|
-| Global | `/` | ✅ Map live (mock or API-Football) |
-| News | `/news` | 🚧 Planned |
-| Leagues | `/leagues` | 🚧 Planned |
-| AI | `/assistant` | 🚧 Planned |
+| Global map | `/` | ✅ Live (API-Football or mock) |
+| Leagues | `/leagues`, `/leagues/[id]` | ✅ Standings, fixtures, leaders |
+| Teams | `/leagues/[id]/teams/[slug]` | ✅ Squad, form, club info |
+| Players | `/leagues/[id]/players/[slug]` | ✅ Stats and profile |
+| Matches | `/matches/[fixtureId]` | ✅ Lineups, stats, timeline |
+| News | `/news` | 🚧 Built; enable with `NEXT_PUBLIC_ENABLE_NEWS=true` |
+| AI Assistant | `/assistant` | 🚧 Built; enable with `NEXT_PUBLIC_ENABLE_AI=true` |
 
----
-
-## Design Philosophy
-
-Built with an **Uber-inspired** interface — simple, fast, and scannable — paired with **Bloomberg-level analytical depth** when you need it.
-
-- Dark mode by default (light mode planned)
-- Mobile-first, responsive layout
-- Card-based dashboards with generous whitespace
-- Clear hierarchy so users understand the app within seconds
+Also shipped: SEO metadata and crawlable page intros, sitemap/robots, brand favicon, Vercel Analytics + Speed Insights, edge-cached API routes.
 
 ---
 
@@ -70,26 +55,27 @@ Built with an **Uber-inspired** interface — simple, fast, and scannable — pa
 git clone https://github.com/yky32/soccer-terminal.git
 cd soccer-terminal
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
 Open [localhost:3000](http://localhost:3000).
 
-Copy `.env.example` to `.env.local` and set your API-Football key:
-
-```bash
-cp .env.example .env.local
-```
+### Environment variables
 
 | Variable | Description |
 |----------|-------------|
-| `API_FOOTBALL_KEY` | Key from [API-Football](https://www.api-football.com/) |
-| `FOOTBALL_DATA_PROVIDER` | Data source (`api-football`; more providers can be added) |
+| `API_FOOTBALL_KEY` | Key from [API-Football](https://www.api-football.com/) — required for live data and match pages |
+| `FOOTBALL_DATA_PROVIDER` | `api-football` (default) or `mock` for offline map/league dev |
 | `NEXT_PUBLIC_SITE_URL` | Public origin for canonical URLs, Open Graph, and sitemap (e.g. `https://www.soccer-terminal.app`) |
+| `NEXT_PUBLIC_ENABLE_NEWS` | Set `true` to expose News nav, routes, and API |
+| `NEXT_PUBLIC_ENABLE_AI` | Set `true` to expose AI Assistant nav and routes |
+| `OPENAI_API_KEY` | Optional — enables LLM briefings/chat; demo mode when unset |
+| `API_HTTP_LOG` | Set `false` to silence request/response DTO logging (default: on) |
 
-The Global map loads fixtures via `GET /api/map/live-countries` (cached ~60s on the server). Set `FOOTBALL_DATA_PROVIDER=mock` for offline development.
+The global map loads fixtures via `GET /api/map/live-countries` (cached ~60s). Match detail pages (`/matches/*`) always require a real API key — no mock fallback.
 
-All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request DTO** and **Response DTO** to the console by default. Set `API_HTTP_LOG=false` to turn logging off.
+Cache tiers live in `src/lib/football/refresh-policy.ts` (live 60s, standings 10m, players 24h).
 
 ---
 
@@ -108,8 +94,11 @@ All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request D
 
 | Category | Technologies |
 |----------|-------------|
-| **Framework** | [Next.js 16](https://nextjs.org) (App Router) |
-| **UI** | [React 19](https://react.dev), [Tailwind CSS 4](https://tailwindcss.com) |
+| **Framework** | [Next.js 16](https://nextjs.org) (App Router, RSC) |
+| **UI** | [React 19](https://react.dev), [Tailwind CSS 4](https://tailwindcss.com), shadcn/ui |
+| **Maps** | [MapLibre GL](https://maplibre.org/) |
+| **Data** | [API-Football](https://www.api-football.com/) with pluggable mock provider |
+| **Analytics** | [Vercel Analytics](https://vercel.com/docs/analytics) + Speed Insights |
 | **Language** | [TypeScript](https://www.typescriptlang.org) |
 | **Deployment** | [Vercel](https://vercel.com) |
 
@@ -119,13 +108,19 @@ All HTTP calls go through `src/lib/http/api-client.ts`, which prints **Request D
 
 ```
 src/
-├── app/              # Routes and layouts (App Router)
-│   ├── news/         # News feed
-│   ├── leagues/      # League browser
-│   └── assistant/    # AI assistant
-├── components/       # Shared UI components
-├── lib/              # Utilities and config
-└── types/            # Shared TypeScript types
+├── app/                    # App Router pages and API routes
+│   ├── page.tsx            # Global live map
+│   ├── matches/            # Match detail
+│   ├── leagues/            # League, team, player pages
+│   ├── news/               # News feed (feature-flagged)
+│   ├── assistant/          # AI briefing + chat (feature-flagged)
+│   └── api/                # Cached football + assistant endpoints
+├── components/             # UI (map, leagues, matches, seo, …)
+└── lib/
+    ├── football/           # Data providers, cache, normalization
+    ├── seo/                # Metadata, JSON-LD, sitemap, page intros
+    ├── assistant/          # Briefing + LLM integration
+    └── http/               # Shared API client and route helpers
 ```
 
 ---
@@ -133,13 +128,13 @@ src/
 ## Deploy to Vercel
 
 1. Push this repo to GitHub.
-2. Import the project at [vercel.com/new](https://vercel.com/new).
-3. Vercel auto-detects Next.js — no extra config needed.
-4. Add your custom domain under **Project → Settings → Domains** (e.g. `soccer-terminal.app` and `www.soccer-terminal.app`). Set the primary host to redirect to `www` if you use that as canonical.
-5. In **Environment Variables** (Production), set `NEXT_PUBLIC_SITE_URL=https://www.soccer-terminal.app` so metadata, sitemap, and share previews use the custom domain.
-6. Deploy.
-
-**Live:** [soccer-terminal.app](https://www.soccer-terminal.app/)
+2. Import the project at [vercel.com/new](https://vercel.com/new) — Next.js is auto-detected.
+3. Add **Environment Variables** for Production:
+   - `API_FOOTBALL_KEY`
+   - `NEXT_PUBLIC_SITE_URL=https://www.soccer-terminal.app`
+   - Optional: `NEXT_PUBLIC_ENABLE_NEWS`, `NEXT_PUBLIC_ENABLE_AI`, `OPENAI_API_KEY`
+4. Add your custom domain under **Project → Settings → Domains** (`soccer-terminal.app` + `www`).
+5. Enable **Web Analytics** under the project **Analytics** tab to view traffic in the Vercel dashboard.
 
 Or use the CLI:
 
@@ -147,40 +142,28 @@ Or use the CLI:
 npx vercel
 ```
 
-### Environment variables
-
-When data sources and AI features are wired up, secrets will go in the Vercel dashboard under **Project → Settings → Environment Variables**, or in a local `.env.local` file. **Never commit credentials.**
+**Never commit** `.env.local` or API keys.
 
 ---
 
 ## Roadmap
 
-1. **Global** — interactive world map with live/future match pins and country drill-down
-2. **News** — headline feed, transfers, and match-related stories
-3. **Leagues** — standings, fixtures, and league dashboards
-4. **AI** — daily briefings and chat interface
-
----
-
-## Differentiation
-
-| vs. consumer apps (e.g. FotMob) | vs. data-heavy platforms |
-|--------------------------------|--------------------------|
-| Global live map with drill-down | Cleaner, simpler UI |
-| News and league coverage in one place | Faster to scan and act on |
-| AI briefings on demand | Uber-level simplicity |
+1. **News** — enable headline feed and team news tabs in production
+2. **AI** — enable assistant with LLM-backed briefings
+3. **Dark mode** — finish theme polish across all surfaces
+4. **Monetization** — waitlist, affiliates, optional Pro tier
 
 ---
 
 ## Contributing
 
-This is an early-stage project. Issues and pull requests are welcome once contribution guidelines are added. For now, open an [issue](https://github.com/yky32/soccer-terminal/issues) to discuss features or report bugs.
+Issues and pull requests are welcome. Open an [issue](https://github.com/yky32/soccer-terminal/issues) to discuss features or report bugs.
 
 ---
 
 ## Inspiration
 
-Soccer World Monitor takes inspiration from global monitoring and situational awareness concepts — particularly projects like [World Monitor](https://github.com/koala73/worldmonitor) — and applies them to football intelligence with a distinct product vision, design system, and feature set.
+Soccer Terminal takes inspiration from global monitoring and situational awareness concepts — particularly projects like [World Monitor](https://github.com/koala73/worldmonitor) — and applies them to football with a distinct product vision, design system, and feature set.
 
 ---
 
