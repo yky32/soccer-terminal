@@ -16,11 +16,16 @@ import {
   seasonYearForEntry,
 } from "@/lib/football/league-catalog";
 import type { ApiFootballLiveFixture } from "@/lib/football/providers/api-football/types";
+import {
+  isSupplementalStandingsGroup,
+  uniqueStandingRowsByTeam,
+} from "@/lib/football/standing-rows";
 import { resolveStandingQualification } from "@/lib/football/standing-qualification";
 import { playerSlugFromTeamAndName } from "@/lib/player-paths";
 
 export type ApiFootballStandingRow = {
   rank: number;
+  group?: string | null;
   team: { id: number; name: string; logo: string | null };
   points: number;
   goalsDiff: number;
@@ -158,9 +163,12 @@ export function flattenStandingsGroups(groups: ApiFootballStandingRow[][]): Leag
     return (groups[0] ?? []).map((row) => normalizeStandingRow(row));
   }
 
-  return groups.flatMap((group, index) =>
-    group.map((row) => normalizeStandingRow(row, standingsGroupLabel(index))),
-  );
+  return groups.flatMap((group, index) => {
+    const groupName = group[0]?.group ?? standingsGroupLabel(index);
+    if (isSupplementalStandingsGroup(groupName)) return [];
+
+    return group.map((row) => normalizeStandingRow(row, row.group ?? groupName));
+  });
 }
 
 export function normalizeStandingRow(
@@ -303,7 +311,7 @@ export function normalizeLeaderBoards(
 }
 
 export function teamWinRatesFromStandings(standings: LeagueStandingRow[]): LeagueTeamStat[] {
-  return [...standings]
+  return [...uniqueStandingRowsByTeam(standings)]
     .filter((row) => row.played > 0)
     .map((row) => ({
       rank: row.rank,

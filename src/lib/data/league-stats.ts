@@ -8,6 +8,7 @@ import {
   type LeagueStandingRow,
   type LeagueTeamStat,
 } from "@/lib/data/league-profile";
+import { uniqueStandingRowsByTeam } from "@/lib/football/standing-rows";
 import { teamSlugFromName } from "@/lib/team-paths";
 
 const FIRST_NAMES = [
@@ -175,7 +176,7 @@ function buildPlayerLeaderRows(
 }
 
 function buildTeamWinRates(standings: LeagueStandingRow[], limit: number): LeagueTeamStat[] {
-  return [...standings]
+  return [...uniqueStandingRowsByTeam(standings)]
     .map((standing) => ({
       team: standing.team,
       teamLogo: standing.teamLogo,
