@@ -110,6 +110,11 @@ export const rootMetadata: Metadata = {
     "fixtures",
     "league standings",
     "match map",
+    "match stats",
+    "team stats",
+    "player stats",
+    "world football",
+    "live football",
   ],
   authors: [{ name: PRODUCT_NAME }],
   creator: PRODUCT_NAME,
@@ -135,6 +140,9 @@ export const rootMetadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  alternates: {
+    canonical: "/",
   },
   verification: {
     google: "a_vlY6eLbppnrZvc2o3IHYmSK3DekIpEJ_erQ3tq00c",
