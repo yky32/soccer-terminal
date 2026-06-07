@@ -1,5 +1,8 @@
+"use client";
+
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchDetailScoreBlock } from "@/components/matches/match-detail-score";
+import { TrackMatchButton } from "@/components/my-soccer/track-match-button";
 import {
   leaguesGlassInset,
   leaguesGlassInsetBar,
@@ -46,6 +49,7 @@ export function MatchDetailHero({ match, detail }: MatchDetailHeroProps) {
               {match.leagueRound}
             </span>
           ) : null}
+          <TrackMatchButton fixtureId={match.id} compact className="ml-auto sm:ml-0" />
         </div>
 
         {kickoff && !upcoming ? (

@@ -5,10 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FootballLogo } from "@/components/overview/football-logo";
 import { LeagueIcon } from "@/components/leagues/league-icon";
 import { MatchHeatmapGrid } from "@/components/overview/match-heatmap-grid";
+import { useMySoccer } from "@/components/my-soccer/my-soccer-provider";
 import { glassFocus, glassInset } from "@/components/glass-surface";
 import type { LiveMatch } from "@/lib/data/live-match";
 import {
-  bulkAddToWatchlist,
   countAddableMatches,
   FAMOUS_LEAGUES,
   filterFamousLeagueMatches,
@@ -19,12 +19,10 @@ import {
   MAX_WATCHLIST,
   matchMinuteLabel,
   markWatchlistOnboarded,
-  readWatchlistIds,
   readWatchlistOnboarded,
   searchMatches,
   sortHeatmapItems,
   teamAbbrev,
-  writeWatchlistIds,
   type MonitoredMatch,
 } from "@/lib/match-monitor";
 import { useMapCountries } from "@/components/overview/map-countries-context";
@@ -173,7 +171,14 @@ function SearchResultRow({
 export function MatchMonitorSection() {
   const { data, loading, error, refresh } = useMapCountries();
   const { formatKickoffTime } = useFormatDateTime();
-  const [watchlistIds, setWatchlistIds] = useState<number[]>(() => readWatchlistIds());
+  const {
+    watchlistIds,
+    addMatch,
+    removeMatch,
+    bulkAddMatches,
+    clearWatchlist,
+    atWatchlistCapacity,
+  } = useMySoccer();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -191,10 +196,6 @@ export function MatchMonitorSection() {
   );
 
   const updatedAt = data?.live.updatedAt ?? data?.future.updatedAt ?? null;
-
-  useEffect(() => {
-    writeWatchlistIds(watchlistIds);
-  }, [watchlistIds]);
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -263,9 +264,9 @@ export function MatchMonitorSection() {
       return;
     }
 
-    setWatchlistIds((current) => bulkAddToWatchlist(current, seed));
+    bulkAddMatches(seed);
     markWatchlistOnboarded();
-  }, [data, famousMatches, loading, todayMatches, watchlistIds.length]);
+  }, [bulkAddMatches, data, famousMatches, loading, todayMatches, watchlistIds.length]);
 
   const famousLeagueQuickAdds = useMemo(
     () =>
@@ -284,27 +285,14 @@ export function MatchMonitorSection() {
     [catalog, watchlistIds],
   );
 
-  const addMatch = useCallback((match: LiveMatch) => {
-    setWatchlistIds((current) => {
-      if (current.includes(match.id)) return current;
-      if (current.length >= MAX_WATCHLIST) return current;
-      return [...current, match.id];
-    });
-  }, []);
+  const addMatchFromSearch = useCallback(
+    (match: LiveMatch) => {
+      addMatch(match.id);
+    },
+    [addMatch],
+  );
 
-  const addMatchesBulk = useCallback((items: MonitoredMatch[]) => {
-    setWatchlistIds((current) => bulkAddToWatchlist(current, items));
-  }, []);
-
-  const removeMatch = useCallback((matchId: number) => {
-    setWatchlistIds((current) => current.filter((id) => id !== matchId));
-  }, []);
-
-  const clearWatchlist = useCallback(() => {
-    setWatchlistIds([]);
-  }, []);
-
-  const atCapacity = watchlistIds.length >= MAX_WATCHLIST;
+  const atCapacity = atWatchlistCapacity;
 
   const heatmapQuickAddClass =
     "border border-white/12 bg-white/10 py-2 pl-2.5 pr-3 text-[0.8125rem] text-neutral-100 shadow-none hover:bg-white/16 hover:text-white disabled:text-neutral-500 [&_span.rounded-full]:bg-white/12 [&_span.rounded-full]:text-neutral-200";
@@ -321,7 +309,7 @@ export function MatchMonitorSection() {
             label="Today"
             count={todayAddable}
             disabled={loading || todayAddable === 0 || atCapacity}
-            onClick={() => addMatchesBulk(todayMatches)}
+            onClick={() => bulkAddMatches(todayMatches)}
             className={cn(heatmapQuickAddClass, "w-full justify-center")}
           />
           <QuickAddButton
@@ -329,7 +317,7 @@ export function MatchMonitorSection() {
             label="All top leagues"
             count={famousAddable}
             disabled={loading || famousAddable === 0 || atCapacity}
-            onClick={() => addMatchesBulk(famousMatches)}
+            onClick={() => bulkAddMatches(famousMatches)}
             className={cn(heatmapQuickAddClass, "w-full justify-center")}
           />
         </div>
@@ -432,7 +420,7 @@ export function MatchMonitorSection() {
                       key={item.match.id}
                       item={item}
                       selected={watchlistIds.includes(item.match.id)}
-                      onSelect={() => addMatch(item.match)}
+                      onSelect={() => addMatchFromSearch(item.match)}
                     />
                   ))}
                 </div>
@@ -456,14 +444,14 @@ export function MatchMonitorSection() {
               label="Today"
               count={todayAddable}
               disabled={loading || todayAddable === 0 || atCapacity}
-              onClick={() => addMatchesBulk(todayMatches)}
+              onClick={() => bulkAddMatches(todayMatches)}
             />
             <QuickAddButton
               icon={Sparkles}
               label="All top"
               count={famousAddable}
               disabled={loading || famousAddable === 0 || atCapacity}
-              onClick={() => addMatchesBulk(famousMatches)}
+              onClick={() => bulkAddMatches(famousMatches)}
             />
             <span className="hidden h-4 w-px bg-black/10 sm:block" aria-hidden />
             {famousLeagueQuickAdds.map((league) => (
@@ -474,7 +462,7 @@ export function MatchMonitorSection() {
                 shortLabel={league.shortLabel}
                 count={league.addable}
                 disabled={loading || league.addable === 0 || atCapacity}
-                onClick={() => addMatchesBulk(league.pool)}
+                onClick={() => bulkAddMatches(league.pool)}
               />
             ))}
           </div>

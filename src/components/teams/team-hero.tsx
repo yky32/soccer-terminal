@@ -4,6 +4,7 @@ import Link from "next/link";
 import { fixtureDetailHref } from "@/lib/match-paths";
 import { useFormatDateTime } from "@/lib/use-format-date-time";
 import { FootballLogo } from "@/components/overview/football-logo";
+import { FollowTeamButton } from "@/components/my-soccer/follow-team-button";
 import {
   leaguesGlassInset,
   leaguesGlassInsetBar,
@@ -11,6 +12,7 @@ import {
 } from "@/components/leagues/leagues-glass";
 import type { TeamProfile } from "@/lib/data/team-profile";
 import type { LeagueFixture } from "@/lib/data/league-profile";
+import { teamSlugFromName } from "@/lib/team-paths";
 import { cn } from "@/lib/utils";
 
 type TeamHeroProps = {
@@ -47,7 +49,17 @@ export function TeamHero({ team }: TeamHeroProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <FollowTeamButton
+            team={{
+              leagueId: team.league.id,
+              teamSlug: teamSlugFromName(team.name),
+              teamName: team.name,
+              teamLogo: team.logo,
+              leagueShortName: team.league.shortName,
+            }}
+            compact
+          />
           <span
             className={cn(
               leaguesGlassInset,

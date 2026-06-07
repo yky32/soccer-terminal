@@ -5,7 +5,7 @@ export const PRODUCT_NAME = "Soccer Terminal";
 export const TITLE_TEMPLATE = `%s - ${PRODUCT_NAME}`;
 
 export const SITE_DESCRIPTION =
-  "Live football map and scores worldwide — league standings, fixtures, lineups, and match stats in one terminal.";
+  "Live soccer map and scores worldwide — league standings, fixtures, lineups, and match stats in one terminal.";
 
 /** Public AdSense publisher ID (site verification + ad units). */
 export const ADSENSE_PUBLISHER_ID = "ca-pub-6625924027167786";

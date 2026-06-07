@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { AppChromeProvider, useAppChrome } from "@/components/app-chrome-context";
 import { Logo } from "@/components/logo";
 import { MobileHeaderNav } from "@/components/mobile-header-nav";
+import { MySoccerMenu } from "@/components/my-soccer/my-soccer-menu";
+import { MySoccerProvider } from "@/components/my-soccer/my-soccer-provider";
+import { MapCountriesProvider } from "@/components/overview/map-countries-context";
 import { SiteFooter } from "@/components/site-footer";
 import { UserMenu } from "@/components/user-menu";
 import { UserPreferencesProvider } from "@/components/user-preferences-provider";
@@ -35,9 +38,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <AppChromeProvider>
       <UserPreferencesProvider>
-        <NewsWireSlotProvider>
-          <AppShellFrame>{children}</AppShellFrame>
-        </NewsWireSlotProvider>
+        <MapCountriesProvider>
+          <MySoccerProvider>
+            <NewsWireSlotProvider>
+              <AppShellFrame>{children}</AppShellFrame>
+            </NewsWireSlotProvider>
+          </MySoccerProvider>
+        </MapCountriesProvider>
       </UserPreferencesProvider>
     </AppChromeProvider>
   );
@@ -96,6 +103,8 @@ function AppShellFrame({ children }: { children: React.ReactNode }) {
             </nav>
 
             <MobileHeaderNav pathname={pathname} className="md:hidden" />
+
+            <MySoccerMenu />
 
             <UserMenu />
           </div>
